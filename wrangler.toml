@@ -1,0 +1,15 @@
+name = "yuk-damel-portal"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+# Binding Database D1 untuk lisensi & konfigurasi portal
+[[d1_databases]]
+binding = "DB"
+database_name = "yuk-damel-portal-db"
+database_id = "placeholder-d1-id"
+
+# Binding KV Namespace untuk cache konfigurasi
+[[kv_namespaces]]
+binding = "CONFIG_KV"
+id = "placeholder-kv-id"

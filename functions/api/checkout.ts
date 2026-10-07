@@ -126,39 +126,34 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     let qrCodeImageUrl = '';
     let pakasirCheckoutUrl = '';
 
-    // PROSES PAKASIR
+    // PROSES PAKASIR (API v2 Resmi)
     if (paymentMethod === 'pakasir') {
       const pakasirApiKey = await getSystemConfig(context.env, 'PAKASIR_API_KEY');
       const pakasirProjectSlug = publicConfig?.pakasirProjectSlug || '';
 
       if (pakasirApiKey && pakasirProjectSlug) {
         try {
-          const pakasirRes = await fetch('https://api.pakasir.com/v1/transaction', {
+          const endpointUrl = `https://app.pakasir.com/api/v2/create-transaction/${encodeURIComponent(pakasirProjectSlug)}/${encodeURIComponent(orderId)}`;
+          const pakasirRes = await fetch(endpointUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${pakasirApiKey}`,
+              'X-Api-Key': pakasirApiKey.trim(),
             },
             body: JSON.stringify({
-              project: pakasirProjectSlug,
-              order_id: orderId,
+              method: 'qris',
               amount: finalAmount,
-              customer_name: clientName,
-              customer_phone: buyerPhone,
-              customer_email: buyerEmail || `${clientSlug}@example.com`,
-              callback_url: new URL('/api/webhooks/pakasir', context.request.url).toString(),
             }),
           });
           const pakasirData: any = await pakasirRes.json();
-          if (pakasirData && pakasirData.payment_url) {
-            pakasirCheckoutUrl = pakasirData.payment_url;
-          }
           if (pakasirData && pakasirData.qr_string) {
             dynamicQrisString = pakasirData.qr_string;
             qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=${encodeURIComponent(dynamicQrisString)}`;
           }
+          // URL halaman bayar langsung Pakasir
+          pakasirCheckoutUrl = `https://app.pakasir.com/pay/${encodeURIComponent(pakasirProjectSlug)}/${encodeURIComponent(orderId)}`;
         } catch (e) {
-          console.error('Gagal memanggil API Pakasir:', e);
+          console.error('Gagal memanggil API Pakasir v2:', e);
         }
       }
     }

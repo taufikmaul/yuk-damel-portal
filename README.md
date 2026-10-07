@@ -43,9 +43,33 @@ Buka di browser:
 
 ---
 
-## 📦 Build Produksi & Deploy
+## 📦 1-Click Deploy ke Cloudflare Pages
 
-```bash
-pnpm build
-```
-Output tersimpan di folder `dist/` dan siap di-deploy ke Cloudflare Pages atau hosting statis apa pun (misalnya domain utama `historycake.com` atau subdomain khusus `ngabsen.id`).
+### Opsi 1: Cloudflare Deploy Button (Instan via Browser)
+
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/taufikmaul/yuk-damel-portal)
+
+Atau langsung sambungkan repository GitHub `taufikmaul/yuk-damel-portal` di **Cloudflare Dashboard > Workers & Pages > Create application > Pages > Connect to Git**:
+- **Project Name**: `yuk-damel-portal`
+- **Framework Preset**: `Vite` (atau `None`)
+- **Build Command**: `pnpm build`
+- **Build Output Directory**: `dist`
+
+### Opsi 2: Deploy Otomatis via GitHub Actions (CI/CD)
+
+Repository ini telah dilengkapi workflow CI/CD otomatis di `.github/workflows/deploy-portal.yml`. Setiap ada `git push` ke branch `main`, Cloudflare Pages akan otomatis ter-build dan ter-deploy.
+
+Cukup tambahkan 2 Secrets di **GitHub Repository Settings > Secrets and variables > Actions**:
+1. `CLOUDFLARE_API_TOKEN`: API Token Cloudflare dengan izin *Cloudflare Pages: Edit*.
+2. `CLOUDFLARE_ACCOUNT_ID`: Account ID Cloudflare (32 digit hex di URL dashboard).
+
+---
+
+## 🛠️ Konfigurasi Cloudflare D1 & KV (Opsional / Recommended)
+
+Untuk fitur penyimpanan lisensi dan konfigurasi serverless:
+1. Buat database D1 di Cloudflare Dashboard: `yuk-damel-portal-db`
+2. Jalankan schema SQL dari `migrations/0001_initial_schema.sql`
+3. Bind database di settings Cloudflare Pages dengan nama binding: `DB`
+4. Buat KV Namespace `CONFIG_KV` dan bind dengan nama: `CONFIG_KV`
+
