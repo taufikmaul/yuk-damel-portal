@@ -13,6 +13,23 @@ export default defineConfig({
   server: {
     port: 5175,
     historyApiFallback: true,
+    proxy: {
+      '/api': {
+        target: 'https://akugawe-portal.pages.dev',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
+  preview: {
+    port: 5175,
+    proxy: {
+      '/api': {
+        target: 'https://akugawe-portal.pages.dev',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
   },
   build: {
     rollupOptions: {

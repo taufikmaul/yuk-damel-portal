@@ -5,7 +5,9 @@
  * POST: Menyimpan konfigurasi & kredensial ke database (Dilindungi verifikasi Master PIN)
  */
 
-import { Env, getSystemConfig, setSystemConfig } from './_db';
+import { Env, getSystemConfig, setSystemConfig, handleOptions, jsonResponse } from './_db';
+
+export const onRequestOptions = handleOptions;
 
 const DEFAULT_ADMIN_PIN_HASH = 'a1fb4e703a9ef1fa4936801721ff285a97ac85330856674412e054892afe6972';
 
@@ -31,32 +33,20 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
     const authorizedChatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
     const telegramBotUsername = await getSystemConfig(context.env, 'TELEGRAM_BOT_USERNAME');
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        config: parsedPublicConfig,
-        credentialsStatus: {
-          isTelegramConfigured: hasTelegram,
-          isGitHubConfigured: hasGitHub,
-          isPakasirConfigured: hasPakasir,
-          hasStaticQris: hasStaticQris,
-          authorizedChatId: authorizedChatId || '',
-          telegramBotUsername: telegramBotUsername || 'AkugawePortalBot',
-        },
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store',
-        },
-      }
-    );
-  } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: err?.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+    return jsonResponse({
+      ok: true,
+      config: parsedPublicConfig,
+      credentialsStatus: {
+        isTelegramConfigured: hasTelegram,
+        isGitHubConfigured: hasGitHub,
+        isPakasirConfigured: hasPakasir,
+        hasStaticQris: hasStaticQris,
+        authorizedChatId: authorizedChatId || '',
+        telegramBotUsername: telegramBotUsername || 'AkugawePortalBot',
+      },
     });
+  } catch (err: any) {
+    return jsonResponse({ ok: false, error: err?.message }, 500);
   }
 };
 
@@ -67,10 +57,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     const { masterPin, publicConfig, sensitiveSecrets } = body;
 
     if (!masterPin) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Akses ditolak: Master PIN wajib disertakan untuk menyimpan konfigurasi.' }),
-        { status: 401, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ ok: false, error: 'Akses ditolak: Master PIN wajib disertakan untuk menyimpan konfigurasi.' }, 401);
     }
 
     // Verifikasi Master PIN terhadap Hash tersimpan di database
@@ -78,10 +65,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     const inputHash = await sha256(String(masterPin).trim());
 
     if (inputHash !== storedPinHash) {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Master PIN tidak valid.' }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
-      );
+      return jsonResponse({ ok: false, error: 'Master PIN tidak valid.' }, 403);
     }
 
     // 1. Simpan Public Config ke Database
@@ -116,17 +100,11 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       }
     }
 
-    return new Response(
-      JSON.stringify({
-        ok: true,
-        message: 'Konfigurasi & kredensial berhasil diamankan dan disimpan ke Cloudflare Database!',
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: err?.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+    return jsonResponse({
+      ok: true,
+      message: 'Konfigurasi & kredensial berhasil diamankan dan disimpan ke Cloudflare Database!',
     });
+  } catch (err: any) {
+    return jsonResponse({ ok: false, error: err?.message }, 500);
   }
 };

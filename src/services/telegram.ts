@@ -36,35 +36,45 @@ export async function sendTelegramOtp(param1: string, param2?: string): Promise<
   const otpCode = isParam1Otp ? param1 : (param2 || param1);
   const targetChatId = isParam1Otp ? (param2 || AUTHORIZED_SELLER_CHAT_ID) : param1;
 
-  // Cloudflare Pages Serverless Proxy (/api/send-otp)
-  try {
-    const proxyRes = await fetch('/api/send-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        otp: otpCode,
-        chatId: targetChatId || AUTHORIZED_SELLER_CHAT_ID,
-      }),
-    });
+  const payload = JSON.stringify({
+    otp: otpCode,
+    chatId: targetChatId || AUTHORIZED_SELLER_CHAT_ID,
+  });
 
-    if (proxyRes.ok) {
-      const data = await proxyRes.json();
-      if (data.ok === true) {
-        return true;
-      }
-      lastTelegramError = data.error || 'Pesan gagal dikirim oleh server Telegram.';
-      return false;
-    } else {
-      const errData = await proxyRes.json().catch(() => ({}));
-      lastTelegramError = errData.error || proxyRes.statusText || 'Gagal mengirim OTP.';
-      console.warn('Serverless OTP Proxy returned error:', lastTelegramError);
-      return false;
-    }
-  } catch (err: any) {
-    lastTelegramError = err?.message || 'Gagal terhubung ke server proxy /api/send-otp';
-    console.error('Failed to connect to /api/send-otp proxy:', err);
-    return false;
+  const endpoints = ['/api/send-otp'];
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    endpoints.push('https://akugawe-portal.pages.dev/api/send-otp');
   }
+
+  for (const endpoint of endpoints) {
+    try {
+      const proxyRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      });
+
+      if (proxyRes.ok) {
+        const data = await proxyRes.json();
+        if (data.ok === true) {
+          return true;
+        }
+        lastTelegramError = data.error || 'Pesan gagal dikirim oleh server Telegram.';
+        return false;
+      } else {
+        const errData = await proxyRes.json().catch(() => ({}));
+        lastTelegramError = errData.error || proxyRes.statusText || 'Gagal mengirim OTP.';
+        console.warn(`Serverless OTP endpoint ${endpoint} returned error:`, lastTelegramError);
+        return false;
+      }
+    } catch (err: any) {
+      console.warn(`Connection to ${endpoint} failed:`, err?.message);
+      lastTelegramError = err?.message || 'Gagal terhubung ke server proxy /api/send-otp';
+    }
+  }
+
+  console.error('All send-otp endpoints failed:', lastTelegramError);
+  return false;
 }
 
 export { BOT_USERNAME };
