@@ -8,7 +8,7 @@ import { Env, getSystemConfig } from './_db';
 // Simple unique token generator
 function generateToken(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let res = 'DAMEL-';
+  let res = 'AKUGAWE-';
   for (let i = 0; i < 4; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));
   res += '-';
   for (let i = 0; i < 4; i++) res += chars.charAt(Math.floor(Math.random() * chars.length));

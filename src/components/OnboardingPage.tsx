@@ -875,7 +875,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                   </span>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between text-slate-800 font-mono text-[11px] bg-white p-2.5 rounded-lg border border-[#f0dbd8]">
-                  <span>Email: admin@yuk-damel.com</span>
+                  <span>Email: admin@akugawe.com</span>
                   <span>Password: password123</span>
                 </div>
                 <p className="text-[10px] text-slate-500">

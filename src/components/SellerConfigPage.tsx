@@ -745,7 +745,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                     value={config.pakasirProjectSlug}
                     onChange={(e) => handleChange('pakasirProjectSlug', e.target.value)}
                     className="text-xs font-mono"
-                    placeholder="contoh: ngabsen-store"
+                    placeholder="contoh: akugawe-store"
                   />
                   <p className="text-[10px] text-slate-500 mt-1">
                     Slug project yang didaftarkan di portal Pakasir.
@@ -967,7 +967,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                   <Input
                     value={config.telegramBotUsername}
                     onChange={(e) => handleChange('telegramBotUsername', e.target.value)}
-                    placeholder="Contoh: YukDamelPortalBot"
+                    placeholder="Contoh: AkugawePortalBot"
                     className="font-mono text-xs bg-white border-[#f0dbd8] text-slate-900 focus-visible:ring-[#a9484c]"
                   />
                   <p className="text-[11px] text-slate-500">
@@ -1129,7 +1129,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                   <Input
                     value={config.brandName}
                     onChange={(e) => handleChange('brandName', e.target.value)}
-                    placeholder="Ngabsen (Beli Putus)"
+                    placeholder="akugawe (Beli Putus)"
                     className="text-xs bg-white border-[#f0dbd8] text-slate-900 focus-visible:ring-[#a9484c]"
                   />
                 </div>
@@ -1142,7 +1142,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                 <Input
                   value={config.defaultSalesMessage}
                   onChange={(e) => handleChange('defaultSalesMessage', e.target.value)}
-                  placeholder="Halo Tim Ngabsen, saya tertarik dengan paket Beli Putus..."
+                  placeholder="Halo Tim akugawe, saya tertarik dengan paket Beli Putus..."
                   className="text-xs bg-white border-[#f0dbd8] text-slate-900 focus-visible:ring-[#a9484c]"
                 />
               </div>
@@ -1372,7 +1372,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                     <span>Lapisan 2: Dynamic OTP (Possession Factor)</span>
                   </div>
                   <p className="text-[11px] text-slate-500 leading-relaxed pl-6">
-                    Kode 6-digit dihasilkan menggunakan Web Crypto CSPRNG dan dikirimkan secara privat ke bot Telegram @YukDamelPortalBot.
+                    Kode 6-digit dihasilkan menggunakan Web Crypto CSPRNG dan dikirimkan secara privat ke bot Telegram @AkugawePortalBot.
                   </p>
                 </div>
 

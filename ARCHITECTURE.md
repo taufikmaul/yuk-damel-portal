@@ -1,6 +1,6 @@
-# ARCHITECTURE & SPECIFICATIONS: YUK-DAMEL PORTAL
+# ARCHITECTURE & SPECIFICATIONS: AKUGAWE PORTAL
 
-Portal penjualan, lisensi pembeli, payment gateway terintegrasi, dan automated edge deployment engine untuk platform absensi & payroll **Yuk-Damel**.
+Portal penjualan, lisensi pembeli, payment gateway terintegrasi, dan automated edge deployment engine untuk platform absensi & payroll **akugawe**.
 
 ---
 
@@ -73,7 +73,7 @@ ngabsen-portal/
 │   │   └── dashboard/
 │   │       └── data.json           # Mock data default untuk demo dashboard
 │   ├── assets/
-│   │   └── logo.tsx                # Komponen SVG logo resmi Yuk-Damel
+│   │   └── logo.tsx                # Komponen SVG logo resmi akugawe
 │   ├── components/
 │   │   ├── reactbits/              # Komponen micro-animation (TrueFocus, DecryptedText, dll.)
 │   │   ├── ui/                     # Primitif UI Tailwind / Radix (button, dialog, input, dll.)

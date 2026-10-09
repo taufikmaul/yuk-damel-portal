@@ -135,7 +135,7 @@ export function App() {
               </div>
               <div>
                 <span className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
-                  yuk-damel
+                  akugawe
                   <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     Beli Putus
                   </span>
@@ -292,7 +292,7 @@ export function App() {
                 Berapa Biaya yang Bisa Anda Hemat?
               </h2>
               <p className="text-sm text-slate-400 mt-2 max-w-xl mx-auto">
-                Bandingkan biaya sewa aplikasi absensi berlangganan (SaaS) per kepala dengan kepemilikan mandiri sistem yuk-damel.
+                Bandingkan biaya sewa aplikasi absensi berlangganan (SaaS) per kepala dengan kepemilikan mandiri sistem akugawe.
               </p>
             </div>
 
@@ -401,7 +401,7 @@ export function App() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-emerald-400 font-bold pt-2 border-t border-slate-800">
-                      <span>Biaya Server yuk-damel (Cloudflare):</span>
+                      <span>Biaya Server akugawe (Cloudflare):</span>
                       <span className="text-sm bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                         Rp 0 / bulan
                       </span>
@@ -572,7 +572,7 @@ export function App() {
                 Mengapa Beli Putus Lebih Menguntungkan?
               </h2>
               <p className="text-sm text-slate-400 mt-2">
-                Perbandingan objektif antara aplikasi absensi sewa (SaaS) vs yuk-damel Self-Hosted.
+                Perbandingan objektif antara aplikasi absensi sewa (SaaS) vs akugawe Self-Hosted.
               </p>
             </div>
 
@@ -585,7 +585,7 @@ export function App() {
                   <tr className="border-b border-slate-800 bg-slate-950/60">
                     <th className="p-4 sm:p-5 font-bold text-slate-300">Aspek Evaluasi</th>
                     <th className="p-4 sm:p-5 font-bold text-rose-400">Aplikasi Absensi SaaS (Sewa)</th>
-                    <th className="p-4 sm:p-5 font-bold text-emerald-400 bg-emerald-500/5">yuk-damel (Beli Putus)</th>
+                    <th className="p-4 sm:p-5 font-bold text-emerald-400 bg-emerald-500/5">akugawe (Beli Putus)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
@@ -660,7 +660,7 @@ export function App() {
               {[
                 {
                   q: 'Benarkah biaya servernya Rp 0 / bulan?',
-                  a: 'Ya, 100% benar. yuk-damel dibangun di atas ekosistem Cloudflare Serverless (Workers, D1 SQLite, KV, dan Pages). Kuota gratis Cloudflare menyediakan hingga 100.000 requests per hari dan 5 juta pembacaan database per hari. Untuk operasional UMKM dengan 5 hingga 100 karyawan, kuota ini tidak akan habis dan tetap gratis selamanya.',
+                  a: 'Ya, 100% benar. akugawe dibangun di atas ekosistem Cloudflare Serverless (Workers, D1 SQLite, KV, dan Pages). Kuota gratis Cloudflare menyediakan hingga 100.000 requests per hari dan 5 juta pembacaan database per hari. Untuk operasional UMKM dengan 5 hingga 100 karyawan, kuota ini tidak akan habis dan tetap gratis selamanya.',
                 },
                 {
                   q: 'Apakah saya membutuhkan server VPS atau programmer khusus?',
@@ -668,7 +668,7 @@ export function App() {
                 },
                 {
                   q: 'Bagaimana jika karyawan saya menggunakan iPhone dan Android berbeda?',
-                  a: 'yuk-damel menggunakan standar Progressive Web App (PWA). Karyawan Android cukup membukanya di Google Chrome dan menekan "Tambahkan ke Layar Utama". Karyawan iPhone membukanya di Safari dan menekan "Add to Home Screen". Tanpa perlu registrasi akun Google Play atau Apple ID.',
+                  a: 'akugawe menggunakan standar Progressive Web App (PWA). Karyawan Android cukup membukanya di Google Chrome dan menekan "Tambahkan ke Layar Utama". Karyawan iPhone membukanya di Safari dan menekan "Add to Home Screen". Tanpa perlu registrasi akun Google Play atau Apple ID.',
                 },
                 {
                   q: 'Apakah bisa ekspor laporan ke Excel atau PDF?',
@@ -735,7 +735,7 @@ export function App() {
 
         {/* FOOTER */}
         <footer className="border-t border-slate-800/80 py-8 px-4 sm:px-8 text-center text-xs text-slate-500">
-          <p>© 2026 yuk-damel. Aplikasi Presensi Biometrik & Penggajian Mandiri UMKM Indonesia.</p>
+          <p>© 2026 akugawe. Aplikasi Presensi Biometrik & Penggajian Mandiri UMKM Indonesia.</p>
           <div className="mt-2 flex items-center justify-center gap-4">
             <span className="text-slate-600">Dioptimalkan khusus untuk Cloudflare Edge</span>
             <a

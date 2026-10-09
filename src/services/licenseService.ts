@@ -120,7 +120,7 @@ export function verifyLicenseToken(token?: string | null): TokenVerificationResu
       valid: false,
       reason: 'INVALID_FORMAT',
       token: cleanToken,
-      message: `Format token "${cleanToken}" tidak valid. Token resmi yuk-damel harus diawali dengan 'NGABSEN-'.`,
+      message: `Format token "${cleanToken}" tidak valid. Token resmi akugawe harus diawali dengan 'NGABSEN-'.`,
     };
   }
 
@@ -143,7 +143,7 @@ export function verifyLicenseToken(token?: string | null): TokenVerificationResu
     valid: false,
     reason: 'NOT_FOUND',
     token: cleanToken,
-    message: `Token "${cleanToken}" tidak terdaftar di database lisensi yuk-damel. Pastikan Anda menggunakan tautan aktivasi resmi yang diberikan oleh penjual.`,
+    message: `Token "${cleanToken}" tidak terdaftar di database lisensi akugawe. Pastikan Anda menggunakan tautan aktivasi resmi yang diberikan oleh penjual.`,
   };
 }
 
@@ -166,7 +166,7 @@ export async function verifyLicenseTokenRemote(token?: string | null): Promise<T
       valid: false,
       reason: 'INVALID_FORMAT',
       token: cleanToken,
-      message: `Format token "${cleanToken}" tidak valid. Token resmi yuk-damel harus diawali dengan 'NGABSEN-'.`,
+      message: `Format token "${cleanToken}" tidak valid. Token resmi akugawe harus diawali dengan 'NGABSEN-'.`,
     };
   }
 

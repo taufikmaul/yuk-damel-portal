@@ -157,13 +157,13 @@ function AdminSidebar({
                   type="button"
                   onClick={toggleSidebar}
                   className="flex aspect-square size-9 items-center justify-center rounded-xl bg-[#a9484c] text-white p-1.5 shadow-xs cursor-pointer hover:bg-[#8f3b3f] transition-all"
-                  title="yuk-damel Sales Admin"
+                  title="akugawe Sales Admin"
                 >
                   <Logo className="size-full" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={12} className="font-semibold text-xs">
-                yuk-damel Sales Admin
+                akugawe Sales Admin
               </TooltipContent>
             </Tooltip>
           </div>
@@ -173,7 +173,7 @@ function AdminSidebar({
               <Logo className="size-full" />
             </div>
             <div className="grid flex-1 text-left text-xs leading-tight min-w-0">
-              <span className="truncate font-bold text-slate-900 text-sm">yuk-damel</span>
+              <span className="truncate font-bold text-slate-900 text-sm">akugawe</span>
               <span className="truncate text-[10px] text-[#7d6568] font-medium">
                 Sales & License Admin
               </span>
@@ -690,7 +690,7 @@ export function AdminPortalPage({
       setOtpSentSuccess(true);
       toast.success('Kode OTP 6-digit berhasil dikirimkan ke Telegram Anda!');
     } else {
-      setErrorMessage('Gagal mengirim pesan ke Telegram. Pastikan bot @YukDamelPortalBot aktif.');
+      setErrorMessage('Gagal mengirim pesan ke Telegram. Pastikan bot @AkugawePortalBot aktif.');
       toast.error('Gagal mengirim OTP ke Telegram.');
     }
   };
@@ -841,7 +841,7 @@ export function AdminPortalPage({
 
   const copyWhatsAppFormat = (client: ClientRecord) => {
     const link = `${window.location.origin}/?onboarding=true&token=${client.token}`;
-    const text = `Halo Kak dari *${client.name}*! Terima kasih atas pembelian Lisensi Aplikasi Absensi & Payroll yuk-damel (Beli Putus).
+    const text = `Halo Kak dari *${client.name}*! Terima kasih atas pembelian Lisensi Aplikasi Absensi & Payroll akugawe (Beli Putus).
 
 Berikut tautan aktivasi 1-Click Deploy ke Cloudflare milik Anda:
 👉 ${link}
@@ -882,7 +882,7 @@ Silakan buka tautan di atas untuk mengatur nama toko & mengaktifkan sistem secar
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `ngabsen-licenses-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `akugawe-licenses-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success('Backup data lisensi berhasil diunduh!');
@@ -1696,7 +1696,7 @@ Silakan buka tautan di atas untuk mengatur nama toko & mengaktifkan sistem secar
                       Arsitektur Cloudflare Serverless Ekosistem
                     </CardTitle>
                     <CardDescription className="text-xs text-slate-500">
-                      Setiap instance klien yuk-damel di-deploy mandiri ke akun Cloudflare klien secara terisolasi tanpa server VPS.
+                      Setiap instance klien akugawe di-deploy mandiri ke akun Cloudflare klien secara terisolasi tanpa server VPS.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">

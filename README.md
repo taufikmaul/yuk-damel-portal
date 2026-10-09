@@ -1,15 +1,15 @@
-# YUK-DAMEL PORTAL — ETALASE PENJUALAN, LISENSI & 1-CLICK ONBOARDING
+# AKUGAWE PORTAL — ETALASE PENJUALAN, LISENSI & 1-CLICK ONBOARDING
 
-[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/taufikmaul/yuk-damel-portal)
+[![Deploy to Cloudflare Pages](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/taufikmaul/akugawe-portal)
 
-Portal mandiri (*standalone portal*) untuk sistem absensi & payroll **Yuk-Damel**. Bertindak sebagai etalase penjualan publik, checkout pembayaran otomatis, manajemen lisensi penjual, serta portal onboarding mandiri bagi pembeli untuk melakukan deployment ke akun Cloudflare mereka sendiri hanya dalam 1 klik.
+Portal mandiri (*standalone portal*) untuk sistem absensi & payroll **akugawe**. Bertindak sebagai etalase penjualan publik, checkout pembayaran otomatis, manajemen lisensi penjual, serta portal onboarding mandiri bagi pembeli untuk melakukan deployment ke akun Cloudflare mereka sendiri hanya dalam 1 klik.
 
 ---
 
 ## 🌟 Arsitektur & Fitur Utama
 
 ### 1. Public Sales Landing Page (`/`)
-- **Showcase Fitur Lengkap**: Presentasi fitur Yuk-Damel (Biometrik GPS PWA, Smart Attendance, Multi-cabang & Shift, Otomasi Payroll THR/PPH21, Bot Telegram).
+- **Showcase Fitur Lengkap**: Presentasi fitur akugawe (Biometrik GPS PWA, Smart Attendance, Multi-cabang & Shift, Otomasi Payroll THR/PPH21, Bot Telegram).
 - **Interactive ROI Calculator**: Simulasi penghematan biaya riil sistem beli putus vs SaaS langganan bulanan.
 - **Tabel Perbandingan Paket**: Paket Starter UMKM, Business Pro (Best Value), dan Enterprise White-Label.
 - **Checkout Modal Terintegrasi**:
@@ -38,7 +38,7 @@ Portal mandiri (*standalone portal*) untuk sistem absensi & payroll **Yuk-Damel*
 - **Wizard Ramah Pemula**: Panduan langkah demi langkah mendapatkan Cloudflare Account ID & API Token gratis.
 - **Input Usaha**: Nama Brand/Usaha, Slug Domain, serta Custom Domain (opsional).
 - **1-Click Deploy ke Cloudflare**:
-  - Memicu GitHub Actions Workflow di repository core Yuk-Damel melalui serverless Edge API (`/api/deploy`).
+  - Memicu GitHub Actions Workflow di repository core akugawe melalui serverless Edge API (`/api/deploy`).
   - Progress terminal live status deployment.
   - Serah terima instan tautan Dashboard Owner, PWA Mobile Absensi, dan akun kredensial default admin perusahaan.
 
@@ -52,8 +52,8 @@ Portal mandiri (*standalone portal*) untuk sistem absensi & payroll **Yuk-Damel*
 
 ```bash
 # Clone repository
-git clone git@github.com:taufikmaul/yuk-damel-portal.git
-cd yuk-damel-portal
+git clone git@github.com:taufikmaul/akugawe-portal.git
+cd akugawe-portal
 
 # Install dependensi
 pnpm install
@@ -73,7 +73,7 @@ Buka di browser:
 
 ### Metode 1: Hubungkan ke Cloudflare Pages via Dashboard (Direkomendasikan)
 1. Buka [Cloudflare Dashboard](https://dash.cloudflare.com/) > **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
-2. Pilih repository `taufikmaul/yuk-damel-portal`.
+2. Pilih repository `taufikmaul/akugawe-portal`.
 3. Gunakan konfigurasi build berikut:
    - **Framework Preset**: `Vite` (atau `None`)
    - **Build command**: `pnpm build`
@@ -95,17 +95,17 @@ Agar data lisensi tersimpan secara permanen di database edge:
 
 1. **Buat Database D1**:
    ```bash
-   npx wrangler d1 create yuk-damel-portal-db
+   npx wrangler d1 create akugawe-portal-db
    ```
 2. **Jalankan Skema Database**:
    ```bash
-   npx wrangler d1 execute yuk-damel-portal-db --remote --file=./migrations/0001_initial_schema.sql
+   npx wrangler d1 execute akugawe-portal-db --remote --file=./migrations/0001_initial_schema.sql
    ```
 3. **Bind ke Cloudflare Pages**:
    - Di dashboard Cloudflare Pages: Masuk ke **Settings > Functions > D1 Database Bindings**.
    - Tambahkan variable binding:
      - Variable name: `DB`
-     - D1 database: `yuk-damel-portal-db`
+     - D1 database: `akugawe-portal-db`
 4. **(Opsional) KV Binding**:
    - Variable name: `CONFIG_KV`
 
@@ -118,4 +118,4 @@ Agar data lisensi tersimpan secara permanen di database edge:
 ---
 
 ## 📄 Lisensi
-Hak cipta dilindungi. Project ini diperuntukkan untuk operasional portal penjualan & onboarding Yuk-Damel.
+Hak cipta dilindungi. Project ini diperuntukkan untuk operasional portal penjualan & onboarding akugawe.

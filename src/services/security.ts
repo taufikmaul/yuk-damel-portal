@@ -1,5 +1,5 @@
 /**
- * Multi-Layered Security Service for Yuk-Damel Sales Portal
+ * Multi-Layered Security Service for akugawe Sales Portal
  * Provides:
  * 1. Master Passcode/PIN Verification (Knowledge Factor)
  * 2. Cryptographic CSPRNG OTP Generation (Possession Factor)
@@ -9,7 +9,7 @@
  * 6. Rate-Limiting, Progressive Lockout, and Idle Inactivity Auto-Lock
  */
 
-const SESSION_SALT = 'yukdamel_sec_v1_auth_salt';
+const SESSION_SALT = 'akugawe_sec_v1_auth_salt';
 const MAX_FAILED_ATTEMPTS = 5;
 const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60 * 1000; // 60 detik lockout jika 5x gagal

@@ -1,10 +1,10 @@
 /**
- * Service Telegram Bot untuk Portal Penjual yuk-damel
+ * Service Telegram Bot untuk Portal Penjual akugawe
  * Seluruh pengiriman pesan diarahkan melalui Edge Function (/api/send-otp)
  * agar Bot API Token tidak pernah diekspos ke client bundle.
  */
 
-const BOT_USERNAME = 'YukDamelPortalBot';
+const BOT_USERNAME = 'AkugawePortalBot';
 export const AUTHORIZED_SELLER_CHAT_ID = '115334079';
 
 import { generateSecureOtp } from './security';

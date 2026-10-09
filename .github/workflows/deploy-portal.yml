@@ -1,4 +1,4 @@
-name: Deploy yuk-damel-portal to Cloudflare Pages
+name: Deploy akugawe-portal to Cloudflare Pages
 
 on:
   push:
@@ -36,4 +36,4 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=yuk-damel-portal
+          command: pages deploy dist --project-name=akugawe-portal

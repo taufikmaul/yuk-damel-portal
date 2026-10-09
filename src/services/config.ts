@@ -108,16 +108,16 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
 ];
 
 export const DEFAULT_SELLER_CONFIG: SellerConfig = {
-  brandName: 'Ngabsen (Beli Putus)',
+  brandName: 'akugawe (Beli Putus)',
   whatsappNumber: '6281234567890',
-  defaultSalesMessage: 'Halo Tim Ngabsen, saya tertarik dengan paket Beli Putus Aplikasi Absensi & Payroll. Bisa info lebih lanjut?',
+  defaultSalesMessage: 'Halo Tim akugawe, saya tertarik dengan paket Beli Putus Aplikasi Absensi & Payroll. Bisa info lebih lanjut?',
   
   isPromoActive: true,
   promoBannerText: '🔥 PROMO KHUSUS BULAN INI: DISKON HINGGA 45% UNTUK PAKET BELI PUTUS!',
   pricingTiers: DEFAULT_PRICING_TIERS,
 
   telegramBotToken: '',
-  telegramBotUsername: 'YukDamelPortalBot',
+  telegramBotUsername: 'AkugawePortalBot',
   authorizedChatId: '115334079',
 
   githubRepoUrl: 'https://github.com/taufikmaul/ngabsen',
