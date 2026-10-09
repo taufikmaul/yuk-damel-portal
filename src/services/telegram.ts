@@ -30,7 +30,11 @@ export function getLastTelegramError(): string | null {
  * Kirim pesan OTP secara aman ke Telegram Chat ID pemilik melalui Serverless Proxy Edge
  * Dilengkapi format monospace tap-to-copy dan tombol resmi Telegram Copy Text
  */
-export async function sendTelegramOtp(param1: string, param2?: string): Promise<boolean> {
+export async function sendTelegramOtp(
+  param1: string,
+  param2?: string,
+  options?: { title?: string; clientName?: string; message?: string }
+): Promise<boolean> {
   lastTelegramError = null;
   const isParam1Otp = /^\d{4,6}$/.test(param1);
   const otpCode = isParam1Otp ? param1 : (param2 || param1);
@@ -39,6 +43,9 @@ export async function sendTelegramOtp(param1: string, param2?: string): Promise<
   const payload = JSON.stringify({
     otp: otpCode,
     chatId: targetChatId || AUTHORIZED_SELLER_CHAT_ID,
+    title: options?.title,
+    clientName: options?.clientName,
+    message: options?.message,
   });
 
   const endpoints = ['/api/send-otp'];

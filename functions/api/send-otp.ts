@@ -13,13 +13,14 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     
     // Ambil Token & Chat ID dari Database D1 / KV (dengan fallback ke Environment Variables)
     const botToken = await getSystemConfig(context.env, 'TELEGRAM_BOT_TOKEN');
-    const targetChatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
+    const defaultChatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
+    const targetChatId = body.chatId ? String(body.chatId).trim() : defaultChatId;
 
     if (!botToken || !targetChatId) {
       return jsonResponse(
         {
           ok: false,
-          error: 'Server configuration error: TELEGRAM_BOT_TOKEN atau AUTHORIZED_CHAT_ID belum dikonfigurasi di Database / Environment Cloudflare.',
+          error: 'Server configuration error: TELEGRAM_BOT_TOKEN atau Chat ID tujuan belum dikonfigurasi.',
         },
         500
       );
@@ -31,7 +32,8 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       return jsonResponse({ ok: false, error: 'Invalid OTP code' }, 400);
     }
 
-    const message = `🔐 *KODE LOGIN SELLER:*\n\`${otpCode}\`\n\n_(Ketuk angka di atas atau klik tombol di bawah untuk salin)_`;
+    const title = body.title || (body.clientName ? `KODE VERIFIKASI ONBOARDING: ${body.clientName}` : 'KODE VERIFIKASI TELEGRAM');
+    const message = body.message || `🔐 *${title}:*\n\`${otpCode}\`\n\n_(Ketuk angka di atas atau klik tombol di bawah untuk salin kode)_\n\n⚠️ Kode PIN ini rahasia untuk verifikasi akses onboarding & deployment Anda. Jangan berikan kepada siapa pun.`;
 
     // Pasang AbortController dengan batas waktu 8 detik agar Worker tidak hang
     const abortCtrl = new AbortController();
