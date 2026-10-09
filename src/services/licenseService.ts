@@ -7,6 +7,7 @@ export interface ClientRecord {
   customDomainDashboard?: string;
   customDomainApp?: string;
   deployedUrl?: string;
+  isCompleted?: boolean;
   isSample?: boolean;
 }
 
@@ -201,6 +202,7 @@ export async function markClientDeployed(
     deployedUrl: string;
     customDomainDashboard?: string;
     customDomainApp?: string;
+    isCompleted?: boolean;
   }
 ): Promise<boolean> {
   const cleanToken = token.trim().toUpperCase();
@@ -233,6 +235,7 @@ export async function markClientDeployed(
           deployedUrl: urls.deployedUrl,
           customDomainDashboard: urls.customDomainDashboard || c.customDomainDashboard,
           customDomainApp: urls.customDomainApp || c.customDomainApp,
+          isCompleted: urls.isCompleted !== undefined ? urls.isCompleted : c.isCompleted,
         };
       }
       return c;

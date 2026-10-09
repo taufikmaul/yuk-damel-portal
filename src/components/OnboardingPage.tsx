@@ -3,7 +3,6 @@ import confetti from 'canvas-confetti';
 import {
   Rocket,
   ShieldCheck,
-  Terminal,
   CheckCircle2,
   ExternalLink,
   RefreshCw,
@@ -42,6 +41,53 @@ interface OnboardingProps {
   onBackToLanding: () => void;
 }
 
+export interface SavedDeployState {
+  dispatched: boolean;
+  businessName: string;
+  businessSlug: string;
+  predictedUrls: {
+    dashboard: string;
+    app: string;
+    api: string;
+    customDashboard?: string;
+    customApp?: string;
+  };
+  deployMode?: 'production' | 'seed' | 'demo';
+  customDomainDashboard?: string;
+  customDomainApp?: string;
+  useCustomDomain?: boolean;
+  isCompleted?: boolean;
+  deployedAt?: string;
+}
+
+export function getSavedDeployState(token?: string): SavedDeployState | null {
+  if (!token || !token.trim()) return null;
+  try {
+    const raw = localStorage.getItem(`ngabsen_deploy_state_${token.trim().toUpperCase()}`);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('Error reading saved deploy state:', e);
+  }
+  return null;
+}
+
+export function saveDeployState(token: string, state: SavedDeployState) {
+  if (!token || !token.trim()) return;
+  try {
+    localStorage.setItem(`ngabsen_deploy_state_${token.trim().toUpperCase()}`, JSON.stringify(state));
+  } catch (e) {
+    console.error('Error saving deploy state:', e);
+  }
+}
+
+function formatSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 export function OnboardingPage({ initialToken = '', onBackToLanding }: OnboardingProps) {
   const sellerConfig = loadSellerConfig();
 
@@ -51,39 +97,94 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     verifyLicenseToken(initialToken)
   );
 
+  const initialSaved = getSavedDeployState(initialToken);
+
   // Form State
-  const [businessName, setBusinessName] = useState(() =>
-    verification.valid ? verification.client.name : ''
+  const [businessName, setBusinessName] = useState(() => {
+    if (initialSaved?.businessName) return initialSaved.businessName;
+    return verification.valid ? verification.client.name : '';
+  });
+  const [businessSlug, setBusinessSlug] = useState(() => {
+    if (initialSaved?.businessSlug) return initialSaved.businessSlug;
+    return verification.valid ? formatSlug(verification.client.name) : '';
+  });
+  const [customDomainDashboard, setCustomDomainDashboard] = useState(
+    () => initialSaved?.customDomainDashboard || ''
   );
-  const [businessSlug, setBusinessSlug] = useState(() =>
-    verification.valid
-      ? verification.client.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '')
-      : ''
+  const [customDomainApp, setCustomDomainApp] = useState(
+    () => initialSaved?.customDomainApp || ''
   );
-  const [customDomainDashboard, setCustomDomainDashboard] = useState('');
-  const [customDomainApp, setCustomDomainApp] = useState('');
-  const [useCustomDomain, setUseCustomDomain] = useState(false);
+  const [useCustomDomain, setUseCustomDomain] = useState(
+    () => !!initialSaved?.useCustomDomain
+  );
   const [cfAccountId, setCfAccountId] = useState('');
   const [cfApiToken, setCfApiToken] = useState('');
   const [showToken, setShowToken] = useState(false);
-  const [deployMode, setDeployMode] = useState<'production' | 'seed' | 'demo'>('production');
+  const [deployMode, setDeployMode] = useState<'production' | 'seed' | 'demo'>(
+    () => initialSaved?.deployMode || 'production'
+  );
 
-  // Deploy State — real results only, no simulation
+  // Status Konfirmasi: Sudah Selesai vs Belum Selesai
+  const [isCompleted, setIsCompleted] = useState<boolean>(() => {
+    if (initialSaved?.isCompleted !== undefined) return initialSaved.isCompleted;
+    if (verification.valid && (verification.isAlreadyDeployed || verification.client.status === 'active')) {
+      return true;
+    }
+    return false;
+  });
+
+  // Deploy State — keep user on deployed view if already dispatched / active
   const [isDeploying, setIsDeploying] = useState(false);
-  const [dispatched, setDispatched] = useState(false);
+  const [dispatched, setDispatched] = useState<boolean>(() => {
+    if (initialSaved?.dispatched) return true;
+    if (
+      verification.valid &&
+      (verification.isAlreadyDeployed ||
+        verification.client.status === 'active' ||
+        !!verification.client.deployedUrl)
+    ) {
+      return true;
+    }
+    return false;
+  });
   const [dispatchError, setDispatchError] = useState<string | null>(null);
-  const [runUrl, setRunUrl] = useState<string | null>(null);
+
   const [predictedUrls, setPredictedUrls] = useState<{
     dashboard: string;
     app: string;
     api: string;
     customDashboard?: string;
     customApp?: string;
-  } | null>(null);
+  } | null>(() => {
+    if (initialSaved?.predictedUrls) return initialSaved.predictedUrls;
+    if (
+      verification.valid &&
+      (verification.isAlreadyDeployed ||
+        verification.client.status === 'active' ||
+        !!verification.client.deployedUrl)
+    ) {
+      const cleanSlug = formatSlug(verification.client.name) || 'usaha-anda';
+      const dashUrl = verification.client.deployedUrl || `https://dash-${cleanSlug}.pages.dev`;
+      const appUrl = `https://app-${cleanSlug}.pages.dev`;
+      const apiUrl = `https://ngabsen-api-${cleanSlug}.workers.dev`;
+      return {
+        dashboard: dashUrl,
+        app: appUrl,
+        api: apiUrl,
+        customDashboard: verification.client.customDomainDashboard
+          ? (verification.client.customDomainDashboard.startsWith('http')
+              ? verification.client.customDomainDashboard
+              : `https://${verification.client.customDomainDashboard}`)
+          : undefined,
+        customApp: verification.client.customDomainApp
+          ? (verification.client.customDomainApp.startsWith('http')
+              ? verification.client.customDomainApp
+              : `https://${verification.client.customDomainApp}`)
+          : undefined,
+      };
+    }
+    return null;
+  });
 
   // Re-verify if initialToken prop changes
   useEffect(() => {
@@ -95,14 +196,47 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         if (isMounted) {
           setVerification(res);
           if (res.valid) {
-            setBusinessName(res.client.name);
-            setBusinessSlug(
-              res.client.name
-                .toLowerCase()
-                .replace(/[^a-z0-9]/g, '-')
-                .replace(/-+/g, '-')
-                .replace(/^-|-$/g, '')
-            );
+            const cleanToken = res.client.token;
+            const saved = getSavedDeployState(cleanToken);
+            if (saved && saved.dispatched) {
+              setDispatched(true);
+              if (saved.businessName) setBusinessName(saved.businessName);
+              if (saved.businessSlug) setBusinessSlug(saved.businessSlug);
+              if (saved.predictedUrls) setPredictedUrls(saved.predictedUrls);
+              if (saved.deployMode) setDeployMode(saved.deployMode);
+              if (saved.isCompleted !== undefined) setIsCompleted(saved.isCompleted);
+              if (saved.customDomainDashboard) setCustomDomainDashboard(saved.customDomainDashboard);
+              if (saved.customDomainApp) setCustomDomainApp(saved.customDomainApp);
+              if (saved.useCustomDomain !== undefined) setUseCustomDomain(saved.useCustomDomain);
+            } else if (res.isAlreadyDeployed || res.client.status === 'active' || res.client.deployedUrl) {
+              setDispatched(true);
+              const cleanSlug = formatSlug(res.client.name) || 'usaha-anda';
+              const dashUrl = res.client.deployedUrl || `https://dash-${cleanSlug}.pages.dev`;
+              const appUrl = `https://app-${cleanSlug}.pages.dev`;
+              const apiUrl = `https://ngabsen-api-${cleanSlug}.workers.dev`;
+              const urls = {
+                dashboard: dashUrl,
+                app: appUrl,
+                api: apiUrl,
+                customDashboard: res.client.customDomainDashboard
+                  ? (res.client.customDomainDashboard.startsWith('http')
+                      ? res.client.customDomainDashboard
+                      : `https://${res.client.customDomainDashboard}`)
+                  : undefined,
+                customApp: res.client.customDomainApp
+                  ? (res.client.customDomainApp.startsWith('http')
+                      ? res.client.customDomainApp
+                      : `https://${res.client.customDomainApp}`)
+                  : undefined,
+              };
+              setBusinessName(res.client.name);
+              setBusinessSlug(cleanSlug);
+              setPredictedUrls(urls);
+              setIsCompleted(true);
+            } else {
+              setBusinessName(res.client.name);
+              setBusinessSlug(formatSlug(res.client.name));
+            }
           }
         }
       }
@@ -112,6 +246,35 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
       isMounted = false;
     };
   }, [initialToken]);
+
+  // Sinkronisasi URL browser agar refresh tetap di onboarding dan membersihkan path /salesAdmin
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      let changed = false;
+
+      // Jika URL masih tertinggal path /salesAdmin dari portal admin, bersihkan ke root
+      if (url.pathname.startsWith('/salesAdmin')) {
+        url.pathname = '/';
+        changed = true;
+      }
+
+      if (url.searchParams.get('onboarding') !== 'true') {
+        url.searchParams.set('onboarding', 'true');
+        changed = true;
+      }
+
+      const currentToken = (verification.valid ? verification.client.token : tokenInput) || initialToken;
+      if (currentToken && url.searchParams.get('token') !== currentToken) {
+        url.searchParams.set('token', currentToken);
+        changed = true;
+      }
+
+      if (changed) {
+        window.history.replaceState({ view: 'onboarding', token: currentToken }, '', url.toString());
+      }
+    } catch (_) {}
+  }, [verification, tokenInput, initialToken]);
 
   // Handler to verify a manual token input on the security gate
   const handleVerifyManualToken = async (e: React.FormEvent) => {
@@ -125,19 +288,56 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     setVerification(res);
 
     if (res.valid) {
-      setBusinessName(res.client.name);
-      setBusinessSlug(
-        res.client.name
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, '-')
-          .replace(/-+/g, '-')
-          .replace(/^-|-$/g, '')
-      );
+      const cleanToken = res.client.token;
+      const saved = getSavedDeployState(cleanToken);
+      if (saved && saved.dispatched) {
+        setDispatched(true);
+        if (saved.businessName) setBusinessName(saved.businessName);
+        if (saved.businessSlug) setBusinessSlug(saved.businessSlug);
+        if (saved.predictedUrls) setPredictedUrls(saved.predictedUrls);
+        if (saved.deployMode) setDeployMode(saved.deployMode);
+        if (saved.isCompleted !== undefined) setIsCompleted(saved.isCompleted);
+        if (saved.customDomainDashboard) setCustomDomainDashboard(saved.customDomainDashboard);
+        if (saved.customDomainApp) setCustomDomainApp(saved.customDomainApp);
+        if (saved.useCustomDomain !== undefined) setUseCustomDomain(saved.useCustomDomain);
+      } else if (res.isAlreadyDeployed || res.client.status === 'active' || res.client.deployedUrl) {
+        setDispatched(true);
+        const cleanSlug = formatSlug(res.client.name) || 'usaha-anda';
+        const dashUrl = res.client.deployedUrl || `https://dash-${cleanSlug}.pages.dev`;
+        const appUrl = `https://app-${cleanSlug}.pages.dev`;
+        const apiUrl = `https://ngabsen-api-${cleanSlug}.workers.dev`;
+        const urls = {
+          dashboard: dashUrl,
+          app: appUrl,
+          api: apiUrl,
+          customDashboard: res.client.customDomainDashboard
+            ? (res.client.customDomainDashboard.startsWith('http')
+                ? res.client.customDomainDashboard
+                : `https://${res.client.customDomainDashboard}`)
+            : undefined,
+          customApp: res.client.customDomainApp
+            ? (res.client.customDomainApp.startsWith('http')
+                ? res.client.customDomainApp
+                : `https://${res.client.customDomainApp}`)
+            : undefined,
+        };
+        setBusinessName(res.client.name);
+        setBusinessSlug(cleanSlug);
+        setPredictedUrls(urls);
+        setIsCompleted(true);
+      } else {
+        setBusinessName(res.client.name);
+        setBusinessSlug(formatSlug(res.client.name));
+      }
+
       // Update browser URL query without reload
       const url = new URL(window.location.href);
+      if (url.pathname.startsWith('/salesAdmin')) {
+        url.pathname = '/';
+      }
       url.searchParams.set('onboarding', 'true');
       url.searchParams.set('token', res.client.token);
-      window.history.replaceState({}, '', url.toString());
+      window.history.replaceState({ view: 'onboarding', token: res.client.token }, '', url.toString());
       toast.success(`Token sah! Selamat datang, ${res.client.name}.`);
     } else {
       toast.error(res.message);
@@ -147,12 +347,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
   // Auto-generate slug from business name
   const handleNameChange = (val: string) => {
     setBusinessName(val);
-    const slug = val
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-    setBusinessSlug(slug);
+    setBusinessSlug(formatSlug(val));
   };
 
   const handleStartDeploy = async (e: React.FormEvent) => {
@@ -186,31 +381,86 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     setIsDeploying(false);
 
     if (dispatchRes.success) {
-      const cleanSlug = businessSlug || 'usaha-anda';
+      const cleanSlug = businessSlug || formatSlug(businessName || verification.client.name) || 'usaha-anda';
       const dashUrl = `https://dash-${cleanSlug}.pages.dev`;
       const appUrl = `https://app-${cleanSlug}.pages.dev`;
       const apiUrl = `https://ngabsen-api-${cleanSlug}.workers.dev`;
 
-      setPredictedUrls({
+      const urls = {
         dashboard: dashUrl,
         app: appUrl,
         api: apiUrl,
         customDashboard: useCustomDomain && customDomainDashboard ? `https://${customDomainDashboard}` : undefined,
         customApp: useCustomDomain && customDomainApp ? `https://${customDomainApp}` : undefined,
-      });
+      };
+
+      setPredictedUrls(urls);
+      setDispatched(true);
+      setIsCompleted(false);
+
+      // Simpan state lengkap agar refresh/revisit tetap di halaman ini & data tidak hilang
+      const stateToSave: SavedDeployState = {
+        dispatched: true,
+        businessName: businessName || verification.client.name,
+        businessSlug: cleanSlug,
+        predictedUrls: urls,
+        deployMode,
+        customDomainDashboard: useCustomDomain ? customDomainDashboard : undefined,
+        customDomainApp: useCustomDomain ? customDomainApp : undefined,
+        useCustomDomain,
+        isCompleted: false,
+        deployedAt: new Date().toISOString(),
+      };
+      saveDeployState(verification.client.token, stateToSave);
 
       // Update client status using licenseService
       markClientDeployed(verification.client.token, {
         deployedUrl: dashUrl,
         customDomainDashboard: useCustomDomain && customDomainDashboard ? customDomainDashboard : undefined,
         customDomainApp: useCustomDomain && customDomainApp ? customDomainApp : undefined,
+        isCompleted: false,
       });
 
-      setRunUrl(dispatchRes.runUrl || null);
-      setDispatched(true);
       confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
     } else {
       setDispatchError(dispatchRes.message);
+    }
+  };
+
+  const handleConfirmStatus = (completed: boolean) => {
+    setIsCompleted(completed);
+    const token = verification.valid ? verification.client.token : tokenInput;
+    if (token) {
+      const existing = getSavedDeployState(token) || {
+        dispatched: true,
+        businessName: businessName || (verification.valid ? verification.client.name : ''),
+        businessSlug: businessSlug,
+        predictedUrls: predictedUrls!,
+        deployMode,
+        customDomainDashboard: useCustomDomain ? customDomainDashboard : undefined,
+        customDomainApp: useCustomDomain ? customDomainApp : undefined,
+        useCustomDomain,
+      };
+      saveDeployState(token, {
+        ...existing,
+        isCompleted: completed,
+      });
+
+      if (predictedUrls) {
+        markClientDeployed(token, {
+          deployedUrl: predictedUrls.dashboard,
+          customDomainDashboard: useCustomDomain ? customDomainDashboard : undefined,
+          customDomainApp: useCustomDomain ? customDomainApp : undefined,
+          isCompleted: completed,
+        });
+      }
+    }
+
+    if (completed) {
+      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      toast.success('Status dikonfirmasi: Deployment Sudah Selesai! 🎉 Sistem siap digunakan.');
+    } else {
+      toast.info('Status dikonfirmasi: Belum Selesai. Silakan tunggu proses selesai atau hubungi kami via WhatsApp jika ada kendala.');
     }
   };
 
@@ -221,6 +471,14 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
 
   const getWaHelpLink = (tokenValue: string) => {
     const text = `Halo Tim ${sellerConfig.brandName}, saya mengalami kendala saat aktivasi token lisensi di portal onboarding. Token: *${tokenValue || 'Belum Ada Token'}*. Mohon bantuan verifikasinya.`;
+    return `https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(text)}`;
+  };
+
+  const getWaConsultationLink = () => {
+    const token = verification.valid ? verification.client.token : tokenInput;
+    const clientName = businessName || (verification.valid ? verification.client.name : 'Klien');
+    const statusText = isCompleted ? 'sudah selesai dicek' : 'belum selesai / butuh panduan teknis';
+    const text = `Halo Tim ${sellerConfig.brandName}, saya sedang melakukan proses deployment sistem untuk *${clientName}* (Token: *${token || 'Belum Ada Token'}*).\nStatus saat ini: ${statusText}.\nSaya ingin berkonsultasi / ada kendala terkait proses deployment ini. Mohon panduannya.`;
     return `https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(text)}`;
   };
 
@@ -329,18 +587,26 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
               <div className="flex aspect-square size-8 items-center justify-center rounded-xl bg-[#a9484c] text-white p-1 shadow-xs">
                 <Logo className="size-full" />
               </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold uppercase tracking-wider">
-                <ShieldCheck className="size-3.5 text-emerald-600" /> Lisensi Resmi Terverifikasi
-              </div>
+              {dispatched ? (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold uppercase tracking-wider">
+                  <CheckCircle2 className="size-3.5 text-emerald-600" /> Deployment Aktif
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold uppercase tracking-wider">
+                  <ShieldCheck className="size-3.5 text-emerald-600" /> Lisensi Resmi Terverifikasi
+                </div>
+              )}
               <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#fbf2f0] border border-[#f0dbd8] text-[#8f3b3f] text-xs font-mono font-semibold">
                 <Key className="size-3 text-[#a9484c]" /> {client.token}
               </div>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Aktivasi & 1-Click Deploy ke Cloudflare Anda
+              {dispatched ? 'Status & Akses Portal Sistem' : 'Aktivasi & 1-Click Deploy ke Cloudflare Anda'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
-              Selamat datang, <strong>{client.name}</strong>! Sistem absensi & payroll akan dibangun dan di-deploy 100% mandiri ke akun Cloudflare milik Anda tanpa biaya server bulanan selamanya.
+              {dispatched
+                ? `Deployment sistem untuk ${businessName || client.name} telah dipicu ke Cloudflare. Data URL dan konfigurasi portal Anda tersimpan di halaman ini.`
+                : `Selamat datang, ${client.name}! Sistem absensi & payroll akan dibangun dan di-deploy 100% mandiri ke akun Cloudflare milik Anda tanpa biaya server bulanan selamanya.`}
             </p>
           </div>
 
@@ -352,8 +618,8 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </button>
         </div>
 
-        {/* Informative banner if already deployed */}
-        {verification.isAlreadyDeployed && (
+        {/* Informative banner if already deployed (only before dispatch) */}
+        {!dispatched && verification.isAlreadyDeployed && (
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 text-xs">
             <Clock className="size-4 shrink-0 text-amber-600 mt-0.5" />
             <div>
@@ -732,80 +998,197 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </div>
         ) : (
           /* TAMPILAN SUKSES — WORKFLOW DISPATCHED */
-          <div className="bg-white border border-emerald-300 rounded-3xl p-8 sm:p-12 text-center shadow-lg relative overflow-hidden">
-            <div className="size-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-inner">
+          <div className="bg-white border border-emerald-300 rounded-3xl p-6 sm:p-10 text-center shadow-lg relative overflow-hidden">
+            <div className="size-16 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-5 shadow-inner">
               <CheckCircle2 className="size-10" />
             </div>
 
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Pipeline Deploy Berhasil Dipicu! 🚀
             </h2>
-            <p className="text-slate-600 max-w-xl mx-auto mt-2 text-sm sm:text-base leading-relaxed">
-              GitHub Actions sedang membangun dan men-deploy sistem untuk{' '}
+            <p className="text-slate-600 max-w-xl mx-auto mt-2 text-xs sm:text-sm leading-relaxed">
+              Sistem otomatis sedang membangun dan men-deploy portal untuk{' '}
               <strong className="text-slate-900">{businessName}</strong> ke akun Cloudflare Anda.
             </p>
 
             {/* Status Box */}
-            <div className="mt-6 max-w-xl mx-auto bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 text-left">
-              <Clock className="size-5 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-semibold text-amber-900">Estimasi selesai: 5–10 menit</p>
-                <p className="text-xs text-amber-800 mt-1 leading-relaxed">
-                  Pantau progres deployment secara real-time di GitHub Actions. URL sistem baru aktif setelah pipeline selesai sepenuhnya.
-                </p>
+            {isCompleted ? (
+              <div className="mt-6 max-w-xl mx-auto bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3 text-left">
+                <CheckCircle2 className="size-5 text-emerald-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-emerald-950">Status: Deployment Sudah Selesai! 🎉</p>
+                  <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                    Sistem absensi & payroll Anda telah aktif dan siap digunakan. Anda dapat langsung membuka Dashboard Owner atau membagikan link PWA ke karyawan di bawah.
+                  </p>
+                </div>
               </div>
-            </div>
-
-            {/* GitHub Actions Run Link */}
-            {runUrl && (
-              <div className="mt-5">
-                <a
-                  href={runUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white hover:bg-slate-50 border border-[#f0dbd8] text-slate-800 font-semibold text-sm transition shadow-xs"
-                >
-                  <Terminal className="size-4 text-[#a9484c]" />
-                  Lihat Live Log di GitHub Actions
-                  <ExternalLink className="size-3.5 text-slate-400" />
-                </a>
+            ) : (
+              <div className="mt-6 max-w-xl mx-auto bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 text-left">
+                <Clock className="size-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">Estimasi proses: 5–10 menit</p>
+                  <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                    Cloudflare sedang memproses deployment serverless Anda. URL portal di bawah akan aktif secara otomatis setelah pipeline selesai sepenuhnya.
+                  </p>
+                </div>
               </div>
             )}
 
+            {/* Konfirmasi Status Deployment (Sudah / Belum Selesai) */}
+            <div className="mt-6 max-w-2xl mx-auto p-5 sm:p-6 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] text-left">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <ShieldCheck className="size-4 text-[#a9484c]" />
+                    Konfirmasi Status Deployment
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Silakan uji URL sistem di bawah dan konfirmasi status deployment Anda:
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={
+                    isCompleted
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 text-[11px] font-semibold self-start sm:self-auto'
+                      : 'bg-amber-50 text-amber-700 border-amber-300 text-[11px] font-semibold self-start sm:self-auto'
+                  }
+                >
+                  {isCompleted ? '✅ Sudah Selesai' : '⏳ Belum Selesai'}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleConfirmStatus(true)}
+                  className={`flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border text-xs sm:text-sm font-bold transition cursor-pointer shadow-xs ${
+                    isCompleted
+                      ? 'bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-500/20'
+                      : 'bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border-[#f0dbd8]'
+                  }`}
+                >
+                  <CheckCircle2 className="size-4 shrink-0" />
+                  Sudah Selesai
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleConfirmStatus(false)}
+                  className={`flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border text-xs sm:text-sm font-bold transition cursor-pointer shadow-xs ${
+                    !isCompleted
+                      ? 'bg-amber-500 text-white border-amber-500 ring-2 ring-amber-400/20'
+                      : 'bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-800 border-[#f0dbd8]'
+                  }`}
+                >
+                  <Clock className="size-4 shrink-0" />
+                  Belum Selesai
+                </button>
+              </div>
+
+              <p className="text-[11px] text-slate-500 mt-3 text-center sm:text-left">
+                {isCompleted
+                  ? '💡 Status tersimpan: Selesai. Selamat menggunakan sistem absensi & payroll akugawe!'
+                  : '💡 Status tersimpan: Belum Selesai. Mohon tunggu proses build atau hubungi kami lewat WhatsApp jika ada kendala.'}
+              </p>
+            </div>
+
+            {/* Tombol Konsultasi WhatsApp jika ada kendala */}
+            <div className="mt-5 max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-left">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <MessageCircle className="size-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-emerald-950">
+                    Ada Kendala atau Butuh Bantuan?
+                  </p>
+                  <p className="text-[11px] text-emerald-800">
+                    Tim teknis kami siap mendampingi proses deployment & setup custom domain via WhatsApp.
+                  </p>
+                </div>
+              </div>
+              <a
+                href={getWaConsultationLink()}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs transition flex items-center justify-center gap-2 shrink-0 shadow-xs cursor-pointer"
+              >
+                <MessageCircle className="size-3.5" />
+                Konsultasi WhatsApp
+              </a>
+            </div>
+
             {/* Predicted URL Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8 text-left">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-6 text-left">
               <div className="p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                 <div className="text-xs font-semibold text-[#a9484c] uppercase tracking-wider mb-1 flex items-center justify-between">
                   <span>👑 Dashboard Owner & HR</span>
+                  {isCompleted && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200">
+                      Aktif
+                    </span>
+                  )}
                 </div>
                 <div className="font-mono text-xs sm:text-sm text-slate-900 font-bold truncate mb-1">
-                  {predictedUrls?.dashboard}
+                  {predictedUrls?.customDashboard || predictedUrls?.dashboard}
                 </div>
-                <p className="text-[11px] text-slate-500">Tersedia setelah pipeline selesai</p>
-                <button
-                  onClick={() => copyToClipboard(predictedUrls?.dashboard || '')}
-                  className="mt-3 px-3 py-1.5 rounded-lg bg-white border border-[#f0dbd8] text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f] transition text-xs font-medium flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  title="Salin URL"
-                >
-                  <Copy className="size-3" /> Salin URL
-                </button>
+                <p className="text-[11px] text-slate-500">
+                  {isCompleted ? 'Sistem siap digunakan' : 'Tersedia setelah pipeline selesai'}
+                </p>
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(predictedUrls?.customDashboard || predictedUrls?.dashboard || '')}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#f0dbd8] text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f] transition text-xs font-medium flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    title="Salin URL"
+                  >
+                    <Copy className="size-3" /> Salin URL
+                  </button>
+                  <a
+                    href={predictedUrls?.customDashboard || predictedUrls?.dashboard}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-[#a9484c] hover:bg-[#8f3b3f] text-white transition text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    Buka Dashboard <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
 
               <div className="p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                 <div className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-1 flex items-center justify-between">
                   <span>📱 Mobile PWA Karyawan</span>
+                  {isCompleted && (
+                    <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-medium border border-emerald-200">
+                      Aktif
+                    </span>
+                  )}
                 </div>
                 <div className="font-mono text-xs sm:text-sm text-slate-900 font-bold truncate mb-1">
-                  {predictedUrls?.app}
+                  {predictedUrls?.customApp || predictedUrls?.app}
                 </div>
-                <p className="text-[11px] text-slate-500">Tersedia setelah pipeline selesai</p>
-                <button
-                  onClick={() => copyToClipboard(predictedUrls?.app || '')}
-                  className="mt-3 px-3 py-1.5 rounded-lg bg-white border border-[#f0dbd8] text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f] transition text-xs font-medium flex items-center gap-1.5 shadow-xs cursor-pointer"
-                  title="Salin URL"
-                >
-                  <Copy className="size-3" /> Salin URL
-                </button>
+                <p className="text-[11px] text-slate-500">
+                  {isCompleted ? 'Sistem siap digunakan' : 'Tersedia setelah pipeline selesai'}
+                </p>
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(predictedUrls?.customApp || predictedUrls?.app || '')}
+                    className="px-3 py-1.5 rounded-lg bg-white border border-[#f0dbd8] text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f] transition text-xs font-medium flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    title="Salin URL"
+                  >
+                    <Copy className="size-3" /> Salin URL
+                  </button>
+                  <a
+                    href={predictedUrls?.customApp || predictedUrls?.app}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                  >
+                    Buka PWA App <ExternalLink className="size-3" />
+                  </a>
+                </div>
               </div>
             </div>
 
@@ -883,15 +1266,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </p>
               </div>
             )}
-
-            <div className="mt-8 flex justify-center gap-4">
-              <button
-                onClick={() => { setDispatched(false); setDispatchError(null); }}
-                className="px-6 py-2.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-[#fbf2f0] border border-[#f0dbd8] transition shadow-xs cursor-pointer"
-              >
-                Deploy Toko / Cabang Lain
-              </button>
-            </div>
           </div>
         )}
       </div>

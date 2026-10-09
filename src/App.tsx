@@ -51,24 +51,76 @@ export function App() {
   // Routing view: 'landing' | 'onboarding' | 'admin'
   const [currentView, setCurrentView] = useState<'landing' | 'onboarding' | 'admin'>(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('onboarding') === 'true' || window.location.pathname.startsWith('/onboarding')) {
+    const pathname = window.location.pathname;
+
+    // 1. Explicit onboarding query or path in URL
+    if (params.get('onboarding') === 'true' || pathname.startsWith('/onboarding')) {
       return 'onboarding';
     }
-    if (window.location.pathname.startsWith('/salesAdmin')) {
+
+    // 2. Fallback session storage: if user refreshed while in onboarding
+    const savedView = sessionStorage.getItem('ngabsen_current_view');
+    if (savedView === 'onboarding') {
+      return 'onboarding';
+    }
+
+    // 3. Admin portal URL
+    if (pathname.startsWith('/salesAdmin')) {
       return 'admin';
     }
+
+    // 4. Fallback session storage for admin
+    if (savedView === 'admin' && pathname.startsWith('/salesAdmin')) {
+      return 'admin';
+    }
+
     return 'landing';
   });
 
   const [activeToken, setActiveToken] = useState<string>(() => {
     const params = new URLSearchParams(window.location.search);
-    return params.get('token') || '';
+    const token = params.get('token');
+    if (token) return token;
+    return sessionStorage.getItem('ngabsen_active_token') || '';
   });
 
+  // Keep state and sessionStorage synchronized with URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
-    if (token) setActiveToken(token);
+    if (token) {
+      setActiveToken(token);
+      sessionStorage.setItem('ngabsen_active_token', token);
+    }
+  }, []);
+
+  // Sync sessionStorage whenever currentView or activeToken changes
+  useEffect(() => {
+    sessionStorage.setItem('ngabsen_current_view', currentView);
+    if (activeToken) {
+      sessionStorage.setItem('ngabsen_active_token', activeToken);
+    }
+  }, [currentView, activeToken]);
+
+  // Handle browser Back / Forward navigation (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const pathname = window.location.pathname;
+      const token = params.get('token') || sessionStorage.getItem('ngabsen_active_token') || '';
+      setActiveToken(token);
+
+      if (params.get('onboarding') === 'true' || pathname.startsWith('/onboarding')) {
+        setCurrentView('onboarding');
+      } else if (pathname.startsWith('/salesAdmin')) {
+        setCurrentView('admin');
+      } else {
+        setCurrentView('landing');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   // Kalkulator hemat biaya
@@ -97,7 +149,11 @@ export function App() {
       >
         <OnboardingPage
           initialToken={activeToken}
-          onBackToLanding={() => setCurrentView('landing')}
+          onBackToLanding={() => {
+            setCurrentView('landing');
+            sessionStorage.setItem('ngabsen_current_view', 'landing');
+            window.history.pushState({ view: 'landing' }, '', '/');
+          }}
         />
       </Suspense>
     );
@@ -113,10 +169,20 @@ export function App() {
         }
       >
         <AdminPortalPage
-          onBackToLanding={() => setCurrentView('landing')}
+          onBackToLanding={() => {
+            setCurrentView('landing');
+            sessionStorage.setItem('ngabsen_current_view', 'landing');
+            window.history.pushState({ view: 'landing' }, '', '/');
+          }}
           onOpenOnboardingWithToken={(tok) => {
             setActiveToken(tok);
             setCurrentView('onboarding');
+            sessionStorage.setItem('ngabsen_current_view', 'onboarding');
+            if (tok) sessionStorage.setItem('ngabsen_active_token', tok);
+            const targetUrl = tok
+              ? `/?onboarding=true&token=${encodeURIComponent(tok)}`
+              : '/?onboarding=true';
+            window.history.pushState({ view: 'onboarding', token: tok }, '', targetUrl);
           }}
         />
       </Suspense>
