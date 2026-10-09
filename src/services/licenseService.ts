@@ -1,3 +1,5 @@
+import { decryptData, encryptData } from './security';
+
 export interface ClientRecord {
   id: string;
   name: string;
@@ -12,6 +14,40 @@ export interface ClientRecord {
 }
 
 export const CLIENTS_STORAGE_KEY = 'ngabsen_seller_clients';
+
+// In-memory cache for decrypted clients
+let cachedClients: ClientRecord[] | null = null;
+let isDecrypting = false;
+
+// Pre-warm the cache immediately if raw storage is encrypted
+if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+  try {
+    const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
+    if (raw) {
+      if (raw.startsWith('ENC:')) {
+        decryptData(raw.slice(4))
+          .then((decrypted) => {
+            try {
+              const parsed = JSON.parse(decrypted);
+              if (Array.isArray(parsed)) {
+                cachedClients = parsed.filter(
+                  (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
+                );
+              }
+            } catch (_) {}
+          })
+          .catch(() => {});
+      } else {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          cachedClients = parsed.filter(
+            (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
+          );
+        }
+      }
+    }
+  } catch (_) {}
+}
 
 // Default secret salt for token checksum validation (in production, can be set in config/env)
 const TOKEN_SECRET_SALT = 'NGABSEN_SECURE_LICENSE_SALT_2026_KEY';
@@ -46,31 +82,95 @@ export function generateLicenseToken(clientName: string): string {
 }
 
 /**
- * Get all registered client licenses from localStorage
+ * Get all registered client licenses from localStorage (synchronous)
+ * Supports cached decrypted records if storage is encrypted with ENC:
  */
 export function getRegisteredClients(): ClientRecord[] {
   try {
     const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        return parsed.filter(
-          (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
-        );
+    if (!raw) return [];
+
+    // Jika terenkripsi dengan format ENC:, jangan JSON.parse langsung
+    if (raw.startsWith('ENC:')) {
+      if (cachedClients) {
+        return cachedClients;
       }
+      // Picu dekripsi di background untuk mengisi cache
+      if (!isDecrypting) {
+        isDecrypting = true;
+        decryptData(raw.slice(4))
+          .then((decrypted) => {
+            try {
+              const parsed = JSON.parse(decrypted);
+              if (Array.isArray(parsed)) {
+                cachedClients = parsed.filter(
+                  (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
+                );
+              }
+            } catch (_) {}
+          })
+          .catch(() => {})
+          .finally(() => {
+            isDecrypting = false;
+          });
+      }
+      return [];
+    }
+
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      const filtered = parsed.filter(
+        (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
+      );
+      cachedClients = filtered;
+      return filtered;
     }
   } catch (err) {
     console.error('Error reading registered clients:', err);
   }
-  return [];
+  return cachedClients || [];
 }
 
 /**
- * Save client list to localStorage
+ * Get all registered client licenses asynchronously (decodes ENC: encrypted storage)
  */
-export function saveRegisteredClients(clients: ClientRecord[]): void {
+export async function getRegisteredClientsAsync(): Promise<ClientRecord[]> {
   try {
-    localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(clients));
+    const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
+    if (!raw) return [];
+
+    let jsonStr = raw;
+    if (raw.startsWith('ENC:')) {
+      jsonStr = await decryptData(raw.slice(4));
+    }
+
+    const parsed = JSON.parse(jsonStr);
+    if (Array.isArray(parsed)) {
+      const filtered = parsed.filter(
+        (c: ClientRecord) => !c.isSample && c.id !== 'c1' && c.id !== 'c2' && c.id !== 'c3'
+      );
+      cachedClients = filtered;
+      return filtered;
+    }
+  } catch (err) {
+    console.error('Error reading registered clients async:', err);
+  }
+  return cachedClients || [];
+}
+
+/**
+ * Save client list to localStorage with encryption
+ */
+export async function saveRegisteredClients(clients: ClientRecord[]): Promise<void> {
+  cachedClients = clients;
+  try {
+    const json = JSON.stringify(clients);
+    try {
+      const encrypted = await encryptData(json);
+      localStorage.setItem(CLIENTS_STORAGE_KEY, `ENC:${encrypted}`);
+    } catch (_) {
+      localStorage.setItem(CLIENTS_STORAGE_KEY, json);
+    }
   } catch (err) {
     console.error('Error saving registered clients:', err);
   }
@@ -189,7 +289,21 @@ export async function verifyLicenseTokenRemote(token?: string | null): Promise<T
     // Jika offline atau dev mode lokal, fallback ke verifikasi lokal
   }
 
-  // 2. Fallback ke database lokal (localStorage)
+  // 2. Fallback ke database lokal (localStorage) dengan decoding ENC:
+  const clients = await getRegisteredClientsAsync();
+  const client = clients.find((c) => c.token.toUpperCase() === cleanToken) || null;
+
+  if (client) {
+    return {
+      valid: true,
+      client,
+      isAlreadyDeployed: client.status === 'active',
+      message: client.status === 'active'
+        ? `Lisensi untuk "${client.name}" sudah pernah diaktivasi.`
+        : `Token lisensi resmi terverifikasi untuk "${client.name}".`,
+    };
+  }
+
   return verifyLicenseToken(cleanToken);
 }
 
@@ -224,7 +338,7 @@ export async function markClientDeployed(
 
   // 2. Update database lokal
   try {
-    const clients = getRegisteredClients();
+    const clients = await getRegisteredClientsAsync();
     let found = false;
     const updated = clients.map((c) => {
       if (c.token.toUpperCase() === cleanToken) {
@@ -242,7 +356,7 @@ export async function markClientDeployed(
     });
 
     if (found) {
-      saveRegisteredClients(updated);
+      await saveRegisteredClients(updated);
       return true;
     }
   } catch (err) {
