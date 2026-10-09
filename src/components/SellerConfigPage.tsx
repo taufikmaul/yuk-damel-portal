@@ -32,7 +32,7 @@ import {
   DEFAULT_SELLER_CONFIG,
 } from '../services/config';
 import { generateDynamicQris, getQrCodeImageUrl, isValidQrisString } from '../services/qris';
-import { sendTelegramOtp } from '../services/telegram';
+import { sendTelegramOtp, getLastTelegramError } from '../services/telegram';
 import { sha256, verifyMasterPin } from '../services/security';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -169,6 +169,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
               },
               sensitiveSecrets: {
                 telegramBotToken: config.telegramBotToken,
+                telegramBotUsername: config.telegramBotUsername,
                 authorizedChatId: config.authorizedChatId,
                 githubPatToken: config.githubPatToken,
                 pakasirApiKey: config.pakasirApiKey,
@@ -217,11 +218,12 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         });
         toast.success('Ping Bot Telegram Berhasil!');
       } else {
+        const err = getLastTelegramError();
         setTestBotResult({
           success: false,
-          message: 'Gagal mengirim. Periksa Bot Token dan Authorized Chat ID.',
+          message: err || 'Gagal mengirim. Periksa Bot Token dan Authorized Chat ID.',
         });
-        toast.error('Gagal mengirim ping ke bot Telegram.');
+        toast.error(err || 'Gagal mengirim ping ke bot Telegram.');
       }
     } catch (err: any) {
       setTestBotResult({

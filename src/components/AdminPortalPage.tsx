@@ -34,6 +34,7 @@ import {
 import {
   generateOtp,
   sendTelegramOtp,
+  getLastTelegramError,
   BOT_USERNAME,
 } from '../services/telegram';
 import {
@@ -690,8 +691,10 @@ export function AdminPortalPage({
       setOtpSentSuccess(true);
       toast.success('Kode OTP 6-digit berhasil dikirimkan ke Telegram Anda!');
     } else {
-      setErrorMessage('Gagal mengirim pesan ke Telegram. Pastikan bot @AkugawePortalBot aktif.');
-      toast.error('Gagal mengirim OTP ke Telegram.');
+      const err = getLastTelegramError();
+      const msg = err || 'Gagal mengirim pesan ke Telegram. Pastikan bot @AkugawePortalBot aktif.';
+      setErrorMessage(msg);
+      toast.error(msg);
     }
   };
 

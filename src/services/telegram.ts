@@ -20,11 +20,18 @@ export function generateOtp(): string {
   return generateSecureOtp();
 }
 
+let lastTelegramError: string | null = null;
+
+export function getLastTelegramError(): string | null {
+  return lastTelegramError;
+}
+
 /**
  * Kirim pesan OTP secara aman ke Telegram Chat ID pemilik melalui Serverless Proxy Edge
  * Dilengkapi format monospace tap-to-copy dan tombol resmi Telegram Copy Text
  */
 export async function sendTelegramOtp(param1: string, param2?: string): Promise<boolean> {
+  lastTelegramError = null;
   const isParam1Otp = /^\d{4,6}$/.test(param1);
   const otpCode = isParam1Otp ? param1 : (param2 || param1);
   const targetChatId = isParam1Otp ? (param2 || AUTHORIZED_SELLER_CHAT_ID) : param1;
@@ -42,13 +49,19 @@ export async function sendTelegramOtp(param1: string, param2?: string): Promise<
 
     if (proxyRes.ok) {
       const data = await proxyRes.json();
-      return data.ok === true;
+      if (data.ok === true) {
+        return true;
+      }
+      lastTelegramError = data.error || 'Pesan gagal dikirim oleh server Telegram.';
+      return false;
     } else {
       const errData = await proxyRes.json().catch(() => ({}));
-      console.warn('Serverless OTP Proxy returned error:', errData.error || proxyRes.statusText);
+      lastTelegramError = errData.error || proxyRes.statusText || 'Gagal mengirim OTP.';
+      console.warn('Serverless OTP Proxy returned error:', lastTelegramError);
       return false;
     }
-  } catch (err) {
+  } catch (err: any) {
+    lastTelegramError = err?.message || 'Gagal terhubung ke server proxy /api/send-otp';
     console.error('Failed to connect to /api/send-otp proxy:', err);
     return false;
   }

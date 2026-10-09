@@ -29,6 +29,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
     const hasPakasir = !!(await getSystemConfig(context.env, 'PAKASIR_API_KEY'));
     const hasStaticQris = !!(await getSystemConfig(context.env, 'STATIC_QRIS_STRING'));
     const authorizedChatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
+    const telegramBotUsername = await getSystemConfig(context.env, 'TELEGRAM_BOT_USERNAME');
 
     return new Response(
       JSON.stringify({
@@ -40,6 +41,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
           isPakasirConfigured: hasPakasir,
           hasStaticQris: hasStaticQris,
           authorizedChatId: authorizedChatId || '',
+          telegramBotUsername: telegramBotUsername || 'AkugawePortalBot',
         },
       }),
       {
@@ -94,6 +96,10 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       }
       if (sensitiveSecrets.authorizedChatId && sensitiveSecrets.authorizedChatId.trim()) {
         await setSystemConfig(context.env, 'AUTHORIZED_CHAT_ID', sensitiveSecrets.authorizedChatId.trim(), true);
+      }
+      if (sensitiveSecrets.telegramBotUsername && sensitiveSecrets.telegramBotUsername.trim()) {
+        const cleanBotUsername = sensitiveSecrets.telegramBotUsername.trim().replace(/^@/, '');
+        await setSystemConfig(context.env, 'TELEGRAM_BOT_USERNAME', cleanBotUsername, false);
       }
       if (sensitiveSecrets.githubPatToken && sensitiveSecrets.githubPatToken.trim()) {
         await setSystemConfig(context.env, 'GITHUB_DISPATCH_PAT', sensitiveSecrets.githubPatToken.trim(), true);

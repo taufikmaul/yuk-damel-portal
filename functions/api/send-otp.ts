@@ -52,7 +52,21 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       }),
     });
 
-    const data = await telegramRes.json();
+    const data: any = await telegramRes.json();
+    if (!telegramRes.ok || !data.ok) {
+      let errorMsg = data.description || 'Gagal mengirim pesan via Telegram';
+      if (typeof data.description === 'string' && data.description.includes('chat not found')) {
+        errorMsg = `Chat Telegram belum terhubung. Buka bot @AkugawePortalBot (https://t.me/AkugawePortalBot) di Telegram, lalu klik 'Start' dan ulangi lagi.`;
+      }
+      return new Response(JSON.stringify({ ok: false, error: errorMsg, details: data }), {
+        status: telegramRes.status || 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
+
     return new Response(JSON.stringify(data), {
       status: telegramRes.status,
       headers: {
