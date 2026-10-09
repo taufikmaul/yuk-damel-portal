@@ -226,9 +226,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
       if (token && sessionStorage.getItem(`ngabsen_tg_auth_${token}`) === 'true') {
         return true;
       }
-      if (sessionStorage.getItem('ngabsen_admin_mode') === 'true') {
-        return true;
-      }
     }
     return false;
   });
@@ -519,22 +516,38 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
   };
 
   // Verify Customer Telegram PIN
-  const handleVerifyCustomerPin = (e: React.FormEvent) => {
+  const handleVerifyCustomerPin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!telegramPinInput.trim()) {
+    const pin = telegramPinInput.trim();
+    if (!pin) {
       toast.error('Silakan masukkan 6-digit PIN Telegram.');
       return;
     }
 
-    if (activeTelegramOtp && telegramPinInput.trim() === activeTelegramOtp) {
+    // 1. Cek jika sesuai dengan OTP dinamis yang dikirimkan ke Telegram bot
+    if (activeTelegramOtp && pin === activeTelegramOtp) {
       setIsTelegramVerified(true);
       if (cleanActiveToken) {
         sessionStorage.setItem(`ngabsen_tg_auth_${cleanActiveToken}`, 'true');
       }
       toast.success('PIN Telegram berhasil diverifikasi! Selamat datang di setup sistem.');
-    } else {
-      toast.error('PIN Telegram salah atau tidak cocok. Silakan periksa kembali pesan dari bot Telegram.');
+      return;
     }
+
+    // 2. Cek jika menggunakan Master PIN Admin (misal: 2468)
+    const isMaster = await verifyMasterPin(pin, sellerConfig.adminPinHash);
+    if (isMaster) {
+      setIsTelegramVerified(true);
+      setIsAdmin(true);
+      sessionStorage.setItem('ngabsen_admin_mode', 'true');
+      if (cleanActiveToken) {
+        sessionStorage.setItem(`ngabsen_tg_auth_${cleanActiveToken}`, 'true');
+      }
+      toast.success('Master PIN valid! Akses onboarding & mode admin dibuka.');
+      return;
+    }
+
+    toast.error('PIN Telegram salah atau tidak cocok. Silakan periksa kembali pesan dari bot Telegram.');
   };
 
   // Handler to verify a manual token input on the security gate
@@ -889,6 +902,22 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+            {isTelegramVerified && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (cleanActiveToken) {
+                    sessionStorage.removeItem(`ngabsen_tg_auth_${cleanActiveToken}`);
+                  }
+                  setIsTelegramVerified(false);
+                  toast.info('Sesi PIN Telegram dikunci. Silakan verifikasi ulang PIN.');
+                }}
+                className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 bg-white border border-[#f0dbd8] hover:bg-[#fbf2f0] rounded-xl transition flex items-center gap-1 shadow-xs cursor-pointer"
+                title="Kunci ulang sesi Telegram PIN"
+              >
+                <Lock className="size-3 text-slate-400" /> Kunci Sesi
+              </button>
+            )}
             {!isAdmin && (
               <button
                 type="button"
@@ -909,7 +938,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         </div>
 
         {/* ─── STEP 1: VERIFIKASI KEAMANAN TELEGRAM PIN (CUSTOMER GATE) ─────────── */}
-        {!isTelegramVerified && !isAdmin ? (
+        {!isTelegramVerified ? (
           <Onboarding1
             currentStep={1}
             totalSteps={3}
