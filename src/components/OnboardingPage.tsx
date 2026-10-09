@@ -24,6 +24,11 @@ import {
 } from 'lucide-react';
 import { triggerGitHubDeploy } from '../services/deployDispatcher';
 import {
+  verifySignedSession,
+  verifyMasterPin,
+  createSignedSession,
+} from '../services/security';
+import {
   verifyLicenseToken,
   verifyLicenseTokenRemote,
   markClientDeployed,
@@ -186,6 +191,86 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     return null;
   });
 
+  // Admin State & Verification for Redeploy Capability
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('admin') === 'true' && sessionStorage.getItem('ngabsen_admin_mode') === 'true') {
+        return true;
+      }
+      if (sessionStorage.getItem('ngabsen_admin_mode') === 'true') {
+        return true;
+      }
+    }
+    return false;
+  });
+  const [showAdminPinModal, setShowAdminPinModal] = useState<boolean>(false);
+  const [adminPinInput, setAdminPinInput] = useState<string>('');
+  const [isVerifyingAdminPin, setIsVerifyingAdminPin] = useState<boolean>(false);
+  const [isRedeployMode, setIsRedeployMode] = useState<boolean>(false);
+
+  // Validate if current session is an authenticated admin session
+  useEffect(() => {
+    let isMounted = true;
+    async function checkAdminAuth() {
+      try {
+        const raw = localStorage.getItem('ngabsen_admin_session_auth');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const valid = await verifySignedSession(parsed);
+          if (valid && isMounted) {
+            setIsAdmin(true);
+            sessionStorage.setItem('ngabsen_admin_mode', 'true');
+            return;
+          }
+        }
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('admin') === 'true' && isMounted) {
+          setShowAdminPinModal(true);
+        }
+      } catch (_) {}
+    }
+    checkAdminAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleVerifyAdminPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminPinInput.trim()) {
+      toast.error('Silakan masukkan PIN Admin.');
+      return;
+    }
+
+    setIsVerifyingAdminPin(true);
+    try {
+      const valid = await verifyMasterPin(adminPinInput.trim(), sellerConfig.adminPinHash);
+      if (valid) {
+        const session = await createSignedSession(24 * 60 * 60 * 1000);
+        localStorage.setItem('ngabsen_admin_session_auth', JSON.stringify(session));
+        sessionStorage.setItem('ngabsen_admin_mode', 'true');
+        setIsAdmin(true);
+        setShowAdminPinModal(false);
+        setAdminPinInput('');
+        toast.success('Akses Admin berhasil diverifikasi! Fitur Redeploy kini aktif.');
+      } else {
+        toast.error('PIN Admin salah. Akses ditolak.');
+      }
+    } catch (_) {
+      toast.error('Terjadi kesalahan saat memverifikasi PIN.');
+    } finally {
+      setIsVerifyingAdminPin(false);
+    }
+  };
+
+  const handleStartRedeploy = () => {
+    setIsRedeployMode(true);
+    setDispatched(false);
+    setDispatchError(null);
+    toast.info('Mode Redeploy aktif. Silakan tinjau konfigurasi Cloudflare lalu klik tombol Deploy.');
+  };
+
   // Re-verify if initialToken prop changes
   useEffect(() => {
     let isMounted = true;
@@ -270,11 +355,16 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         changed = true;
       }
 
+      if (isAdmin && url.searchParams.get('admin') !== 'true') {
+        url.searchParams.set('admin', 'true');
+        changed = true;
+      }
+
       if (changed) {
         window.history.replaceState({ view: 'onboarding', token: currentToken }, '', url.toString());
       }
     } catch (_) {}
-  }, [verification, tokenInput, initialToken]);
+  }, [verification, tokenInput, initialToken, isAdmin]);
 
   // Handler to verify a manual token input on the security gate
   const handleVerifyManualToken = async (e: React.FormEvent) => {
@@ -397,6 +487,11 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
       setPredictedUrls(urls);
       setDispatched(true);
       setIsCompleted(false);
+
+      if (isRedeployMode) {
+        toast.success('Redeploy berhasil dipicu! Pipeline GitHub Actions sedang berjalan.');
+      }
+      setIsRedeployMode(false);
 
       // Simpan state lengkap agar refresh/revisit tetap di halaman ini & data tidak hilang
       const stateToSave: SavedDeployState = {
@@ -599,23 +694,46 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
               <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#fbf2f0] border border-[#f0dbd8] text-[#8f3b3f] text-xs font-mono font-semibold">
                 <Key className="size-3 text-[#a9484c]" /> {client.token}
               </div>
+              {isAdmin && (
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-semibold uppercase tracking-wider">
+                  <Lock className="size-3 text-purple-600" /> Mode Admin Aktif
+                </div>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              {dispatched ? 'Status & Akses Portal Sistem' : 'Aktivasi & 1-Click Deploy ke Cloudflare Anda'}
+              {dispatched
+                ? 'Status & Akses Portal Sistem'
+                : isRedeployMode
+                ? 'Redeploy Sistem Cloudflare (Mode Admin)'
+                : 'Aktivasi & 1-Click Deploy ke Cloudflare Anda'}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl leading-relaxed">
               {dispatched
                 ? `Deployment sistem untuk ${businessName || client.name} telah dipicu ke Cloudflare. Data URL dan konfigurasi portal Anda tersimpan di halaman ini.`
+                : isRedeployMode
+                ? `Perbarui konfigurasi dan picu ulang deployment sistem untuk ${businessName || client.name}. Data lisensi & slug tetap terjaga.`
                 : `Selamat datang, ${client.name}! Sistem absensi & payroll akan dibangun dan di-deploy 100% mandiri ke akun Cloudflare milik Anda tanpa biaya server bulanan selamanya.`}
             </p>
           </div>
 
-          <button
-            onClick={onBackToLanding}
-            className="self-start sm:self-center px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-[#f0dbd8] hover:bg-[#fbf2f0] rounded-xl transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
-          >
-            <ArrowLeft className="size-3.5" /> Kembali ke Depan
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+            {!isAdmin && (
+              <button
+                type="button"
+                onClick={() => setShowAdminPinModal(true)}
+                className="px-3.5 py-2 text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+                title="Masuk sebagai Admin untuk mengaktifkan fitur Redeploy"
+              >
+                <Lock className="size-3.5 text-purple-600" /> Akses Admin
+              </button>
+            )}
+            <button
+              onClick={onBackToLanding}
+              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-[#f0dbd8] hover:bg-[#fbf2f0] rounded-xl transition flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer"
+            >
+              <ArrowLeft className="size-3.5" /> Kembali ke Depan
+            </button>
+          </div>
         </div>
 
         {/* Informative banner if already deployed (only before dispatch) */}
@@ -646,9 +764,33 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Form Setup Kiri */}
             <div className="lg:col-span-7 bg-white border border-[#f0dbd8] rounded-2xl p-6 sm:p-8 shadow-xs">
+              {isRedeployMode && (
+                <div className="mb-6 p-4 rounded-xl bg-purple-50 border border-purple-200 text-purple-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
+                  <div className="flex items-start gap-2.5">
+                    <RefreshCw className="size-4 text-purple-700 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-purple-900">Mode Admin: Deploy Ulang (Redeploy)</p>
+                      <p className="text-purple-700 text-[11px] mt-0.5 leading-relaxed">
+                        Anda sedang meninjau konfigurasi untuk deploy ulang. Periksa token Cloudflare lalu klik tombol deploy di bawah.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRedeployMode(false);
+                      setDispatched(true);
+                    }}
+                    className="self-start sm:self-center px-3 py-1.5 rounded-lg bg-white border border-purple-200 text-purple-800 hover:bg-purple-100 font-semibold text-xs transition cursor-pointer shadow-xs shrink-0"
+                  >
+                    ← Batal & Kembali ke Status
+                  </button>
+                </div>
+              )}
+
               <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2 pb-3 border-b border-[#f0dbd8]">
                 <Rocket className="size-5 text-[#a9484c]" />
-                Form Konfigurasi Sistem
+                {isRedeployMode ? 'Form Konfigurasi Deploy Ulang' : 'Form Konfigurasi Sistem'}
               </h2>
 
               <form onSubmit={handleStartDeploy} className="space-y-5">
@@ -913,6 +1055,10 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                       <>
                         <RefreshCw className="size-4 animate-spin" /> Mengirim ke GitHub Actions...
                       </>
+                    ) : isRedeployMode ? (
+                      <>
+                        <RefreshCw className="size-4" /> Jalankan Deploy Ulang (Redeploy) Sekarang 🚀
+                      </>
                     ) : (
                       <>
                         <Rocket className="size-4" /> 1-Click Deploy ke Cloudflare Saya Sekarang 🚀
@@ -1119,6 +1265,35 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
               </a>
             </div>
 
+            {/* KONTROL ADMIN: TOMBOL REDEPLOY SISTEM */}
+            {isAdmin && (
+              <div className="mt-5 max-w-2xl mx-auto p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-purple-50 via-[#faf5ff] to-purple-50 border-2 border-dashed border-purple-300 text-left shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-purple-700 text-white hover:bg-purple-800 text-[10px] font-bold px-2 py-0.5">
+                        KONTROL ADMIN
+                      </Badge>
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                        <RefreshCw className="size-4 text-purple-700" /> Butuh Deploy Ulang (Redeploy)?
+                      </h4>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed max-w-md">
+                      Sebagai administrator, Anda dapat memicu ulang pipeline deployment ke Cloudflare dengan konfigurasi baru atau token baru.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleStartRedeploy}
+                    className="bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs px-5 py-3 rounded-xl shadow-md shadow-purple-700/20 cursor-pointer flex items-center justify-center gap-2 shrink-0 self-stretch sm:self-center"
+                  >
+                    <RefreshCw className="size-4" />
+                    Redeploy Sistem Sekarang 🚀
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Predicted URL Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-6 text-left">
               <div className="p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
@@ -1266,9 +1441,102 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </p>
               </div>
             )}
+
+            {!isAdmin && (
+              <div className="mt-8 pt-4 border-t border-[#f0dbd8] text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowAdminPinModal(true)}
+                  className="text-[11px] text-slate-400 hover:text-purple-700 font-medium inline-flex items-center gap-1.5 transition cursor-pointer"
+                >
+                  <Lock className="size-3" /> Akses Admin Portal (Login untuk Buka Fitur Redeploy)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* MODAL VERIFIKASI MASTER PIN ADMIN */}
+      {showAdminPinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white border border-purple-200 shadow-2xl rounded-3xl max-w-md w-full p-6 text-left space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-purple-100">
+              <div className="flex items-center gap-2.5">
+                <div className="size-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shadow-inner">
+                  <Lock className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Verifikasi Master PIN Admin</h3>
+                  <p className="text-[11px] text-slate-500">Otorisasi akses kontrol admin & redeploy</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAdminPinModal(false);
+                  setAdminPinInput('');
+                }}
+                className="text-slate-400 hover:text-slate-700 text-lg font-bold p-1 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyAdminPin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Masukkan Master PIN Admin
+                </label>
+                <div className="relative">
+                  <Input
+                    type="password"
+                    autoFocus
+                    placeholder="Masukkan PIN (Default: 2468)"
+                    value={adminPinInput}
+                    onChange={(e) => setAdminPinInput(e.target.value)}
+                    className="font-mono text-center tracking-widest text-lg h-12 bg-white border-purple-200 focus-visible:ring-purple-600 text-slate-900"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  Setelah diverifikasi, Anda akan mendapatkan akses ke tombol Redeploy untuk token lisensi ini.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-purple-100">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAdminPinModal(false);
+                    setAdminPinInput('');
+                  }}
+                  className="text-xs h-10 px-4 cursor-pointer"
+                >
+                  Batal
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isVerifyingAdminPin || !adminPinInput.trim()}
+                  className="bg-purple-700 hover:bg-purple-800 text-white font-semibold text-xs h-10 px-5 cursor-pointer flex items-center gap-2"
+                >
+                  {isVerifyingAdminPin ? (
+                    <>
+                      <RefreshCw className="size-3.5 animate-spin" />
+                      Memverifikasi...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="size-3.5" />
+                      Buka Akses Admin
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

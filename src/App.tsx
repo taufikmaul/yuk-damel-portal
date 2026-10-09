@@ -178,10 +178,11 @@ export function App() {
             setActiveToken(tok);
             setCurrentView('onboarding');
             sessionStorage.setItem('ngabsen_current_view', 'onboarding');
+            sessionStorage.setItem('ngabsen_admin_mode', 'true');
             if (tok) sessionStorage.setItem('ngabsen_active_token', tok);
             const targetUrl = tok
-              ? `/?onboarding=true&token=${encodeURIComponent(tok)}`
-              : '/?onboarding=true';
+              ? `/?onboarding=true&token=${encodeURIComponent(tok)}&admin=true`
+              : '/?onboarding=true&admin=true';
             window.history.pushState({ view: 'onboarding', token: tok }, '', targetUrl);
           }}
         />
