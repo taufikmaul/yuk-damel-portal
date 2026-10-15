@@ -64,7 +64,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     promoPriceRp: 1499000,
     description: 'Cocok untuk 1 toko, kafe, atau rintisan usaha mandiri (1–20 karyawan).',
     features: [
-      'Lisensi Penuh Beli Putus 1 Cabang',
+      'Lisensi Penuh 1 Cabang',
       'PWA Mobile Absensi GPS Karyawan',
       'Dashboard Owner & Penggajian',
       'Database D1 Terisolasi di Cloudflare Anda',
@@ -108,12 +108,12 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
 ];
 
 export const DEFAULT_SELLER_CONFIG: SellerConfig = {
-  brandName: 'akugawe (Beli Putus)',
+  brandName: 'akugawe',
   whatsappNumber: '6281234567890',
-  defaultSalesMessage: 'Halo Tim akugawe, saya tertarik dengan paket Beli Putus Aplikasi Absensi & Payroll. Bisa info lebih lanjut?',
+  defaultSalesMessage: 'Halo Tim akugawe, saya tertarik dengan paket Aplikasi Absensi & Payroll. Bisa info lebih lanjut?',
   
   isPromoActive: true,
-  promoBannerText: '🔥 PROMO KHUSUS BULAN INI: DISKON HINGGA 45% UNTUK PAKET BELI PUTUS!',
+  promoBannerText: '🔥 PROMO KHUSUS BULAN INI: DISKON HINGGA 45% UNTUK LISENSI RESMI!',
   pricingTiers: DEFAULT_PRICING_TIERS,
 
   telegramBotToken: '',
@@ -152,9 +152,14 @@ export function loadSellerConfig(): SellerConfig {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      const cleanBrandName = parsed.brandName && parsed.brandName.includes('Beli Putus')
+        ? 'akugawe'
+        : (parsed.brandName || DEFAULT_SELLER_CONFIG.brandName);
+
       return {
         ...DEFAULT_SELLER_CONFIG,
         ...parsed,
+        brandName: cleanBrandName,
         pricingTiers: parsed.pricingTiers && parsed.pricingTiers.length > 0 ? parsed.pricingTiers : DEFAULT_PRICING_TIERS,
       };
     }

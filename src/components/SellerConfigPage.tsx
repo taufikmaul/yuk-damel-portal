@@ -97,7 +97,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
       promoPriceRp: 1999000,
       description: 'Deskripsi paket layanan absensi & payroll mandiri.',
       features: [
-        'Lisensi Beli Putus 1 Cabang',
+        'Lisensi Penuh 1 Cabang',
         'PWA Absensi GPS Karyawan',
         'Dashboard Owner & Penggajian',
         'Database D1 Cloudflare Terisolasi',
@@ -1131,7 +1131,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                   <Input
                     value={config.brandName}
                     onChange={(e) => handleChange('brandName', e.target.value)}
-                    placeholder="akugawe (Beli Putus)"
+                    placeholder="akugawe"
                     className="text-xs bg-white border-[#f0dbd8] text-slate-900 focus-visible:ring-[#a9484c]"
                   />
                 </div>
@@ -1144,7 +1144,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                 <Input
                   value={config.defaultSalesMessage}
                   onChange={(e) => handleChange('defaultSalesMessage', e.target.value)}
-                  placeholder="Halo Tim akugawe, saya tertarik dengan paket Beli Putus..."
+                  placeholder="Halo Tim akugawe, saya tertarik dengan paket lisensi akugawe..."
                   className="text-xs bg-white border-[#f0dbd8] text-slate-900 focus-visible:ring-[#a9484c]"
                 />
               </div>

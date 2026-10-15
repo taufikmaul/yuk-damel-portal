@@ -11,7 +11,6 @@ import {
   Users,
   MessageCircle,
   HelpCircle,
-  ExternalLink,
   Key,
 } from 'lucide-react';
 import {
@@ -20,7 +19,6 @@ import {
   SpotlightCard,
   TiltedCard,
   ShinyText,
-  TrueFocus,
   StarBorder,
   Magnet,
   CountUp,
@@ -30,6 +28,7 @@ import { InteractiveDemoShowcase } from './components/InteractiveDemoShowcase';
 import { AiAgentShowcase } from './components/AiAgentShowcase';
 import { FeatureTabsSection } from './components/FeatureTabsSection';
 import { FloatingCtaBar } from './components/FloatingCtaBar';
+import { loadSellerConfig } from './services/config';
 
 const OnboardingPage = lazy(() =>
   import('./components/OnboardingPage').then((m) => ({ default: m.OnboardingPage }))
@@ -38,12 +37,10 @@ const AdminPortalPage = lazy(() =>
   import('./components/AdminPortalPage').then((m) => ({ default: m.AdminPortalPage }))
 );
 
-const DASHBOARD_URL = import.meta.env.VITE_DASHBOARD_URL || 'https://dash-ngabsen.historycake.com';
-const APP_URL = import.meta.env.VITE_APP_URL || 'https://ngabsen.historycake.com';
-import { loadSellerConfig } from './services/config';
-
 export function App() {
   const sellerConfig = loadSellerConfig();
+  const dashboardUrl = sellerConfig.demoDashboardUrl || import.meta.env.VITE_DASHBOARD_URL || 'https://dash-ngabsen.historycake.com';
+  const appUrl = sellerConfig.demoAppUrl || import.meta.env.VITE_APP_URL || 'https://ngabsen.historycake.com';
 
   // Routing view: 'landing' | 'onboarding' | 'admin'
   const [currentView, setCurrentView] = useState<'landing' | 'onboarding' | 'admin'>(() => {
@@ -130,7 +127,7 @@ export function App() {
 
   const getWaLink = (tierName?: string) => {
     const text = tierName
-      ? `Halo Tim ${sellerConfig.brandName}, saya tertarik untuk memesan paket *${tierName}* (Beli Putus). Bisa info rekening pembayaran & cara aktivasinya?`
+      ? `Halo Tim ${sellerConfig.brandName}, saya tertarik untuk memesan paket *${tierName}*. Bisa info rekening pembayaran & cara aktivasinya?`
       : sellerConfig.defaultSalesMessage;
     return `https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(text)}`;
   };
@@ -189,51 +186,38 @@ export function App() {
 
   return (
     <ClickSpark sparkColor="#a9484c" sparkSize={9} sparkRadius={30} sparkCount={10}>
-      <div className="w-full min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-[#a9484c]/30 selection:text-white overflow-x-hidden">
+      <div className="w-full min-h-screen bg-[#faf6f5] text-slate-800 font-sans selection:bg-[#a9484c]/20 selection:text-[#a9484c] overflow-x-hidden">
         {/* NAVBAR */}
-        <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800/80 px-4 sm:px-8 py-3.5">
+        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-[#f0dbd8] px-4 sm:px-8 py-3.5 shadow-xs">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="size-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center p-1 shadow-inner">
+              <div className="size-9 rounded-xl bg-white border border-[#f0dbd8] flex items-center justify-center p-1 shadow-xs">
                 <Logo className="w-full h-full" />
               </div>
               <div>
-                <span className="font-bold text-lg text-white tracking-tight flex items-center gap-2">
+                <span className="font-bold text-lg text-slate-900 tracking-tight flex items-center gap-2">
                   akugawe
-                  <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    Beli Putus
-                  </span>
                 </span>
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
-              <a href="#demo-roles" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">Demo Peran</a>
-              <a href="#ai-agent" className="hover:text-cyan-300 transition-colors">AI HR Agent</a>
-              <a href="#fitur" className="hover:text-white transition-colors">Fitur Unggulan</a>
-              <a href="#kalkulator" className="hover:text-white transition-colors">Kalkulator</a>
-              <a href="#harga" className="hover:text-white transition-colors">Paket & Harga</a>
-              <a href="#perbandingan" className="hover:text-white transition-colors">SaaS vs Beli Putus</a>
-              <a href="#faq" className="hover:text-white transition-colors">FAQ</a>
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
+              <a href="#demo-roles" className="text-[#a9484c] hover:text-[#8f3b3f] font-semibold transition-colors">Demo Peran</a>
+              <a href="#ai-agent" className="hover:text-[#a9484c] transition-colors">AI HR Agent</a>
+              <a href="#fitur" className="hover:text-[#a9484c] transition-colors">Fitur Unggulan</a>
+              <a href="#kalkulator" className="hover:text-[#a9484c] transition-colors">Kalkulator</a>
+              <a href="#harga" className="hover:text-[#a9484c] transition-colors">Paket & Harga</a>
+              <a href="#perbandingan" className="hover:text-[#a9484c] transition-colors">SaaS vs akugawe</a>
+              <a href="#faq" className="hover:text-[#a9484c] transition-colors">FAQ</a>
             </nav>
 
             <div className="flex items-center gap-2.5">
-              <a
-                href={`${DASHBOARD_URL}/login`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs font-semibold px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-900 transition-colors flex items-center gap-1.5"
-              >
-                <span>Login Owner</span>
-                <ExternalLink className="size-3 text-slate-500" />
-              </a>
-
               <Magnet magnetStrength={4}>
                 <a
-                  href={`${DASHBOARD_URL}/login`}
+                  href={`${dashboardUrl}/login`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xs font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-[#a9484c] to-[#8f3b3f] text-white shadow-lg shadow-[#a9484c]/20 hover:opacity-95 active:scale-95 transition-all flex items-center gap-1.5"
+                  className="text-xs font-semibold px-4 py-2 rounded-xl bg-[#a9484c] hover:bg-[#8f3b3f] text-white shadow-md shadow-[#a9484c]/20 hover:opacity-95 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <Sparkles className="size-3.5" />
                   <span>Coba Demo</span>
@@ -250,43 +234,35 @@ export function App() {
             direction="diagonal"
             speed={0.4}
             squareSize={46}
-            borderColor="rgba(255, 255, 255, 0.04)"
-            hoverFillColor="rgba(169, 72, 76, 0.16)"
+            borderColor="rgba(169, 72, 76, 0.08)"
+            hoverFillColor="rgba(169, 72, 76, 0.06)"
             className="opacity-75 z-0"
           />
 
           {/* Glow Background Effect */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#a9484c]/20 via-rose-950/20 to-transparent blur-[120px] pointer-events-none rounded-full z-0" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-gradient-to-tr from-[#f7e5e3]/70 via-[#fbf2f0]/60 to-transparent blur-[120px] pointer-events-none rounded-full z-0" />
 
           <div className="max-w-4xl mx-auto text-center relative z-10 pointer-events-auto">
             {/* ReactBits: ShinyText on Badge with Quick Feature Pills */}
-            <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs font-medium text-slate-300 mb-6 shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-white/95 border border-[#f0dbd8] text-xs font-medium text-slate-700 mb-6 shadow-xs">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <ShinyText text="Bebas Biaya Langganan Bulanan untuk UMKM Indonesia" speed={3} />
-              <span className="text-slate-600 hidden sm:inline">•</span>
-              <span className="text-emerald-400 hidden sm:inline">Server Rp 0/bln Cloudflare</span>
+              <span className="text-slate-400 hidden sm:inline">•</span>
+              <span className="text-emerald-700 font-semibold hidden sm:inline">Server Rp 0/bln Cloudflare</span>
             </div>
 
-            {/* Dynamic Headline with TrueFocus Animation */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.2] mb-6 flex flex-col items-center">
+            {/* Headline without TrueFocus animation */}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-[1.2] mb-6 flex flex-col items-center">
               <span className="block mb-2">Aplikasi Absensi & Gaji Karyawan</span>
-              <div className="my-1">
-                <TrueFocus
-                  sentence="Beli Sekali Tanpa Iuran"
-                  manualMode={false}
-                  blurAmount={4}
-                  borderColor="#a9484c"
-                  glowColor="rgba(169, 72, 76, 0.5)"
-                  animationDuration={0.4}
-                  pauseBetweenAnimations={1.6}
-                />
-              </div>
-              <span className="bg-gradient-to-r from-[#e2aba7] via-[#a9484c] to-amber-200 bg-clip-text text-transparent mt-2">
+              <span className="text-[#a9484c] my-1 font-black">
+                Beli Sekali Tanpa Iuran
+              </span>
+              <span className="bg-gradient-to-r from-[#ba5d62] via-[#a9484c] to-[#773236] bg-clip-text text-transparent mt-2">
                 Biaya Server Rp 0 Selamanya
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10">
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed mb-10">
               Gak perlu lagi bayar sewa bulanan tiap nambah karyawan. Absen selfie anti-fake GPS, hitung gaji & lembur otomatis, plus asisten AI praktis untuk bantu rekap absensi usaha Anda.
             </p>
 
@@ -294,19 +270,19 @@ export function App() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
               <a
                 href="#demo-roles"
-                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#a9484c] to-[#8f3b3f] text-white font-bold text-sm shadow-xl shadow-[#a9484c]/25 hover:shadow-[#a9484c]/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-gradient-to-r from-[#a9484c] to-[#8f3b3f] text-white font-bold text-sm shadow-xl shadow-[#a9484c]/25 hover:shadow-[#a9484c]/35 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <Sparkles className="size-4" />
                 <span>Coba Demo Gratis (1-Klik)</span>
               </a>
 
               <a
-                href={`${APP_URL}/login`}
+                href={`${appUrl}/login`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 font-semibold text-sm hover:text-white transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-white hover:bg-slate-50 border border-[#f0dbd8] text-slate-800 font-semibold text-sm shadow-xs hover:border-[#cf807c] transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Smartphone className="size-4 text-purple-400" />
+                <Smartphone className="size-4 text-purple-600" />
                 <span>Coba Aplikasi HP</span>
               </a>
 
@@ -315,11 +291,11 @@ export function App() {
                 href={getWaLink()}
                 target="_blank"
                 rel="noreferrer"
-                color="#10b981"
+                color="#059669"
                 speed="3.5s"
                 className="cursor-pointer"
               >
-                <MessageCircle className="size-4 text-emerald-400" />
+                <MessageCircle className="size-4 text-emerald-600" />
                 <span>Chat WhatsApp</span>
               </StarBorder>
             </div>
@@ -327,29 +303,29 @@ export function App() {
             {/* ReactBits: TiltedCard Metric Badges with CountUp */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto text-center items-center justify-center">
               <TiltedCard maxTilt={10} glare={true}>
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-sm h-full">
-                  <div className="text-2xl font-black text-emerald-400 mb-0.5">
+                <div className="p-4 rounded-2xl bg-white border border-[#f0dbd8] shadow-xs h-full">
+                  <div className="text-2xl font-black text-emerald-700 mb-0.5">
                     Rp 0
                   </div>
-                  <div className="text-xs text-slate-400 font-medium">Biaya Server Bulanan</div>
+                  <div className="text-xs text-slate-500 font-medium">Biaya Server Bulanan</div>
                 </div>
               </TiltedCard>
 
               <TiltedCard maxTilt={10} glare={true}>
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-sm h-full">
-                  <div className="text-2xl font-black text-white mb-0.5">
+                <div className="p-4 rounded-2xl bg-white border border-[#f0dbd8] shadow-xs h-full">
+                  <div className="text-2xl font-black text-slate-900 mb-0.5">
                     <CountUp to={3} suffix=" Menit" duration={1.5} />
                   </div>
-                  <div className="text-xs text-slate-400 font-medium">Setup Kantor Pertama</div>
+                  <div className="text-xs text-slate-500 font-medium">Setup Kantor Pertama</div>
                 </div>
               </TiltedCard>
 
               <TiltedCard maxTilt={10} glare={true}>
-                <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-sm h-full">
+                <div className="p-4 rounded-2xl bg-white border border-[#f0dbd8] shadow-xs h-full">
                   <div className="text-2xl font-black text-[#a9484c] mb-0.5">
                     <CountUp to={100} suffix="%" duration={1.5} />
                   </div>
-                  <div className="text-xs text-slate-400 font-medium">Privasi Data & Milik Anda</div>
+                  <div className="text-xs text-slate-500 font-medium">Privasi Data & Milik Anda</div>
                 </div>
               </TiltedCard>
             </div>
@@ -357,23 +333,23 @@ export function App() {
         </section>
 
         {/* INTERACTIVE MULTI-ROLE DEMO SHOWCASE */}
-        <InteractiveDemoShowcase dashboardUrl={DASHBOARD_URL} appUrl={APP_URL} />
+        <InteractiveDemoShowcase dashboardUrl={dashboardUrl} appUrl={appUrl} />
 
         {/* AUTONOMOUS AI AGENT & MCP SHOWCASE */}
         <AiAgentShowcase />
 
         {/* KALKULATOR HEMAT BIAYA */}
-        <section id="kalkulator" className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-900/40 border-y border-slate-800/80">
+        <section id="kalkulator" className="py-16 sm:py-24 px-4 sm:px-6 bg-white border-y border-[#f0dbd8]">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#a9484c]/10 text-[#a9484c] text-xs font-semibold mb-3 border border-[#a9484c]/20">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-[#fbf2f0] text-[#a9484c] text-xs font-semibold mb-3 border border-[#f0dbd8]">
                 <Calculator className="size-3.5" />
                 <ShinyText text="Simulasi Penghematan Dana UMKM" speed={4} />
               </div>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Berapa Biaya yang Bisa Anda Hemat?
               </h2>
-              <p className="text-sm text-slate-400 mt-2 max-w-xl mx-auto">
+              <p className="text-sm text-slate-600 mt-2 max-w-xl mx-auto">
                 Bandingkan biaya sewa aplikasi per orang tiap bulan dengan sekali beli pakai akugawe.
               </p>
             </div>
@@ -382,16 +358,16 @@ export function App() {
               {/* ReactBits: SpotlightCard for Input Controls */}
               <div className="lg:col-span-6">
                 <SpotlightCard
-                  spotlightColor="rgba(169, 72, 76, 0.15)"
-                  className="p-6 sm:p-8 space-y-6 bg-slate-900"
+                  spotlightColor="rgba(169, 72, 76, 0.08)"
+                  className="p-6 sm:p-8 space-y-6 bg-[#faf6f5] border border-[#f0dbd8] rounded-3xl shadow-xs"
                 >
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
                         <Users className="size-4 text-[#a9484c]" />
                         Jumlah Karyawan Anda:
                       </label>
-                      <span className="text-lg font-black text-white bg-slate-800 px-3 py-1 rounded-xl border border-slate-700">
+                      <span className="text-lg font-black text-slate-900 bg-white px-3 py-1 rounded-xl border border-[#f0dbd8] shadow-xs">
                         {employeeCount} Orang
                       </span>
                     </div>
@@ -414,11 +390,11 @@ export function App() {
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-                        <TrendingDown className="size-4 text-amber-400" />
+                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
+                        <TrendingDown className="size-4 text-amber-600" />
                         Perkiraan Biaya Sewa per Karyawan / Bulan:
                       </label>
-                      <span className="text-xs font-bold text-slate-200">
+                      <span className="text-xs font-bold text-slate-800">
                         Rp {saasPricePerUser.toLocaleString('id-ID')} / orang
                       </span>
                     </div>
@@ -429,8 +405,8 @@ export function App() {
                           type="button"
                           onClick={() => setSaasPricePerUser(price)}
                           className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${saasPricePerUser === price
-                            ? 'bg-[#a9484c]/20 text-[#a9484c] border-[#a9484c]/50 shadow-md'
-                            : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:text-slate-200'
+                            ? 'bg-[#a9484c] text-white border-[#a9484c] shadow-xs'
+                            : 'bg-white text-slate-700 border-[#f0dbd8] hover:bg-slate-50'
                             }`}
                         >
                           Rp {price.toLocaleString('id-ID')}
@@ -439,19 +415,19 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800 text-xs text-slate-400 leading-relaxed">
-                    💡 <strong className="text-slate-200">Hemat Maksimal:</strong> Aplikasi berjalan di server gratis Cloudflare (hingga <strong>100.000 akses/hari</strong>), sangat cukup untuk toko atau kantor Anda tanpa harus bayar biaya server bulanan.
+                  <div className="p-4 rounded-2xl bg-white border border-[#f0dbd8] text-xs text-slate-600 leading-relaxed shadow-xs">
+                    💡 <strong className="text-slate-900">Hemat Maksimal:</strong> Aplikasi berjalan di server gratis Cloudflare (hingga <strong>100.000 akses/hari</strong>), sangat cukup untuk toko atau kantor Anda tanpa harus bayar biaya server bulanan.
                   </div>
                 </SpotlightCard>
               </div>
 
-              {/* ReactBits: SpotlightCard with Emerald Glow & CountUp for Results */}
+              {/* ReactBits: SpotlightCard for Results */}
               <div className="lg:col-span-6">
                 <SpotlightCard
-                  spotlightColor="rgba(16, 185, 129, 0.22)"
-                  className="p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-slate-900/90 to-slate-950 border-emerald-500/30 shadow-2xl relative overflow-hidden"
+                  spotlightColor="rgba(255, 255, 255, 0.15)"
+                  className="p-6 sm:p-8 bg-gradient-to-br from-[#ba5d62] via-[#a9484c] to-[#8f3b3f] text-white border border-[#8f3b3f] shadow-2xl rounded-3xl relative overflow-hidden"
                 >
-                  <div className="text-xs uppercase tracking-wider font-bold text-emerald-400 mb-1 flex items-center gap-1.5">
+                  <div className="text-xs uppercase tracking-wider font-bold text-rose-100 mb-1 flex items-center gap-1.5">
                     <ShieldCheck className="size-4" />
                     <span>Uang yang Bisa Anda Hemat</span>
                   </div>
@@ -464,27 +440,27 @@ export function App() {
                       separator="."
                       className="text-white"
                     />
-                    <span className="text-xs font-normal text-slate-400 block mt-1">
+                    <span className="text-xs font-normal text-rose-100/90 block mt-1">
                       Total uang usaha yang terselamatkan dalam 3 tahun
                     </span>
                   </div>
 
-                  <div className="space-y-3 pt-4 border-t border-slate-800 text-xs">
-                    <div className="flex items-center justify-between text-slate-400">
+                  <div className="space-y-3 pt-4 border-t border-white/20 text-xs">
+                    <div className="flex items-center justify-between text-rose-100">
                       <span>Jika Sewa 1 Tahun ({employeeCount} staf):</span>
-                      <span className="line-through text-rose-400 font-semibold">
+                      <span className="line-through text-rose-200 font-semibold">
                         <CountUp to={yearlySaaSCost} prefix="Rp " duration={0.8} />
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-slate-400">
+                    <div className="flex items-center justify-between text-rose-100">
                       <span>Jika Sewa 3 Tahun ({employeeCount} staf):</span>
-                      <span className="line-through text-rose-400 font-semibold">
+                      <span className="line-through text-rose-200 font-semibold">
                         <CountUp to={threeYearSaaSCost} prefix="Rp " duration={0.8} />
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-emerald-400 font-bold pt-2 border-t border-slate-800">
+                    <div className="flex items-center justify-between text-white font-bold pt-2 border-t border-white/20">
                       <span>Biaya Pakai akugawe:</span>
-                      <span className="text-sm bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                      <span className="text-sm bg-white/20 px-2.5 py-0.5 rounded-full border border-white/30 text-white">
                         Rp 0 / bulan
                       </span>
                     </div>
@@ -496,7 +472,7 @@ export function App() {
                         href={getWaLink()}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg shadow-emerald-500/20"
+                        className="w-full py-3 rounded-xl bg-white hover:bg-rose-50 text-[#a9484c] font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg shadow-black/10"
                       >
                         <MessageCircle className="size-4" />
                         Beli Sekali & Mulai Hemat Sekarang
@@ -521,77 +497,77 @@ export function App() {
           }}
         />
 
-        {/* PERBANDINGAN SAAS VS BELI PUTUS */}
-        <section id="perbandingan" className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-900/30 border-t border-slate-800/80">
+        {/* PERBANDINGAN SAAS VS AKUGAWE */}
+        <section id="perbandingan" className="py-16 sm:py-24 px-4 sm:px-6 bg-[#faf6f5] border-t border-[#f0dbd8]">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-14">
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Mengapa Beli Putus Lebih Menguntungkan?
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+                Mengapa akugawe Lebih Menguntungkan?
               </h2>
-              <p className="text-sm text-slate-400 mt-2">
-                Perbandingan objektif antara aplikasi absensi sewa (SaaS) vs akugawe Self-Hosted.
+              <p className="text-sm text-slate-600 mt-2">
+                Perbandingan objektif antara aplikasi absensi sewa (SaaS) vs akugawe.
               </p>
             </div>
 
             <SpotlightCard
-              spotlightColor="rgba(169, 72, 76, 0.12)"
-              className="overflow-x-auto rounded-3xl border border-slate-800 bg-slate-900"
+              spotlightColor="rgba(169, 72, 76, 0.08)"
+              className="overflow-x-auto rounded-3xl border border-[#f0dbd8] bg-white shadow-xs"
             >
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/60">
-                    <th className="p-4 sm:p-5 font-bold text-slate-300">Aspek Evaluasi</th>
-                    <th className="p-4 sm:p-5 font-bold text-rose-400">Aplikasi Absensi SaaS (Sewa)</th>
-                    <th className="p-4 sm:p-5 font-bold text-emerald-400 bg-emerald-500/5">akugawe (Beli Putus)</th>
+                  <tr className="border-b border-[#f0dbd8] bg-[#fbf2f0]">
+                    <th className="p-4 sm:p-5 font-bold text-slate-800">Aspek Evaluasi</th>
+                    <th className="p-4 sm:p-5 font-bold text-rose-600">Aplikasi Absensi SaaS (Sewa)</th>
+                    <th className="p-4 sm:p-5 font-bold text-[#a9484c] bg-[#fbf2f0]">akugawe</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 text-slate-300">
+                <tbody className="divide-y divide-[#f0dbd8] text-slate-700">
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold text-white">Biaya Langganan Bulanan</td>
-                    <td className="p-4 sm:p-5 text-rose-400/90 flex items-center gap-1.5">
+                    <td className="p-4 sm:p-5 font-semibold text-slate-900">Biaya Langganan Bulanan</td>
+                    <td className="p-4 sm:p-5 text-rose-600 flex items-center gap-1.5">
                       <XCircle className="size-4 shrink-0 text-rose-500" />
                       Rp 25.000 - Rp 50.000 / staf / bulan
                     </td>
-                    <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-emerald-500/5">
+                    <td className="p-4 sm:p-5 text-[#a9484c] font-bold bg-[#fbf2f0]/30">
                       <span className="flex items-center gap-1.5">
-                        <CheckCircle2 className="size-4 shrink-0 text-emerald-400" />
+                        <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
                         Rp 0 / bulan (Gratis Cloudflare Free Tier)
                       </span>
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold text-white">Biaya Tambah Karyawan Baru</td>
-                    <td className="p-4 sm:p-5 text-rose-400/90">
+                    <td className="p-4 sm:p-5 font-semibold text-slate-900">Biaya Tambah Karyawan Baru</td>
+                    <td className="p-4 sm:p-5 text-rose-600/90">
                       Tagihan membengkak otomatis tiap rekrut staf baru
                     </td>
-                    <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-emerald-500/5">
+                    <td className="p-4 sm:p-5 text-[#a9484c] font-bold bg-[#fbf2f0]/30">
                       Gratis & Tanpa Batas (Bebas tambah karyawan)
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold text-white">Kepemilikan Data & Privasi</td>
-                    <td className="p-4 sm:p-5 text-slate-400">
+                    <td className="p-4 sm:p-5 font-semibold text-slate-900">Kepemilikan Data & Privasi</td>
+                    <td className="p-4 sm:p-5 text-slate-500">
                       Tersimpan di server vendor bersama ribuan perusahaan lain
                     </td>
-                    <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-emerald-500/5">
+                    <td className="p-4 sm:p-5 text-[#a9484c] font-bold bg-[#fbf2f0]/30">
                       100% di akun Cloudflare privat milik Anda
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold text-white">Ketergantungan Vendor</td>
-                    <td className="p-4 sm:p-5 text-slate-400">
+                    <td className="p-4 sm:p-5 font-semibold text-slate-900">Ketergantungan Vendor</td>
+                    <td className="p-4 sm:p-5 text-slate-500">
                       Jika vendor menaikkan harga sepihak, Anda terpaksa bayar
                     </td>
-                    <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-emerald-500/5">
+                    <td className="p-4 sm:p-5 text-[#a9484c] font-bold bg-[#fbf2f0]/30">
                       Nol ketergantungan. Sistem aktif selamanya
                     </td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-semibold text-white">Instalasi & Onboarding</td>
-                    <td className="p-4 sm:p-5 text-slate-400">
+                    <td className="p-4 sm:p-5 font-semibold text-slate-900">Instalasi & Onboarding</td>
+                    <td className="p-4 sm:p-5 text-slate-500">
                       Karyawan harus cari & download di PlayStore
                     </td>
-                    <td className="p-4 sm:p-5 text-emerald-400 font-bold bg-emerald-500/5">
+                    <td className="p-4 sm:p-5 text-[#a9484c] font-bold bg-[#fbf2f0]/30">
                       Cukup 1 link PWA & First-Run Wizard 3 menit
                     </td>
                   </tr>
@@ -602,14 +578,14 @@ export function App() {
         </section>
 
         {/* FAQ SECTION */}
-        <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6">
+        <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 bg-white border-t border-[#f0dbd8]">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-14">
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Pertanyaan yang Sering Diajukan (FAQ)
               </h2>
-              <p className="text-sm text-slate-400 mt-2">
-                Semua yang perlu Anda ketahui mengenai skema Beli Putus & teknologi Cloudflare.
+              <p className="text-sm text-slate-600 mt-2">
+                Semua yang perlu Anda ketahui mengenai akugawe & teknologi Cloudflare.
               </p>
             </div>
 
@@ -634,14 +610,14 @@ export function App() {
               ].map((faq, idx) => (
                 <SpotlightCard
                   key={idx}
-                  spotlightColor="rgba(169, 72, 76, 0.12)"
-                  className="p-6 space-y-2 bg-slate-900 border-slate-800"
+                  spotlightColor="rgba(169, 72, 76, 0.08)"
+                  className="p-6 space-y-2 bg-[#faf6f5] border border-[#f0dbd8] shadow-xs"
                 >
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                     <HelpCircle className="size-4 text-[#a9484c] shrink-0" />
                     {faq.q}
                   </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed pl-6">
+                  <p className="text-xs text-slate-600 leading-relaxed pl-6">
                     {faq.a}
                   </p>
                 </SpotlightCard>
@@ -651,21 +627,21 @@ export function App() {
         </section>
 
         {/* FINAL CTA BANNER */}
-        <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-slate-900/60 to-slate-950 border-t border-slate-800">
+        <section className="py-16 sm:py-20 px-4 sm:px-6 bg-gradient-to-b from-[#fbf2f0] to-white border-t border-[#f0dbd8]">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               <ShinyText text="Mulai Hemat Anggaran HR Perusahaan Anda Hari Ini" speed={4} />
             </h2>
-            <p className="text-sm text-slate-400 max-w-xl mx-auto">
+            <p className="text-sm text-slate-600 max-w-xl mx-auto">
               Coba demo langsung tanpa komitmen apa pun, atau diskusikan kebutuhan kantor Anda dengan tim kami.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
               <Magnet magnetStrength={3}>
                 <a
-                  href={`${DASHBOARD_URL}/login`}
+                  href={`${dashboardUrl}/login`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#a9484c] to-[#8f3b3f] text-white font-bold text-sm shadow-xl shadow-[#a9484c]/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-[#a9484c] to-[#8f3b3f] text-white font-bold text-sm shadow-xl shadow-[#a9484c]/25 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Sparkles className="size-4" />
                   <span>Buka Live Demo Sekarang</span>
@@ -678,11 +654,11 @@ export function App() {
                   href={getWaLink()}
                   target="_blank"
                   rel="noreferrer"
-                  color="#10b981"
+                  color="#059669"
                   speed="3.5s"
                   className="cursor-pointer"
                 >
-                  <MessageCircle className="size-4 text-emerald-400" />
+                  <MessageCircle className="size-4 text-emerald-600" />
                   <span>Hubungi via WhatsApp</span>
                 </StarBorder>
               </Magnet>
@@ -691,13 +667,13 @@ export function App() {
         </section>
 
         {/* FOOTER */}
-        <footer className="border-t border-slate-800/80 py-8 px-4 sm:px-8 text-center text-xs text-slate-500">
+        <footer className="border-t border-[#f0dbd8] bg-[#faf6f5] py-8 px-4 sm:px-8 text-center text-xs text-slate-500">
           <p>© 2026 akugawe. Aplikasi Presensi Biometrik & Penggajian Mandiri UMKM Indonesia.</p>
           <div className="mt-2 flex items-center justify-center gap-4">
-            <span className="text-slate-600">Dioptimalkan khusus untuk Cloudflare Edge</span>
+            <span className="text-slate-500">Dioptimalkan khusus untuk Cloudflare Edge</span>
             <a
               href="/salesAdmin"
-              className="text-[11px] text-slate-600 hover:text-slate-400 flex items-center gap-1 transition"
+              className="text-[11px] text-slate-500 hover:text-[#a9484c] flex items-center gap-1 transition"
             >
               <Key className="size-3" /> Area Penjual / Onboarding
             </a>
@@ -705,7 +681,7 @@ export function App() {
         </footer>
 
         {/* FLOATING QUICK CTA BAR */}
-        <FloatingCtaBar dashboardUrl={DASHBOARD_URL} appUrl={APP_URL} waLink={getWaLink()} />
+        <FloatingCtaBar dashboardUrl={dashboardUrl} appUrl={appUrl} waLink={getWaLink()} />
       </div>
     </ClickSpark>
   );

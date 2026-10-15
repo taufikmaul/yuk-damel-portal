@@ -342,33 +342,36 @@ function AdminSidebar({
             )}
 
             {/* Live Demo App */}
-            {isCollapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    href="https://dash-ngabsen.historycake.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center size-10 mx-auto rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-[#fbf2f0]/60"
-                  >
-                    <ExternalLink className="size-4 shrink-0" />
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={12} className="font-medium text-xs">
-                  Live Demo App (Eksternal)
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <a
-                href="https://dash-ngabsen.historycake.com"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs text-slate-600 hover:text-slate-900 hover:bg-[#fbf2f0]/60 transition-all cursor-pointer"
-              >
-                <ExternalLink className="size-4 shrink-0" />
-                <span className="truncate">Live Demo App</span>
-              </a>
-            )}
+            {(() => {
+              const demoUrl = loadSellerConfig().demoDashboardUrl || 'https://dash-ngabsen.historycake.com';
+              return isCollapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <a
+                      href={demoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center size-10 mx-auto rounded-xl transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-[#fbf2f0]/60"
+                    >
+                      <ExternalLink className="size-4 shrink-0" />
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={12} className="font-medium text-xs">
+                    Live Demo App (Eksternal)
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <a
+                  href={demoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs text-slate-600 hover:text-slate-900 hover:bg-[#fbf2f0]/60 transition-all cursor-pointer"
+                >
+                  <ExternalLink className="size-4 shrink-0" />
+                  <span className="truncate">Live Demo App</span>
+                </a>
+              );
+            })()}
           </div>
         </div>
       </SidebarContent>
@@ -844,7 +847,7 @@ export function AdminPortalPage({
 
   const copyWhatsAppFormat = (client: ClientRecord) => {
     const link = `${window.location.origin}/?onboarding=true&token=${client.token}`;
-    const text = `Halo Kak dari *${client.name}*! Terima kasih atas pembelian Lisensi Aplikasi Absensi & Payroll akugawe (Beli Putus).
+    const text = `Halo Kak dari *${client.name}*! Terima kasih atas pembelian Lisensi Aplikasi Absensi & Payroll akugawe.
 
 Berikut tautan aktivasi 1-Click Deploy ke Cloudflare milik Anda:
 👉 ${link}
@@ -1358,7 +1361,7 @@ Silakan buka tautan di atas untuk mengatur nama toko & mengaktifkan sistem secar
                         Estimasi Omset
                       </CardTitle>
                       <Badge variant="outline" className="text-[10px] text-emerald-700 bg-emerald-50 border-emerald-200">
-                        Beli Putus
+                        Lisensi
                       </Badge>
                     </CardHeader>
                     <CardContent>

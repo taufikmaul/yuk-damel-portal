@@ -30,19 +30,19 @@ export function FloatingCtaBar({ dashboardUrl, appUrl, waLink }: FloatingCtaBarP
 
   return (
     <aside aria-label="Aksi Cepat" className="fixed bottom-4 left-4 right-4 z-40 max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-5 duration-300">
-      <div className="p-3 sm:p-3.5 rounded-2xl bg-slate-900/95 border border-slate-700/80 backdrop-blur-md shadow-2xl flex items-center justify-between gap-3 text-white">
+      <div className="p-3 sm:p-3.5 rounded-2xl bg-white/95 border border-[#f0dbd8] backdrop-blur-md shadow-2xl flex items-center justify-between gap-3 text-slate-800">
         <div className="flex items-center gap-3 pl-1">
-          <div className="size-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="size-8 rounded-xl bg-[#fbf2f0] border border-[#f0dbd8] text-[#a9484c] flex items-center justify-center shrink-0">
             <Sparkles className="size-4 animate-pulse" />
           </div>
           <div className="hidden sm:block">
-            <div className="text-xs font-bold text-white flex items-center gap-2">
+            <div className="text-xs font-bold text-slate-900 flex items-center gap-2">
               akugawe • Sekali Beli Selamanya
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
                 Server Rp 0 / Bln
               </span>
             </div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-[11px] text-slate-500">
               Absen selfie anti-titip & rekap gaji otomatis tanpa tagihan bulanan.
             </div>
           </div>
@@ -53,9 +53,9 @@ export function FloatingCtaBar({ dashboardUrl, appUrl, waLink }: FloatingCtaBarP
             href={`${dashboardUrl}/login`}
             target="_blank"
             rel="noreferrer"
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-[#fbf2f0] hover:bg-[#f7e5e3] text-[#a9484c] border border-[#f0dbd8] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Sparkles className="size-3.5 text-amber-400" />
+            <Sparkles className="size-3.5 text-[#a9484c]" />
             <span className="hidden md:inline">Demo Bos</span>
             <span className="md:hidden">Demo</span>
           </a>
@@ -64,9 +64,9 @@ export function FloatingCtaBar({ dashboardUrl, appUrl, waLink }: FloatingCtaBarP
             href={`${appUrl}/login`}
             target="_blank"
             rel="noreferrer"
-            className="hidden sm:flex px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold items-center gap-1.5 transition-colors cursor-pointer"
+            className="hidden sm:flex px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-[#f0dbd8] text-xs font-semibold items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <Smartphone className="size-3.5 text-purple-400" />
+            <Smartphone className="size-3.5 text-purple-600" />
             <span>Demo HP Staf</span>
           </a>
 
@@ -75,7 +75,7 @@ export function FloatingCtaBar({ dashboardUrl, appUrl, waLink }: FloatingCtaBarP
               href={waLink}
               target="_blank"
               rel="noreferrer"
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all active:scale-95 cursor-pointer"
             >
               <MessageCircle className="size-3.5" />
               <span>Chat WhatsApp</span>
@@ -85,7 +85,7 @@ export function FloatingCtaBar({ dashboardUrl, appUrl, waLink }: FloatingCtaBarP
           <button
             type="button"
             onClick={() => setIsDismissed(true)}
-            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-slate-800 transition-colors ml-1 cursor-pointer"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors ml-1 cursor-pointer"
             title="Tutup banner"
           >
             <X className="size-4" />

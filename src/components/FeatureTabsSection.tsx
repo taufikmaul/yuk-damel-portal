@@ -215,9 +215,9 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
   },
   {
     id: 'selfhost',
-    label: 'Beli Putus (Rp 0 Server)',
+    label: 'akugawe (Rp 0 Server)',
     icon: Server,
-    color: '#06b6d4',
+    color: '#a9484c',
     badge: 'Milik Sendiri Selamanya',
     headline: 'Beli Sekali Jadi Milik Usaha Anda, Tanpa Biaya Bulanan',
     subheadline: 'Berbeda dengan aplikasi sewa (SaaS) yang minta iuran tiap bulan per kepala karyawan. akugawe jadi aset milik usaha Anda selamanya.',
@@ -253,17 +253,17 @@ export function FeatureTabsSection() {
   const [activeTab, setActiveTab] = useState<FeatureCategory>(FEATURE_CATEGORIES[0]);
 
   return (
-    <section id="fitur" className="py-20 sm:py-28 px-4 sm:px-6 bg-slate-900/30 border-y border-slate-800/80 relative">
+    <section id="fitur" className="py-20 sm:py-28 px-4 sm:px-6 bg-[#faf6f5] border-y border-[#f0dbd8] relative">
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-300 text-xs font-semibold mb-3 border border-blue-500/20 shadow-sm">
-            <Layers className="size-3.5 text-blue-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#fbf2f0] text-[#a9484c] text-xs font-semibold mb-3 border border-[#f0dbd8] shadow-xs">
+            <Layers className="size-3.5 text-[#a9484c]" />
             <ShinyText text="Fitur Lengkap untuk Toko & Kantor UMKM" speed={3.5} />
           </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Semua yang Dibutuhkan Usaha Anda Ada di Sini
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 mt-2.5 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 mt-2.5 max-w-2xl mx-auto leading-relaxed">
             Mulai dari absen anti-titip, hitung gaji bulanan otomatis, hingga izin lewat HP — semua mudah dipahami tanpa perlu belajar lama.
           </p>
         </div>
@@ -280,14 +280,14 @@ export function FeatureTabsSection() {
                 onClick={() => setActiveTab(cat)}
                 className={`py-2.5 px-4 rounded-xl text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer border shrink-0 ${
                   isSelected
-                    ? 'bg-slate-800 text-white border-slate-600 shadow-md ring-1 ring-slate-500'
-                    : 'bg-slate-950/70 text-slate-400 border-slate-800 hover:text-white hover:bg-slate-900/90'
+                    ? 'bg-[#a9484c] text-white border-[#a9484c] shadow-md ring-1 ring-[#8f3b3f]'
+                    : 'bg-white text-slate-700 border-[#f0dbd8] hover:text-slate-900 hover:bg-[#fbf2f0]/60'
                 }`}
               >
                 <div
                   className="size-5 rounded-md flex items-center justify-center shrink-0"
                   style={{
-                    backgroundColor: isSelected ? cat.color : `${cat.color}20`,
+                    backgroundColor: isSelected ? 'rgba(255,255,255,0.2)' : `${cat.color}20`,
                     color: isSelected ? '#ffffff' : cat.color,
                   }}
                 >
@@ -301,11 +301,11 @@ export function FeatureTabsSection() {
 
         {/* ACTIVE CATEGORY SHOWCASE CARD */}
         <SpotlightCard
-          spotlightColor="rgba(229, 127, 142, 0.15)"
-          className="p-6 sm:p-10 rounded-3xl bg-slate-950 border border-slate-800/90 shadow-2xl space-y-8"
+          spotlightColor="rgba(169, 72, 76, 0.08)"
+          className="p-6 sm:p-10 rounded-3xl bg-white border border-[#f0dbd8] shadow-xl space-y-8"
         >
           {/* Header of Active Tab */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800/80">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-[#f0dbd8]">
             <div className="space-y-2 max-w-2xl">
               <span
                 className="text-[10px] font-bold uppercase tracking-wider font-mono px-2.5 py-1 rounded-full border"
@@ -317,23 +317,23 @@ export function FeatureTabsSection() {
               >
                 {activeTab.badge}
               </span>
-              <h3 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              <h3 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 {activeTab.headline}
               </h3>
-              <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
                 {activeTab.subheadline}
               </p>
             </div>
 
             {/* Stat Box Highlight */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 text-left lg:text-right shrink-0">
+            <div className="p-4 sm:p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] text-left lg:text-right shrink-0">
               <div
                 className="text-2xl sm:text-3xl font-black tracking-tight"
                 style={{ color: activeTab.color }}
               >
                 {activeTab.statBox.value}
               </div>
-              <div className="text-xs font-bold text-white mt-0.5">
+              <div className="text-xs font-bold text-slate-900 mt-0.5">
                 {activeTab.statBox.label}
               </div>
               <div className="text-[11px] text-slate-500 mt-0.5">
@@ -349,34 +349,34 @@ export function FeatureTabsSection() {
               return (
                 <div
                   key={idx}
-                  className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between space-y-4 text-left"
+                  className="p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] hover:border-[#cf807c] shadow-xs transition-all flex flex-col justify-between space-y-4 text-left"
                 >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div
                         className="size-9 rounded-xl flex items-center justify-center"
                         style={{
-                          backgroundColor: `${activeTab.color}20`,
+                          backgroundColor: `${activeTab.color}15`,
                           color: activeTab.color,
                         }}
                       >
                         <CardIcon className="size-4" />
                       </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-slate-600 border border-[#f0dbd8]">
                         {card.tag}
                       </span>
                     </div>
 
-                    <h4 className="font-bold text-sm text-white">
+                    <h4 className="font-bold text-sm text-slate-900">
                       {card.title}
                     </h4>
 
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 leading-relaxed">
                       {card.description}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 pt-2 border-t border-slate-800/80">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 pt-2 border-t border-[#f0dbd8]">
                     <CheckCircle2 className="size-3.5 shrink-0" />
                     <span>Sudah Siap Pakai</span>
                   </div>

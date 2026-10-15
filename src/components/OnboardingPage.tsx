@@ -880,7 +880,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-base text-slate-900 tracking-tight">akugawe</span>
                 <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Beli Putus Portal
+                  akugawe Portal
                 </span>
                 {isAdmin && (
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 border border-purple-200 flex items-center gap-1">

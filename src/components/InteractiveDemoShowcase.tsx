@@ -209,20 +209,20 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
   };
 
   return (
-    <section id="demo-roles" className="py-20 sm:py-28 px-4 sm:px-6 bg-slate-900/50 border-t border-slate-800/80 relative">
+    <section id="demo-roles" className="py-20 sm:py-28 px-4 sm:px-6 bg-white/70 border-t border-[#f0dbd8] relative">
       {/* Background radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-r from-[#a9484c]/15 via-indigo-600/10 to-transparent blur-[140px] pointer-events-none rounded-full" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-gradient-to-r from-[#f7e5e3]/60 via-[#fbf2f0]/60 to-transparent blur-[140px] pointer-events-none rounded-full" />
 
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-300 text-xs font-semibold mb-3 border border-amber-500/20 shadow-sm">
-            <Sparkles className="size-3.5 text-amber-400" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#fbf2f0] text-[#a9484c] text-xs font-semibold mb-3 border border-[#f0dbd8] shadow-xs">
+            <Sparkles className="size-3.5 text-[#a9484c]" />
             <ShinyText text="Coba Demo Langsung Sesuai Posisi" speed={3.5} />
           </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Satu Aplikasi, Pas untuk Semua Posisi Kerja
           </h2>
-          <p className="text-sm sm:text-base text-slate-400 mt-2.5 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 mt-2.5 max-w-2xl mx-auto leading-relaxed">
             Klik profil di bawah ini untuk melihat bagaimana akugawe memberikan tampilan yang pas bagi Pemilik Usaha, Manajer, hingga Karyawan toko:
           </p>
         </div>
@@ -239,26 +239,26 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
                 onClick={() => setSelectedRole(role)}
                 className={`p-3 sm:p-3.5 rounded-2xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between relative overflow-hidden group ${
                   isSelected
-                    ? 'bg-slate-800/90 border-[#a9484c] shadow-lg shadow-[#a9484c]/20 ring-1 ring-[#a9484c]'
-                    : 'bg-slate-950/60 border-slate-800 hover:bg-slate-900/80 hover:border-slate-700'
+                    ? 'bg-[#fbf2f0] border-[#a9484c] shadow-md shadow-[#a9484c]/10 ring-1 ring-[#a9484c]'
+                    : 'bg-white border-[#f0dbd8] hover:bg-[#fbf2f0]/60 hover:border-[#cf807c]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div
                     className="size-8 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105"
-                    style={{ backgroundColor: `${role.color}20`, color: role.color }}
+                    style={{ backgroundColor: `${role.color}15`, color: role.color }}
                   >
                     <IconComponent className="size-4" />
                   </div>
                   {isSelected && (
-                    <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
                   )}
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-white tracking-tight truncate">
+                  <div className="text-xs font-bold text-slate-900 tracking-tight truncate">
                     {role.level}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate mt-0.5">
+                  <div className="text-[10px] text-slate-500 truncate mt-0.5">
                     {role.title.split('(')[0].trim()}
                   </div>
                 </div>
@@ -269,8 +269,8 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
 
         {/* ACTIVE ROLE DETAIL PREVIEW CARD */}
         <SpotlightCard
-          spotlightColor="rgba(169, 72, 76, 0.18)"
-          className="p-6 sm:p-10 rounded-3xl bg-slate-950/90 border border-slate-800/90 shadow-2xl relative overflow-hidden"
+          spotlightColor="rgba(169, 72, 76, 0.08)"
+          className="p-6 sm:p-10 rounded-3xl bg-white border border-[#f0dbd8] shadow-xl relative overflow-hidden"
         >
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left: Role Info & Persona */}
@@ -279,36 +279,36 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
                 <img
                   src={selectedRole.avatarUrl}
                   alt={selectedRole.name}
-                  className="size-16 sm:size-20 rounded-2xl object-cover border-2 border-slate-700 shadow-xl shrink-0"
+                  className="size-16 sm:size-20 rounded-2xl object-cover border-2 border-[#f0dbd8] shadow-md shrink-0"
                 />
                 <div>
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full border ${selectedRole.badgeBg}`}>
                       {selectedRole.level}
                     </span>
-                    <span className="text-[10px] font-medium text-slate-400 bg-slate-900 px-2 py-0.5 rounded-full border border-slate-800">
+                    <span className="text-[10px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                       {getTargetBadgeLabel(selectedRole.targetApp)}
                     </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
                     {selectedRole.name}
                   </h3>
-                  <p className="text-xs font-medium text-slate-400">
+                  <p className="text-xs font-medium text-slate-500">
                     {selectedRole.title} • {selectedRole.department}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/60 p-4 rounded-2xl border border-slate-800/80">
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed bg-[#faf6f5] p-4 rounded-2xl border border-[#f0dbd8]">
                 {selectedRole.description}
               </p>
 
               <div className="space-y-2">
-                <div className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="size-3.5 text-emerald-400" />
+                <div className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="size-3.5 text-emerald-600" />
                   <span>Kemudahan untuk Peran Ini:</span>
                 </div>
-                <ul className="space-y-2 text-xs text-slate-300">
+                <ul className="space-y-2 text-xs text-slate-700">
                   {selectedRole.highlights.map((item, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <CheckCircle2 className="size-3.5 text-[#a9484c] shrink-0 mt-0.5" />
@@ -334,11 +334,11 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
 
             {/* Right: Role Mock Dashboard / App Screen Preview */}
             <div className="lg:col-span-7">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-5 sm:p-6 shadow-inner space-y-5">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="rounded-2xl border border-[#f0dbd8] bg-[#faf6f5] p-5 sm:p-6 shadow-xs space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-[#f0dbd8]">
                   <div className="flex items-center gap-2">
-                    <span className="size-2.5 rounded-full bg-emerald-400 animate-ping" />
-                    <span className="text-xs font-bold text-white">
+                    <span className="size-2.5 rounded-full bg-emerald-500 animate-ping" />
+                    <span className="text-xs font-bold text-slate-900">
                       Ringkasan Aktivitas ({selectedRole.level})
                     </span>
                   </div>
@@ -352,9 +352,9 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
                   {selectedRole.mockStats.map((stat, idx) => (
                     <div
                       key={idx}
-                      className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 space-y-1"
+                      className="p-3.5 rounded-xl bg-white border border-[#f0dbd8] shadow-xs space-y-1"
                     >
-                      <div className="text-[11px] font-medium text-slate-400 truncate">
+                      <div className="text-[11px] font-medium text-slate-500 truncate">
                         {stat.label}
                       </div>
                       <div
@@ -363,7 +363,7 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
                       >
                         {stat.value}
                       </div>
-                      <div className="text-[10px] text-slate-500 truncate">
+                      <div className="text-[10px] text-slate-400 truncate">
                         {stat.detail}
                       </div>
                     </div>
@@ -371,43 +371,43 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
                 </div>
 
                 {/* Simulated Screen Card */}
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-3">
-                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                <div className="p-4 rounded-xl bg-white border border-[#f0dbd8] shadow-xs text-xs space-y-3">
+                  <div className="flex items-center justify-between text-slate-500 text-[11px]">
                     <span className="flex items-center gap-1.5 font-medium">
-                      <Clock className="size-3 text-emerald-400" />
+                      <Clock className="size-3 text-emerald-600" />
                       Status Sistem Terkini
                     </span>
-                    <span className="text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    <span className="text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                       Normal & Berjalan
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between gap-3">
+                  <div className="p-3 rounded-lg bg-[#faf6f5] border border-[#f0dbd8] flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="size-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-300">
+                      <div className="size-8 rounded-lg bg-white border border-[#f0dbd8] flex items-center justify-center text-slate-600">
                         <MapPin className="size-4 text-[#a9484c]" />
                       </div>
                       <div>
-                        <div className="font-semibold text-white text-xs">
+                        <div className="font-semibold text-slate-900 text-xs">
                           {selectedRole.targetApp === 'dashboard' ? 'Semua Toko Terhubung' : 'Presensi Hari Ini'}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-slate-500">
                           {selectedRole.targetApp === 'dashboard' ? '3 Toko aktif dalam radius aman' : 'Foto selfie & lokasi sudah terverifikasi'}
                         </div>
                       </div>
                     </div>
-                    <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                   </div>
                 </div>
 
                 {/* Quick Hint */}
-                <div className="text-[11px] text-slate-400 flex items-center justify-between pt-1">
+                <div className="text-[11px] text-slate-500 flex items-center justify-between pt-1">
                   <span>💡 Ingin mencoba langsung fitur aslinya?</span>
                   <a
                     href={getDemoLaunchUrl(selectedRole)}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#e57f8e] hover:underline font-semibold flex items-center gap-1"
+                    className="text-[#a9484c] hover:underline font-semibold flex items-center gap-1"
                   >
                     Buka Aplikasi Sekarang <ArrowRight className="size-3" />
                   </a>
