@@ -359,15 +359,17 @@ export function App() {
               <div className="lg:col-span-6">
                 <SpotlightCard
                   spotlightColor="rgba(169, 72, 76, 0.08)"
-                  className="p-6 sm:p-8 space-y-6 bg-[#faf6f5] border border-[#f0dbd8] rounded-3xl shadow-xs"
+                  className="p-6 sm:p-8 space-y-6 bg-white border border-[#f0dbd8] rounded-3xl shadow-sm"
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                        <Users className="size-4 text-[#a9484c]" />
-                        Jumlah Karyawan Anda:
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-[#fbf2f0] text-[#a9484c] border border-[#f0dbd8]">
+                          <Users className="size-3.5" />
+                        </span>
+                        <span>Jumlah Karyawan Anda:</span>
                       </label>
-                      <span className="text-lg font-black text-slate-900 bg-white px-3 py-1 rounded-xl border border-[#f0dbd8] shadow-xs">
+                      <span className="text-base font-black text-[#8f3b3f] bg-[#fbf2f0] px-3.5 py-1 rounded-xl border border-[#f0dbd8] shadow-xs">
                         {employeeCount} Orang
                       </span>
                     </div>
@@ -378,9 +380,9 @@ export function App() {
                       step="5"
                       value={employeeCount}
                       onChange={(e) => setEmployeeCount(Number(e.target.value))}
-                      className="w-full accent-[#a9484c] cursor-pointer"
+                      className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#a9484c]"
                     />
-                    <div className="flex justify-between text-[11px] text-slate-500 font-medium mt-1">
+                    <div className="flex justify-between text-[11px] text-slate-500 font-semibold mt-1.5">
                       <span>5 Orang</span>
                       <span>25 Orang</span>
                       <span>50 Orang</span>
@@ -389,25 +391,28 @@ export function App() {
                   </div>
 
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                        <TrendingDown className="size-4 text-amber-600" />
-                        Perkiraan Biaya Sewa per Karyawan / Bulan:
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                        <span className="p-1.5 rounded-lg bg-[#fbf2f0] text-amber-600 border border-[#f0dbd8]">
+                          <TrendingDown className="size-3.5" />
+                        </span>
+                        <span>Perkiraan Biaya Sewa per Karyawan / Bulan:</span>
                       </label>
-                      <span className="text-xs font-bold text-slate-800">
+                      <span className="text-xs font-extrabold text-[#8f3b3f]">
                         Rp {saasPricePerUser.toLocaleString('id-ID')} / orang
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2.5">
                       {[20000, 30000, 50000].map((price) => (
                         <button
                           key={price}
                           type="button"
                           onClick={() => setSaasPricePerUser(price)}
-                          className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${saasPricePerUser === price
-                            ? 'bg-[#a9484c] text-white border-[#a9484c] shadow-xs'
-                            : 'bg-white text-slate-700 border-[#f0dbd8] hover:bg-slate-50'
-                            }`}
+                          className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                            saasPricePerUser === price
+                              ? 'bg-[#a9484c] text-white border-[#8f3b3f] shadow-md shadow-[#a9484c]/20'
+                              : 'bg-[#faf6f5] text-slate-700 border-[#f0dbd8] hover:bg-white hover:border-[#a9484c]/40'
+                          }`}
                         >
                           Rp {price.toLocaleString('id-ID')}
                         </button>
@@ -415,8 +420,11 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-2xl bg-white border border-[#f0dbd8] text-xs text-slate-600 leading-relaxed shadow-xs">
-                    💡 <strong className="text-slate-900">Hemat Maksimal:</strong> Aplikasi berjalan di server gratis Cloudflare (hingga <strong>100.000 akses/hari</strong>), sangat cukup untuk toko atau kantor Anda tanpa harus bayar biaya server bulanan.
+                  <div className="p-4 rounded-2xl bg-[#fbf2f0] border border-[#f0dbd8] text-xs text-slate-700 leading-relaxed shadow-xs flex items-start gap-2.5">
+                    <span className="text-base leading-none">💡</span>
+                    <div>
+                      <strong className="text-slate-900 font-bold">Hemat Maksimal:</strong> Aplikasi berjalan di server gratis Cloudflare (hingga <strong className="text-[#8f3b3f]">100.000 akses/hari</strong>), sangat cukup untuk toko atau kantor Anda tanpa harus bayar biaya server bulanan.
+                    </div>
                   </div>
                 </SpotlightCard>
               </div>
@@ -424,15 +432,15 @@ export function App() {
               {/* ReactBits: SpotlightCard for Results */}
               <div className="lg:col-span-6">
                 <SpotlightCard
-                  spotlightColor="rgba(255, 255, 255, 0.15)"
-                  className="p-6 sm:p-8 bg-gradient-to-br from-[#ba5d62] via-[#a9484c] to-[#8f3b3f] text-white border border-[#8f3b3f] shadow-2xl rounded-3xl relative overflow-hidden"
+                  spotlightColor="rgba(255, 255, 255, 0.2)"
+                  className="p-6 sm:p-8 bg-gradient-to-br from-[#ba5d62] via-[#a9484c] to-[#8f3b3f] text-white border border-[#8f3b3f] shadow-2xl shadow-[#a9484c]/25 rounded-3xl relative overflow-hidden"
                 >
-                  <div className="text-xs uppercase tracking-wider font-bold text-rose-100 mb-1 flex items-center gap-1.5">
-                    <ShieldCheck className="size-4" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 border border-white/25 text-[11px] font-bold uppercase tracking-wider text-white backdrop-blur-xs mb-3">
+                    <ShieldCheck className="size-3.5 text-rose-200" />
                     <span>Uang yang Bisa Anda Hemat</span>
                   </div>
 
-                  <div className="text-3xl sm:text-5xl font-black text-white tracking-tight my-4">
+                  <div className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
                     <CountUp
                       to={totalSavings}
                       prefix="Rp "
@@ -440,27 +448,27 @@ export function App() {
                       separator="."
                       className="text-white"
                     />
-                    <span className="text-xs font-normal text-rose-100/90 block mt-1">
+                    <span className="text-xs font-medium text-rose-100 block mt-1">
                       Total uang usaha yang terselamatkan dalam 3 tahun
                     </span>
                   </div>
 
                   <div className="space-y-3 pt-4 border-t border-white/20 text-xs">
-                    <div className="flex items-center justify-between text-rose-100">
+                    <div className="flex items-center justify-between text-rose-100 py-0.5">
                       <span>Jika Sewa 1 Tahun ({employeeCount} staf):</span>
-                      <span className="line-through text-rose-200 font-semibold">
+                      <span className="line-through text-rose-200/80 font-semibold">
                         <CountUp to={yearlySaaSCost} prefix="Rp " duration={0.8} />
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-rose-100">
+                    <div className="flex items-center justify-between text-rose-100 py-0.5">
                       <span>Jika Sewa 3 Tahun ({employeeCount} staf):</span>
-                      <span className="line-through text-rose-200 font-semibold">
+                      <span className="line-through text-rose-200/80 font-semibold">
                         <CountUp to={threeYearSaaSCost} prefix="Rp " duration={0.8} />
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-white font-bold pt-2 border-t border-white/20">
+                    <div className="flex items-center justify-between text-white font-bold pt-2.5 border-t border-white/20">
                       <span>Biaya Pakai akugawe:</span>
-                      <span className="text-sm bg-white/20 px-2.5 py-0.5 rounded-full border border-white/30 text-white">
+                      <span className="text-xs font-black bg-white text-[#8f3b3f] px-3 py-1 rounded-full shadow-xs">
                         Rp 0 / bulan
                       </span>
                     </div>
@@ -472,7 +480,7 @@ export function App() {
                         href={getWaLink()}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full py-3 rounded-xl bg-white hover:bg-rose-50 text-[#a9484c] font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg shadow-black/10"
+                        className="w-full py-3.5 rounded-xl bg-white hover:bg-[#faf6f5] text-[#8f3b3f] font-black text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-lg hover:shadow-xl"
                       >
                         <MessageCircle className="size-4" />
                         Beli Sekali & Mulai Hemat Sekarang
@@ -578,13 +586,17 @@ export function App() {
         </section>
 
         {/* FAQ SECTION */}
-        <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 bg-white border-t border-[#f0dbd8]">
+        <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 bg-[#faf6f5] border-t border-[#f0dbd8]">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-white text-[#a9484c] text-xs font-semibold mb-3 border border-[#f0dbd8] shadow-xs">
+                <HelpCircle className="size-3.5 text-[#a9484c]" />
+                <span>Pusat Informasi & Tanya Jawab</span>
+              </div>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
                 Pertanyaan yang Sering Diajukan (FAQ)
               </h2>
-              <p className="text-sm text-slate-600 mt-2">
+              <p className="text-sm text-slate-600 mt-2 max-w-xl mx-auto">
                 Semua yang perlu Anda ketahui mengenai akugawe & teknologi Cloudflare.
               </p>
             </div>
@@ -611,15 +623,21 @@ export function App() {
                 <SpotlightCard
                   key={idx}
                   spotlightColor="rgba(169, 72, 76, 0.08)"
-                  className="p-6 space-y-2 bg-[#faf6f5] border border-[#f0dbd8] shadow-xs"
+                  className="p-5 sm:p-6 bg-white border border-[#f0dbd8] rounded-2xl shadow-xs hover:border-[#a9484c]/50 hover:shadow-md transition-all"
                 >
-                  <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <HelpCircle className="size-4 text-[#a9484c] shrink-0" />
-                    {faq.q}
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed pl-6">
-                    {faq.a}
-                  </p>
+                  <div className="flex items-start gap-3.5">
+                    <div className="size-8 rounded-xl bg-[#fbf2f0] border border-[#f0dbd8] flex items-center justify-center shrink-0 mt-0.5 text-[#a9484c]">
+                      <HelpCircle className="size-4" />
+                    </div>
+                    <div className="space-y-1.5 flex-1">
+                      <h4 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                        {faq.q}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        {faq.a}
+                      </p>
+                    </div>
+                  </div>
                 </SpotlightCard>
               ))}
             </div>

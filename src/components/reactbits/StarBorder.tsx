@@ -33,7 +33,7 @@ export function StarBorder({
           animationDuration: speed,
         }}
       />
-      <div className="relative rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-900 flex items-center justify-center gap-2 h-full w-full">
+      <div className="relative rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition-colors hover:bg-emerald-50/60 flex items-center justify-center gap-2 h-full w-full border border-emerald-100 shadow-xs">
         {children}
       </div>
     </Component>
