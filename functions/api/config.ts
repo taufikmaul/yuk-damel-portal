@@ -6,6 +6,7 @@
  */
 
 import { Env, getSystemConfig, setSystemConfig, handleOptions, jsonResponse } from './_db';
+import { checkRateLimit } from './_ratelimit';
 
 export const onRequestOptions = handleOptions;
 
@@ -30,6 +31,8 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
     const hasGitHub = !!(await getSystemConfig(context.env, 'GITHUB_DISPATCH_PAT'));
     const hasPakasir = !!(await getSystemConfig(context.env, 'PAKASIR_API_KEY'));
     const hasStaticQris = !!(await getSystemConfig(context.env, 'STATIC_QRIS_STRING'));
+    const hasResend = !!(await getSystemConfig(context.env, 'RESEND_API_KEY'));
+    const emailFrom = (await getSystemConfig(context.env, 'EMAIL_FROM')) || '';
     const authorizedChatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
     const telegramBotUsername = await getSystemConfig(context.env, 'TELEGRAM_BOT_USERNAME');
 
@@ -41,6 +44,8 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
         isGitHubConfigured: hasGitHub,
         isPakasirConfigured: hasPakasir,
         hasStaticQris: hasStaticQris,
+        isResendConfigured: hasResend,
+        emailFrom: emailFrom,
         authorizedChatId: authorizedChatId || '',
         telegramBotUsername: telegramBotUsername || 'AkugawePortalBot',
       },
@@ -53,6 +58,11 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
 // POST /api/config: Menyimpan konfigurasi & rahasia ke Database (Wajib verifikasi Master PIN)
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   try {
+    // Rate Limiting: Maksimal 5 percobaan simpan konfigurasi / PIN per 15 menit
+    const rateCheck = await checkRateLimit(context.env, context.request, 'admin_config', 5, 900);
+    if (!rateCheck.allowed && rateCheck.response) {
+      return rateCheck.response;
+    }
     const body: any = await context.request.json();
     const { masterPin, publicConfig, sensitiveSecrets } = body;
 
@@ -90,6 +100,12 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       }
       if (sensitiveSecrets.pakasirApiKey && sensitiveSecrets.pakasirApiKey.trim()) {
         await setSystemConfig(context.env, 'PAKASIR_API_KEY', sensitiveSecrets.pakasirApiKey.trim(), true);
+      }
+      if (sensitiveSecrets.resendApiKey && sensitiveSecrets.resendApiKey.trim()) {
+        await setSystemConfig(context.env, 'RESEND_API_KEY', sensitiveSecrets.resendApiKey.trim(), true);
+      }
+      if (sensitiveSecrets.emailFrom && sensitiveSecrets.emailFrom.trim()) {
+        await setSystemConfig(context.env, 'EMAIL_FROM', sensitiveSecrets.emailFrom.trim(), false);
       }
       if (sensitiveSecrets.staticQrisString && sensitiveSecrets.staticQrisString.trim()) {
         await setSystemConfig(context.env, 'STATIC_QRIS_STRING', sensitiveSecrets.staticQrisString.trim(), false);

@@ -146,3 +146,21 @@ Tersedia di `migrations/0001_initial_schema.sql`:
    - `custom_domain_app TEXT`
    - `created_at DATETIME DEFAULT CURRENT_TIMESTAMP`
    - `deployed_at DATETIME`
+
+---
+
+## ☁️ Aturan Baku Alokasi Pod & Akun Cloudflare
+
+Sistem menganut arsitektur alokasi pod tetap:
+1. **Shared Multi-Tenant Pod (1 Pod, 1 Akun Cloudflare Bersama)**:
+   - **Demo** (`demo`), **Free Tier** (`free_trial`), dan **Starter Tier** (`starter`):
+     - Disatukan ke dalam **1 Pod Shared bersama** (`is_shared_pod = 1`, kuota 25–50 tenant per akun Cloudflare).
+     - Database SQLite D1 terisolasi by `company_id` / `slug`.
+     - URL Pola: `app.akugawe.web.id/[slug]` & `hrd.akugawe.web.id/[slug]`.
+2. **Dedicated Pod (1 Klien = 1 Pod = 1 Akun Cloudflare Khusus)**:
+   - **Pro Tier** (`pro`) & **Enterprise** (`enterprise`):
+     - Wajib mendapatkan **1 Dedicated Pod** yang berjalan di **1 Akun Cloudflare tersendiri** (`is_shared_pod = 0`, `max_companies = 1`).
+     - Isolasi infrastruktur penuh: Dedicated Workers, D1 DB, KV, dan R2 Storage.
+3. **Dokumentasi Baku**:
+   - Selengkapnya di [`CLOUDFLARE_PODS_RULES.md`](file:///CLOUDFLARE_PODS_RULES.md).
+

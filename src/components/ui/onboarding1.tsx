@@ -1,6 +1,5 @@
 import React from 'react';
 import { Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -60,15 +59,12 @@ export function Onboarding1({
             </div>
           )}
 
-          {/* Badge */}
+          {/* Kicker Title */}
           {badge && (
-            <Badge
-              variant="outline"
-              className="mb-4 bg-white/80 border-[#f0dbd8] text-slate-800 text-xs px-3.5 py-1 font-semibold shadow-xs"
-            >
-              <Sparkles className="mr-1.5 size-3.5 text-[#a9484c]" />
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#a9484c] flex items-center justify-center gap-1.5">
+              <Sparkles className="size-3.5 text-[#a9484c]" />
               {badge}
-            </Badge>
+            </p>
           )}
 
           {/* Heading */}

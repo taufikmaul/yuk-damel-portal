@@ -197,9 +197,12 @@ export function InteractiveDemoShowcase({ dashboardUrl, appUrl }: InteractiveDem
 
   const getDemoLaunchUrl = (role: RoleDemoItem) => {
     if (role.targetApp === 'dashboard') {
-      return `${dashboardUrl}/login`;
+      const base = dashboardUrl || 'https://hrd.akugawe.web.id/demo';
+      const roleParam = role.loginRoleParam || role.role;
+      return base.includes('/demo') ? `${base}?role=${roleParam}&auto=1` : `${base}/demo?role=${roleParam}&auto=1`;
     }
-    return `${appUrl}/login`;
+    const base = appUrl || 'https://app.akugawe.web.id/demo';
+    return base.includes('/demo') ? base : `${base}/demo`;
   };
 
   const getTargetBadgeLabel = (targetApp: RoleDemoItem['targetApp']) => {

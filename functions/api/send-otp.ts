@@ -1,9 +1,16 @@
 import { Env, getSystemConfig, handleOptions, jsonResponse } from './_db';
+import { checkRateLimit } from './_ratelimit';
 
 export const onRequestOptions = handleOptions;
 
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   try {
+    // 1. Rate Limiting: Maksimal 5 pengiriman OTP per 10 menit per IP
+    const rateCheck = await checkRateLimit(context.env, context.request, 'send_otp', 5, 600);
+    if (!rateCheck.allowed && rateCheck.response) {
+      return rateCheck.response;
+    }
+
     let body: any = {};
     try {
       body = await context.request.json();

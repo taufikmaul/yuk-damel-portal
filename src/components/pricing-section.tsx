@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { FullWidthDivider } from "@/components/full-width-divider";
-import { Check, Sparkles, MessageCircle, QrCode } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Check, Sparkles, MessageCircle, QrCode, Zap, Users } from "lucide-react";
 import { PricingTier, loadSellerConfig } from "@/services/config";
 import { CheckoutModal } from "./CheckoutModal";
 
@@ -9,17 +8,53 @@ interface PricingSectionProps {
   onProceedToOnboarding?: (token: string) => void;
 }
 
+const DURATION_OPTIONS = [
+  { value: "1", label: "1 Bulan" },
+  { value: "3", label: "3 Bulan" },
+  { value: "6", label: "6 Bulan" },
+  { value: "12", label: "1 Tahun" },
+  { value: "24", label: "2 Tahun" },
+  { value: "60", label: "5 Tahun" },
+];
+
 export function PricingSection({ onSelectTier, onProceedToOnboarding }: PricingSectionProps) {
   const sellerConfig = loadSellerConfig();
   const tiers = sellerConfig.pricingTiers;
 
+  const [selectedDuration, setSelectedDuration] = useState<string>("12"); // Default 1 Tahun
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
-  const [activeTier, setActiveTier] = useState<PricingTier>(tiers[1] || tiers[0]);
+  const [activeTier, setActiveTier] = useState<PricingTier>(tiers.find((t) => !t.isFree) || tiers[0]);
+
+  // Deteksi URL query param (?checkout=free_trial atau ?checkout=starter) dari demo app
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const checkoutParam = params.get('checkout') || params.get('tier');
+      if (checkoutParam) {
+        const found = tiers.find(
+          (t) =>
+            t.id.toLowerCase() === checkoutParam.toLowerCase() ||
+            (checkoutParam === 'free' && t.isFree) ||
+            (checkoutParam === 'free_trial' && t.isFree) ||
+            (checkoutParam === 'starter' && t.id === 'starter')
+        );
+        if (found) {
+          setActiveTier(found);
+          const durParam = params.get('duration') || params.get('durasi');
+          if (durParam && DURATION_OPTIONS.some((d) => d.value === durParam)) {
+            setSelectedDuration(durParam);
+          }
+          setCheckoutModalOpen(true);
+        }
+      }
+    } catch (_) {}
+  }, []);
 
   const handleSelectTier = (tier: PricingTier) => {
     setActiveTier(tier);
-    if (sellerConfig.paymentMode === 'whatsapp') {
-      const text = `Halo Tim ${sellerConfig.brandName}, saya tertarik untuk memesan paket *${tier.name}*. Bisa info rekening pembayaran & aktivasinya?`;
+    if (sellerConfig.paymentMode === 'whatsapp' && !tier.isFree) {
+      const durLabel = DURATION_OPTIONS.find((d) => d.value === selectedDuration)?.label || `${selectedDuration} Bulan`;
+      const text = `Halo Tim ${sellerConfig.brandName}, saya tertarik untuk memesan paket *${tier.name} (${durLabel})*. Bisa info pembayaran & aktivasinya?`;
       window.open(`https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(text)}`, '_blank');
       onSelectTier?.(tier);
     } else {
@@ -29,70 +64,80 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding }: PricingS
   };
 
   return (
-    <section id="harga" className="mx-auto min-h-screen max-w-6xl place-content-center border-x border-[#f0dbd8] py-16 px-4 sm:px-6">
-      {/* BANNER PROMO */}
-      {sellerConfig.isPromoActive && (
-        <div className="mb-8 max-w-2xl mx-auto p-3.5 rounded-2xl bg-gradient-to-r from-[#fbf2f0] via-[#f7e5e3] to-[#fbf2f0] border border-[#f0dbd8] text-center shadow-xs">
-          <span className="font-extrabold text-xs sm:text-sm text-[#a9484c] tracking-wide flex items-center justify-center gap-2">
-            <Sparkles className="size-4 shrink-0 text-[#a9484c]" />
-            {sellerConfig.promoBannerText}
-          </span>
-        </div>
-      )}
-
-      {/* HIGHLIGHT FASILITAS TERIMA BERES */}
-      {sellerConfig.managedSetupEnabled && (
-        <div className="mb-10 max-w-3xl mx-auto p-4 rounded-2xl bg-white border border-[#f0dbd8] flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
-          <div className="flex items-center gap-3 text-left">
-            <div className="size-10 rounded-xl bg-[#fbf2f0] border border-[#f0dbd8] text-[#a9484c] flex items-center justify-center shrink-0">
-              <Sparkles className="size-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-900">Tersedia Fasilitas: VIP Setup Terima Beres</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#fbf2f0] text-[#a9484c] border border-[#f0dbd8]">
-                  +Rp {sellerConfig.managedSetupPriceRp.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-600 mt-0.5">
-                Bagi pengusaha non-teknis: Tim kami yang siapkan akun Cloudflare, domain, & database sampai live siap pakai.
-              </p>
-            </div>
+    <section id="harga" className="py-16 sm:py-24 px-4 sm:px-6 bg-zinc-50/60 border-b border-zinc-200/80">
+      <div className="max-w-6xl mx-auto">
+        {/* BANNER PROMO */}
+        {sellerConfig.isPromoActive && (
+          <div className="mb-8 max-w-xl mx-auto p-3 rounded-xl bg-white border border-zinc-200/90 text-center shadow-xs">
+            <span className="font-semibold text-xs text-[#a9484c] tracking-wide flex items-center justify-center gap-2">
+              <Sparkles className="size-4 shrink-0 text-[#a9484c]" />
+              {sellerConfig.promoBannerText}
+            </span>
           </div>
-          <span className="text-[11px] font-semibold text-emerald-700 whitespace-nowrap bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200">
-            ✓ Bisa Dipilih Saat Checkout
-          </span>
+        )}
+
+        {/* SECTION HEADER */}
+        <div className="text-center max-w-3xl mx-auto mb-10">
+          <p className="text-xs font-semibold text-[#a9484c] uppercase tracking-wider mb-3">
+            Harga
+          </p>
+          <h2 className="text-3xl sm:text-5xl font-bold text-zinc-900 tracking-tight leading-tight">
+            Mulai hemat, tanpa biaya bulanan tak terduga
+          </h2>
+          <p className="mt-3 text-base text-zinc-600">
+            Pilih paket yang cocok dengan skala workspace Anda. Server & database berkecepatan tinggi ditangani penuh oleh tim kami.
+          </p>
+
+          {/* Single-line horizontal scrollable selector, no badges, no multi-row wrap */}
+          <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-white rounded-xl max-w-xl mx-auto border border-zinc-200 shadow-2xs mt-6 w-full justify-start sm:justify-center px-1.5">
+            {DURATION_OPTIONS.map((opt) => {
+              const isSelected = selectedDuration === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setSelectedDuration(opt.value)}
+                  className={`whitespace-nowrap shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                    isSelected
+                      ? "bg-[#a9484c] text-white shadow-2xs font-semibold"
+                      : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      )}
 
-      <div className="relative">
-        <FullWidthDivider position="top" />
-        <FullWidthDivider position="bottom" />
-
-        <div className="grid grid-cols-1 gap-px bg-[#f0dbd8] md:grid-cols-2 lg:grid-cols-4 rounded-3xl overflow-hidden border border-[#f0dbd8]">
-          {/* Header Left Card */}
-          <div className="flex flex-col justify-between bg-gradient-to-br from-[#a9484c] to-[#8f3b3f] text-white p-6 sm:p-8 md:col-span-2 lg:col-span-1">
+        {/* Pricing Cards: Smooth horizontal scroll on mobile, responsive grid on desktop */}
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-5 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-zinc-200/80 rounded-2xl border border-zinc-200/90 shadow-xs bg-white">
+          {/* Header Left Brand Card */}
+          <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-zinc-900 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>
-              <p className="mb-4 text-xs font-bold text-rose-100 uppercase tracking-widest flex items-center gap-1.5">
-                <Sparkles className="size-3.5" /> PAKET RESMI AKUGAWE
+              <p className="mb-2 text-xs font-bold text-[#cf807c] uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="size-3.5" /> AKUGAWE SAAS
               </p>
-              <h2 className="font-extrabold text-2xl sm:text-4xl leading-tight text-white tracking-tight">
-                Investasi Sekali Bayar Selamanya
-              </h2>
-              <p className="mt-4 text-xs text-rose-100/90 leading-relaxed">
-                Tanpa iuran bulanan per kepala, tanpa biaya lisensi per tahun. Sistem 100% mandiri berjalan di Cloudflare Free Tier bisnis Anda.
+              <h3 className="font-bold text-xl sm:text-2xl leading-tight text-white tracking-tight">
+                Langganan hemat tanpa ribet
+              </h3>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                Semua paket sudah termasuk fitur presensi selfie, geofence radius, dan rekap slip gaji otomatis.
               </p>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-white/20 space-y-2">
-              <div className="text-[11px] font-semibold text-rose-50 flex items-center gap-1.5">
-                <Check className="size-3.5 text-emerald-300" /> Free Serverless Cloud Hosting
+            <div className="mt-8 pt-6 border-t border-zinc-800 space-y-2">
+              <div className="text-xs text-zinc-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Free Tier 4 Bulan (Rp 0)
               </div>
-              <div className="text-[11px] font-semibold text-rose-50 flex items-center gap-1.5">
-                <Check className="size-3.5 text-emerald-300" /> Full Database D1 Ownership
+              <div className="text-xs text-zinc-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Starter Mulai Rp 15rb/bln
               </div>
-              <div className="text-[11px] font-semibold text-rose-50 flex items-center gap-1.5">
-                <Check className="size-3.5 text-emerald-300" /> Garansi First-Run Wizard
+              <div className="text-xs text-zinc-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Anti-Fake GPS & PWA Mobile
+              </div>
+              <div className="text-xs text-zinc-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Otomasi Slip Gaji PDF
               </div>
             </div>
           </div>
@@ -102,94 +147,140 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding }: PricingS
             <PricingCard
               key={tier.id}
               tier={tier}
+              selectedDuration={selectedDuration}
               isPromoActive={sellerConfig.isPromoActive}
               paymentMode={sellerConfig.paymentMode}
               onSelect={() => handleSelectTier(tier)}
             />
           ))}
         </div>
-      </div>
 
-      {/* CHECKOUT MODAL POP-UP */}
-      <CheckoutModal
-        isOpen={checkoutModalOpen}
-        onClose={() => setCheckoutModalOpen(false)}
-        selectedTier={activeTier}
-        sellerConfig={sellerConfig}
-        onProceedToOnboarding={onProceedToOnboarding}
-      />
+        {/* CHECKOUT MODAL POP-UP */}
+        <CheckoutModal
+          isOpen={checkoutModalOpen}
+          onClose={() => setCheckoutModalOpen(false)}
+          selectedTier={activeTier}
+          selectedDurationMonths={Number(activeTier.isFree ? 4 : selectedDuration)}
+          sellerConfig={sellerConfig}
+          onProceedToOnboarding={onProceedToOnboarding}
+        />
+      </div>
     </section>
   );
 }
 
 function PricingCard({
   tier,
+  selectedDuration,
   isPromoActive,
   paymentMode,
   onSelect,
 }: {
   tier: PricingTier;
+  selectedDuration: string;
   isPromoActive: boolean;
   paymentMode: 'whatsapp' | 'pakasir' | 'qris_manual' | 'hybrid';
   onSelect: () => void;
 }) {
-  const currentPrice = isPromoActive ? tier.promoPriceRp : tier.normalPriceRp;
+  const isFree = Boolean(tier.isFree);
+  const durNum = Number(selectedDuration);
+
+  // Kalkulasi harga berdasarkan durasi
+  let displayPriceMonthly = 15000;
+  let totalBilled = 15000;
+  let durationLabel = `${durNum} Bulan`;
+
+  if (isFree) {
+    displayPriceMonthly = 0;
+    totalBilled = 0;
+    durationLabel = "4 Bulan Penuh";
+  } else if (tier.pricing && tier.pricing[selectedDuration]) {
+    const p = tier.pricing[selectedDuration];
+    totalBilled = isPromoActive ? p.promoRp : p.normalRp;
+    displayPriceMonthly = Math.round(totalBilled / durNum);
+    durationLabel = p.label;
+  } else {
+    displayPriceMonthly = isPromoActive ? tier.promoPriceRp : tier.normalPriceRp;
+    totalBilled = displayPriceMonthly * durNum;
+  }
+
+  const employeeLimitDisplay =
+    tier.maxEmployees === -1
+      ? "Unlimited Karyawan"
+      : `Maks ${tier.maxEmployees} Karyawan`;
 
   return (
     <div
-      className={`flex flex-col justify-between p-6 sm:p-8 transition-colors ${
+      className={`w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none border md:border-0 border-zinc-200/80 shadow-xs md:shadow-none flex flex-col justify-between p-6 sm:p-7 transition-all ${
         tier.isPopular ? "bg-[#fbf2f0]/60 ring-2 ring-inset ring-[#a9484c]" : "bg-white"
       }`}
     >
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <p className={`text-xs font-bold uppercase tracking-widest ${tier.isPopular ? 'text-[#a9484c]' : 'text-slate-500'}`}>
+        {/* Tier Header */}
+        <div className="flex items-center justify-between mb-3">
+          <p className={`text-xs font-bold uppercase tracking-wider ${tier.isPopular ? 'text-[#a9484c]' : 'text-slate-600'}`}>
             {tier.name}
           </p>
-          {tier.badge && (
-            <span
-              className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
-                tier.isPopular
-                  ? "bg-[#a9484c] text-white"
-                  : "bg-slate-100 text-slate-700 border border-slate-200"
-              }`}
-            >
-              {tier.badge}
-            </span>
+        </div>
+
+        {/* Price Block */}
+        <div className="mb-3">
+          {isFree ? (
+            <div>
+              <div className="flex items-baseline gap-1">
+                <h3 className="font-black text-3xl font-mono text-emerald-600">
+                  Rp 0
+                </h3>
+                <span className="text-slate-500 text-xs font-semibold">/ 4 Bulan</span>
+              </div>
+              <span className="text-[11px] text-emerald-700 font-bold block mt-0.5">
+                ✓ Gratis Tanpa Kartu Kredit
+              </span>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-baseline gap-1">
+                <h3 className="font-black text-2xl sm:text-3xl font-mono text-slate-900">
+                  Rp {displayPriceMonthly.toLocaleString("id-ID")}
+                </h3>
+                <span className="text-slate-500 text-xs font-medium">/ bulan</span>
+              </div>
+              <span className="text-slate-500 text-[11px] block mt-0.5 font-medium">
+                Ditagih Rp {totalBilled.toLocaleString("id-ID")} per {durationLabel}
+              </span>
+            </div>
           )}
         </div>
 
-        <div className="mb-2">
-          {isPromoActive && tier.normalPriceRp > tier.promoPriceRp && (
-            <div className="text-xs text-slate-400 line-through font-mono mb-0.5">
-              Rp {tier.normalPriceRp.toLocaleString("id-ID")}
-            </div>
-          )}
-          <div className="flex items-baseline gap-1.5">
-            <h3 className="font-extrabold text-2xl sm:text-3xl font-mono text-slate-900">
-              Rp {currentPrice.toLocaleString("id-ID")}
-            </h3>
-          </div>
-          <span className="text-slate-500 text-[11px] block mt-0.5">
-            / Sekali Bayar Selamanya
-          </span>
+        {/* Max Employee Inline Info */}
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-zinc-600 font-semibold">
+          <Users className="size-3.5 text-[#a9484c]" />
+          <span>{employeeLimitDisplay}</span>
         </div>
 
         <p className="mb-6 line-clamp-2 text-xs text-slate-600 leading-relaxed min-h-[32px]">
           {tier.description}
         </p>
 
+        {/* CTA Button */}
         <div className="mb-6">
           <button
             type="button"
             onClick={onSelect}
             className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer ${
-              tier.isPopular
+              isFree
+                ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                : tier.isPopular
                 ? "bg-[#a9484c] hover:bg-[#8f3b3f] text-white shadow-[#a9484c]/20"
                 : "bg-white hover:bg-slate-50 text-slate-800 border border-[#f0dbd8]"
             }`}
           >
-            {paymentMode === 'whatsapp' ? (
+            {isFree ? (
+              <>
+                <Zap className="size-3.5" />
+                Mulai 4 Bulan Gratis
+              </>
+            ) : paymentMode === 'whatsapp' ? (
               <>
                 <MessageCircle className="size-3.5" />
                 Pesan via WhatsApp
@@ -203,15 +294,16 @@ function PricingCard({
           </button>
         </div>
 
-        <div className="space-y-3 pt-6 border-t border-[#f0dbd8]">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-            FITUR & FASILITAS:
+        {/* Features Checklist */}
+        <div className="space-y-2.5 pt-5 border-t border-[#f0dbd8]">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            FASILITAS PAKET:
           </p>
 
           {tier.features.map((feature, idx) => (
             <div
               key={idx}
-              className="flex items-start gap-2.5 text-xs text-slate-700 leading-relaxed"
+              className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed"
             >
               <Check className="size-3.5 shrink-0 text-emerald-600 mt-0.5" />
               <span>{feature}</span>

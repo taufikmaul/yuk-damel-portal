@@ -23,6 +23,7 @@ import {
   CreditCard,
   QrCode,
   Copy,
+  Mail,
 } from 'lucide-react';
 import {
   SellerConfig,
@@ -78,6 +79,44 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
   const [generatedTestQris, setGeneratedTestQris] = useState<string | null>(null);
   const [testQrisError, setTestQrisError] = useState<string | null>(null);
 
+  // Email Service State
+  const [showResendKey, setShowResendKey] = useState(false);
+  const [testEmailAddress, setTestEmailAddress] = useState('');
+  const [testEmailSending, setTestEmailSending] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+
+  const handleTestEmail = async () => {
+    if (!testEmailAddress || !testEmailAddress.includes('@')) {
+      toast.error('Masukkan alamat email tujuan pengujian.');
+      return;
+    }
+    setTestEmailSending(true);
+    setTestEmailResult(null);
+    try {
+      const res = await fetch('/api/test-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetEmail: testEmailAddress.trim() }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setTestEmailResult({ success: true, message: data.message });
+        toast.success(data.message);
+      } else {
+        setTestEmailResult({ success: false, message: data.error || 'Gagal mengirim email tes.' });
+        toast.error(data.error || 'Gagal mengirim email tes.');
+      }
+    } catch (err: any) {
+      setTestEmailResult({ success: false, message: err?.message || 'Gagal menghubungi server.' });
+      toast.error('Gagal menghubungi server.');
+    } finally {
+      setTestEmailSending(false);
+    }
+  };
+
   const handleChange = <K extends keyof SellerConfig>(key: K, value: SellerConfig[K]) => {
     setConfig((prev) => ({ ...prev, [key]: value }));
   };
@@ -88,19 +127,63 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
     handleChange('pricingTiers', updated);
   };
 
+  const handleDurationPriceChange = (
+    tierIdx: number,
+    durationKey: string,
+    field: 'promoRp' | 'normalRp',
+    value: number
+  ) => {
+    const updated = [...config.pricingTiers];
+    const tier = updated[tierIdx];
+    const existingPricing = tier.pricing || {};
+    const defaultLabels: Record<string, string> = {
+      '1': '1 Bulan',
+      '3': '3 Bulan',
+      '4': '4 Bulan',
+      '6': '6 Bulan',
+      '12': '1 Tahun',
+      '24': '2 Tahun',
+      '60': '5 Tahun',
+    };
+    const currentDuration = existingPricing[durationKey] || {
+      normalRp: value,
+      promoRp: value,
+      label: defaultLabels[durationKey] || `${durationKey} Bulan`,
+    };
+    updated[tierIdx] = {
+      ...tier,
+      pricing: {
+        ...existingPricing,
+        [durationKey]: {
+          ...currentDuration,
+          [field]: value,
+        },
+      },
+    };
+    handleChange('pricingTiers', updated);
+  };
+
   const handleAddTier = () => {
     const newTier: PricingTier = {
       id: `tier_${Date.now()}`,
       name: 'Paket Baru',
       badge: 'Paket Khusus',
-      normalPriceRp: 3000000,
-      promoPriceRp: 1999000,
+      maxEmployees: 15,
+      isFree: false,
+      normalPriceRp: 25000,
+      promoPriceRp: 20000,
       description: 'Deskripsi paket layanan absensi & payroll mandiri.',
+      pricing: {
+        '1': { normalRp: 25000, promoRp: 20000, discountPercent: 0, label: '1 Bulan' },
+        '3': { normalRp: 75000, promoRp: 57000, discountPercent: 7, label: '3 Bulan' },
+        '6': { normalRp: 150000, promoRp: 108000, discountPercent: 12, label: '6 Bulan' },
+        '12': { normalRp: 300000, promoRp: 199000, discountPercent: 20, badge: 'Best Value', label: '1 Tahun' },
+      },
       features: [
-        'Lisensi Penuh 1 Cabang',
+        'Maksimal 15 Karyawan Aktif',
         'PWA Absensi GPS Karyawan',
         'Dashboard Owner & Penggajian',
-        'Database D1 Cloudflare Terisolasi',
+        'Multi-Tenant Cloudflare Pod',
       ],
     };
     handleChange('pricingTiers', [...config.pricingTiers, newTier]);
@@ -173,6 +256,8 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                 authorizedChatId: config.authorizedChatId,
                 githubPatToken: config.githubPatToken,
                 pakasirApiKey: config.pakasirApiKey,
+                resendApiKey: config.resendApiKey,
+                emailFrom: config.emailFrom,
                 staticQrisString: config.staticQrisString,
               },
             }),
@@ -260,7 +345,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         return;
       }
       const newHash = await sha256(newPin);
-      const updatedConfig = { ...config, adminPinHash: newHash };
+      const updatedConfig = { ...config, adminPin: newPin, adminPinHash: newHash };
       setConfig(updatedConfig);
       saveSellerConfig(updatedConfig);
       setOldPin('');
@@ -275,25 +360,25 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5">
       {/* Header & Sticky Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#f0dbd8]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#f0dbd8]">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+          <h2 className="text-base font-bold tracking-tight text-slate-900 flex items-center gap-2">
             Konfigurasi Operasional Seller
           </h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             Kelola harga promo, tier paket, notifikasi bot Telegram, dan kredensial pipeline GitHub Actions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {onBack && (
             <Button
               variant="outline"
               size="sm"
               onClick={onBack}
-              className="text-xs border-[#f0dbd8] bg-white text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f]"
+              className="text-xs h-8 border-[#f0dbd8] bg-white text-slate-700 hover:bg-[#fbf2f0] hover:text-[#8f3b3f]"
             >
               ← Kembali
             </Button>
@@ -302,76 +387,83 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
             variant="outline"
             size="sm"
             onClick={handleReset}
-            className="text-xs border-[#f0dbd8] bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50"
+            className="text-xs h-8 border-[#f0dbd8] bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 px-2.5"
           >
-            <RotateCcw className="size-3.5 mr-1" />
+            <RotateCcw className="size-3 mr-1" />
             Reset Default
           </Button>
           <Button
             size="sm"
             onClick={() => handleSave()}
             disabled={isSaving}
-            className="bg-[#a9484c] hover:bg-[#8f3b3f] text-white font-semibold text-xs shadow-xs cursor-pointer transition-all active:scale-[0.99]"
+            className="bg-[#a9484c] hover:bg-[#8f3b3f] text-white font-semibold text-xs h-8 px-3 shadow-xs cursor-pointer transition-all active:scale-[0.99]"
           >
             {isSaving ? (
-              <RefreshCw className="size-3.5 mr-1 animate-spin" />
+              <RefreshCw className="size-3 mr-1 animate-spin" />
             ) : (
-              <Save className="size-3.5 mr-1" />
+              <Save className="size-3 mr-1" />
             )}
             Simpan Perubahan
           </Button>
         </div>
       </div>
 
-      {/* Tabs Navigation */}
-      <Tabs defaultValue="pricing" className="w-full space-y-6">
-        <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 bg-[#fbf4f3] border border-[#f0dbd8] p-1 w-full max-w-4xl rounded-xl">
+      {/* Tabs Navigation: Horizontal scroll on mobile, responsive on desktop */}
+      <Tabs defaultValue="pricing" className="w-full space-y-3.5">
+        <TabsList className="flex overflow-x-auto no-scrollbar items-center justify-start sm:justify-center gap-1 bg-[#fbf4f3] border border-[#f0dbd8] p-1 w-full max-w-4xl rounded-xl">
           <TabsTrigger
             value="pricing"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <Tag className="size-3.5 text-amber-500" />
+            <Tag className="size-3 text-amber-500" />
             <span>Paket & Promo</span>
           </TabsTrigger>
           <TabsTrigger
             value="payment"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <CreditCard className="size-3.5 text-emerald-600" />
+            <CreditCard className="size-3 text-emerald-600" />
             <span>Pembayaran & Add-on</span>
           </TabsTrigger>
           <TabsTrigger
             value="telegram"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <Bot className="size-3.5 text-sky-600" />
+            <Bot className="size-3 text-sky-600" />
             <span>Telegram Bot</span>
           </TabsTrigger>
           <TabsTrigger
             value="github"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <GitBranch className="size-3.5 text-purple-600" />
+            <GitBranch className="size-3 text-purple-600" />
             <span>GitHub Pipeline</span>
           </TabsTrigger>
           <TabsTrigger
             value="sales"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <Smartphone className="size-3.5 text-emerald-600" />
+            <Smartphone className="size-3 text-emerald-600" />
             <span>Sales & Demo</span>
           </TabsTrigger>
           <TabsTrigger
             value="security"
-            className="text-xs flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
           >
-            <Shield className="size-3.5 text-rose-600" />
+            <Shield className="size-3 text-rose-600" />
             <span>Keamanan</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="email"
+            className="whitespace-nowrap shrink-0 text-[11px] py-1.5 px-3 flex items-center gap-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#8f3b3f] data-[state=active]:shadow-xs text-slate-600 font-medium cursor-pointer"
+          >
+            <Mail className="size-3 text-red-600" />
+            <span>Email & OTP</span>
           </TabsTrigger>
         </TabsList>
 
         {/* TAB 1: PRICING & PROMO */}
-        <TabsContent value="pricing" className="space-y-6 mt-0">
+        <TabsContent value="pricing" className="space-y-3.5 mt-0">
           {/* Promo Banner Settings */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-4">
@@ -491,26 +583,82 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                       />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 bg-[#fbf4f3] p-2.5 rounded-lg border border-[#f0dbd8]">
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-slate-500">Normal (Rp)</label>
+                        <label className="text-[10px] font-semibold text-slate-700 block">
+                          Maksimal Karyawan
+                        </label>
                         <Input
                           type="number"
-                          value={tier.normalPriceRp}
-                          onChange={(e) => handleTierChange(idx, 'normalPriceRp', Number(e.target.value))}
-                          className="h-8 font-mono text-xs bg-white border-[#f0dbd8] text-slate-900"
+                          value={tier.maxEmployees}
+                          onChange={(e) => handleTierChange(idx, 'maxEmployees', Number(e.target.value))}
+                          placeholder="15 (-1 unlim)"
+                          className="h-7 text-xs font-mono bg-white"
                         />
+                        <span className="text-[9px] text-slate-400 block">-1 untuk Unlimited</span>
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[11px] font-medium text-amber-700">Promo (Rp)</label>
-                        <Input
-                          type="number"
-                          value={tier.promoPriceRp}
-                          onChange={(e) => handleTierChange(idx, 'promoPriceRp', Number(e.target.value))}
-                          className="h-8 font-mono text-xs text-amber-800 bg-amber-50/50 border-amber-300 font-bold"
-                        />
+                        <label className="text-[10px] font-semibold text-slate-700 block">
+                          Paket Gratis (Rp 0)?
+                        </label>
+                        <div className="flex items-center gap-1.5 pt-0.5">
+                          <input
+                            type="checkbox"
+                            checked={!!tier.isFree}
+                            onChange={(e) => handleTierChange(idx, 'isFree', e.target.checked)}
+                            className="rounded border-[#f0dbd8] accent-[#a9484c] size-4 cursor-pointer"
+                          />
+                          <span className="text-[11px] font-medium text-slate-700">
+                            {tier.isFree ? 'Ya, Gratis' : 'Tidak (Berbayar)'}
+                          </span>
+                        </div>
+                        {tier.isFree && (
+                          <div className="mt-1">
+                            <Input
+                              type="number"
+                              value={tier.freeDurationMonths || 4}
+                              onChange={(e) => handleTierChange(idx, 'freeDurationMonths', Number(e.target.value))}
+                              placeholder="4"
+                              className="h-6 text-[10px] font-mono bg-white"
+                            />
+                            <span className="text-[9px] text-slate-400 block">Durasi (Bulan)</span>
+                          </div>
+                        )}
                       </div>
                     </div>
+
+                    {!tier.isFree && (
+                      <div className="space-y-1.5 pt-1 border-t border-[#f0dbd8]">
+                        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
+                          <span>Harga Paket per Durasi</span>
+                          <span className="text-[10px] text-slate-400 font-normal">Promo (Rp)</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1.5 text-[10px]">
+                          {[
+                            { key: '1', label: '1 Bulan' },
+                            { key: '3', label: '3 Bulan' },
+                            { key: '6', label: '6 Bulan' },
+                            { key: '12', label: '1 Tahun' },
+                            { key: '24', label: '2 Tahun' },
+                            { key: '60', label: '5 Tahun' },
+                          ].map((dur) => {
+                            const p = tier.pricing?.[dur.key];
+                            const val = p ? p.promoRp : (Number(dur.key) * tier.promoPriceRp);
+                            return (
+                              <div key={dur.key} className="flex items-center justify-between bg-slate-50 p-1 rounded border border-slate-200">
+                                <span className="font-medium text-slate-600">{dur.label}:</span>
+                                <input
+                                  type="number"
+                                  value={val}
+                                  onChange={(e) => handleDurationPriceChange(idx, dur.key, 'promoRp', Number(e.target.value))}
+                                  className="w-20 text-right font-mono text-[10px] font-bold text-[#a9484c] bg-white border border-slate-200 rounded px-1 py-0.5"
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="space-y-1">
                       <label className="text-[11px] font-medium text-slate-500">Deskripsi Singkat</label>
@@ -555,9 +703,11 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                   </CardContent>
 
                   <CardFooter className="pt-2 pb-3 border-t border-[#f0dbd8] text-[11px] text-slate-500 flex justify-between items-center bg-[#fbf4f3]/40 rounded-b-xl">
-                    <span>Preview Biaya:</span>
+                    <span>Ringkasan Paket:</span>
                     <span className="font-bold text-slate-900 font-mono text-xs">
-                      Rp {tier.promoPriceRp.toLocaleString('id-ID')}
+                      {tier.isFree
+                        ? `Rp 0 / ${tier.freeDurationMonths || 4} Bln (${tier.maxEmployees} Staf)`
+                        : `Rp ${(tier.pricing?.['1']?.promoRp ?? tier.promoPriceRp).toLocaleString('id-ID')} / bln (${tier.maxEmployees === -1 ? 'Unlimited' : `${tier.maxEmployees} Staf`})`}
                     </span>
                   </CardFooter>
                 </Card>
@@ -567,7 +717,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         </TabsContent>
 
         {/* TAB PAYMENT: METODE PEMBAYARAN & ADD-ON */}
-        <TabsContent value="payment" className="space-y-6 mt-0">
+        <TabsContent value="payment" className="space-y-3.5 mt-0">
           {/* Card 1: Switch Mode Pembayaran */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
@@ -918,7 +1068,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         </TabsContent>
 
         {/* TAB 2: TELEGRAM BOT */}
-        <TabsContent value="telegram" className="space-y-6 mt-0">
+        <TabsContent value="telegram" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1022,7 +1172,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         </TabsContent>
 
         {/* TAB 3: GITHUB DISPATCHER */}
-        <TabsContent value="github" className="space-y-6 mt-0">
+        <TabsContent value="github" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
               <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1096,7 +1246,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         </TabsContent>
 
         {/* TAB 4: SALES & DEMO */}
-        <TabsContent value="sales" className="space-y-6 mt-0">
+        <TabsContent value="sales" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
               <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1195,7 +1345,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
         </TabsContent>
 
         {/* TAB 5: SECURITY */}
-        <TabsContent value="security" className="space-y-6 mt-0">
+        <TabsContent value="security" className="space-y-3.5 mt-0">
           {/* Card 1: Ganti Master PIN Penjual */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-4">
@@ -1427,6 +1577,145 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
                     Data klien dan token lisensi yang disimpan di local storage dienkripsi menggunakan standar militer AES-GCM 256-bit dengan initialization vector unik.
                   </p>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 7: EMAIL & VERIFIKASI OTP */}
+        <TabsContent value="email" className="space-y-3.5 mt-0">
+          <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <Mail className="size-4 text-rose-600" />
+                    Layanan Email Aktivasi & Anti-Spam Free Tier
+                  </CardTitle>
+                  <CardDescription className="text-xs text-slate-500 mt-1">
+                    Konfigurasi pengiriman kode aktivasi 6-digit via email untuk memverifikasi pelanggan Free Tier dan mencegah spam pendaftaran.
+                  </CardDescription>
+                </div>
+                <Badge className="bg-emerald-50 text-emerald-800 border-emerald-200 text-xs w-fit">
+                  Resend + Cloudflare MailChannels
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3.5 bg-[#fbf4f3] border border-[#f0dbd8] rounded-xl text-xs space-y-1.5 text-slate-700">
+                <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <ShieldCheck className="size-4 text-emerald-600" />
+                  Bagaimana Verifikasi Email Melindungi Kuota Server Anda:
+                </div>
+                <p className="text-[11px] leading-relaxed text-slate-600">
+                  Setiap kali calon pelanggan memilih paket Free Tier 4 Bulan, mereka diwajibkan memasukkan email aktif dan memasukkan 6-digit kode aktivasi yang dikirim ke email tersebut. Sistem juga membatasi 1 email hanya dapat mengklaim 1x akun Free Tier.
+                </p>
+              </div>
+
+              {/* Input Resend API Key */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Resend API Key (Rekomendasi)
+                  </label>
+                  <a
+                    href="https://resend.com/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[11px] text-[#a9484c] hover:underline flex items-center gap-1 font-medium"
+                  >
+                    Dapatkan API Key Gratis di Resend.com <ExternalLink className="size-3" />
+                  </a>
+                </div>
+                <div className="relative">
+                  <Input
+                    type={showResendKey ? 'text' : 'password'}
+                    placeholder="re_xxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={config.resendApiKey || ''}
+                    onChange={(e) => handleChange('resendApiKey', e.target.value)}
+                    className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs pr-10 focus-visible:ring-[#a9484c]"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowResendKey(!showResendKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  >
+                    {showResendKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Resend menyediakan kuota gratis 3.000 email/bulan. Kunci ini disimpan terenkripsi di Cloudflare Database.
+                </p>
+              </div>
+
+              {/* Input Sender Email */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Email Pengirim (Sender From)
+                </label>
+                <Input
+                  type="text"
+                  placeholder="akugawe <onboarding@resend.dev> atau akugawe <noreply@akugawe.id>"
+                  value={config.emailFrom || ''}
+                  onChange={(e) => handleChange('emailFrom', e.target.value)}
+                  className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs focus-visible:ring-[#a9484c]"
+                />
+                <p className="text-[10px] text-slate-400">
+                  Contoh: <code>akugawe &lt;onboarding@resend.dev&gt;</code> untuk domain uji coba Resend, atau domain custom terverifikasi Anda.
+                </p>
+              </div>
+
+              {/* Uji Coba Pengiriman Email */}
+              <div className="p-4 rounded-xl bg-white border border-[#f0dbd8] space-y-3 mt-4">
+                <div className="font-bold text-xs text-slate-900 flex items-center gap-2">
+                  <Send className="size-3.5 text-[#a9484c]" />
+                  Uji Coba Pengiriman Email ke Kotak Masuk Anda
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    type="email"
+                    placeholder="Masukkan email penerima tes (e.g. nama@gmail.com)"
+                    value={testEmailAddress}
+                    onChange={(e) => setTestEmailAddress(e.target.value)}
+                    className="bg-white border-[#f0dbd8] text-slate-900 text-xs focus-visible:ring-[#a9484c] flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleTestEmail}
+                    disabled={testEmailSending || !testEmailAddress}
+                    className="bg-[#a9484c] hover:bg-[#8f3b3f] text-white text-xs font-semibold px-4 cursor-pointer shrink-0"
+                  >
+                    {testEmailSending ? (
+                      <>
+                        <RefreshCw className="size-3.5 mr-1.5 animate-spin" />
+                        Mengirim...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="size-3.5 mr-1.5" />
+                        Kirim Email Tes
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                {testEmailResult && (
+                  <div className={`p-3 rounded-lg text-xs flex items-start gap-2 ${
+                    testEmailResult.success
+                      ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                      : 'bg-rose-50 border border-rose-200 text-rose-800'
+                  }`}>
+                    {testEmailResult.success ? (
+                      <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                    ) : (
+                      <Shield className="size-4 text-rose-600 shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      <div className="font-bold">{testEmailResult.success ? 'Berhasil Terkirim!' : 'Gagal Mengirim:'}</div>
+                      <div>{testEmailResult.message}</div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

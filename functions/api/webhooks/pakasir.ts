@@ -1,80 +1,126 @@
 /**
  * Webhook Endpoint /api/webhooks/pakasir
  * Menerima callback status pembayaran dari Pakasir Payment Gateway
- * Mengubah status order menjadi 'paid' & mengirimkan notifikasi Telegram ke Seller
+ * Mengubah status order menjadi 'paid' & memperpanjang masa aktif subscription
  */
 
-import { Env, getSystemConfig } from '../_db';
+import { Env, getSystemConfig, sendTelegramAlert, jsonResponse, handleOptions } from '../_db';
+
+export const onRequestOptions = async () => {
+  return handleOptions();
+};
 
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   try {
-    const body: any = await context.request.json();
+    const configuredApiKey = await getSystemConfig(context.env, 'PAKASIR_API_KEY');
+    if (configuredApiKey) {
+      const incomingKey =
+        context.request.headers.get('x-api-key') ||
+        context.request.headers.get('x-pakasir-key') ||
+        context.request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+
+      if (!incomingKey || incomingKey.trim() !== configuredApiKey.trim()) {
+        return jsonResponse({ ok: false, error: 'Akses ditolak: Webhook signature / API Key tidak valid' }, 401);
+      }
+    }
+
+    const body: any = await context.request.json().catch(() => ({}));
     
     // Format payload Pakasir (order_id, status, amount, transaction_id, etc.)
-    const orderId = body.order_id || body.orderId || body.reference;
-    const status = (body.status || body.payment_status || '').toLowerCase();
-    const amount = Number(body.amount || 0);
-
-    if (!orderId) {
-      return new Response(JSON.stringify({ ok: false, error: 'order_id wajib disertakan' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' },
-      });
+    const rawOrderId = body.order_id || body.orderId || body.reference;
+    if (!rawOrderId || typeof rawOrderId !== 'string' || !/^[A-Za-z0-9_-]{4,64}$/.test(rawOrderId.trim())) {
+      return jsonResponse({ ok: false, error: 'order_id wajib disertakan dengan format valid' }, 400);
     }
+    const orderId = rawOrderId.trim();
+    const status = String(body.status || body.payment_status || '').toLowerCase().trim();
+    const amount = Number(body.amount || 0);
 
     const isPaid = status === 'completed' || status === 'paid' || status === 'settlement' || status === 'success';
 
     if (context.env.DB) {
       // 1. Ambil detail order
       const order = await context.env.DB.prepare(
-        'SELECT id, client_name, buyer_phone, package_tier_id, amount_paid_rp, license_token, payment_status FROM orders WHERE id = ? LIMIT 1'
+        'SELECT * FROM orders WHERE id = ? LIMIT 1'
       ).bind(orderId).first<any>();
 
       if (!order) {
-        return new Response(JSON.stringify({ ok: false, error: 'Order tidak ditemukan' }), {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        });
+        return jsonResponse({ ok: false, error: 'Order tidak ditemukan' }, 404);
       }
 
       if (isPaid) {
-        // 2. Update status order menjadi paid
-        await context.env.DB.prepare(
-          "UPDATE orders SET payment_status = 'paid' WHERE id = ?"
-        ).bind(orderId).run();
+        const cycleMonths = order.billing_cycle_months || 1;
+        const now = new Date();
+        const existingEnd = order.current_period_end ? new Date(order.current_period_end) : null;
 
-        // 3. Kirim notifikasi Telegram ke Seller
-        const botToken = await getSystemConfig(context.env, 'TELEGRAM_BOT_TOKEN');
-        const chatId = await getSystemConfig(context.env, 'AUTHORIZED_CHAT_ID');
+        // Logika penambahan masa aktif: jika masih aktif, tambahkan dari tanggal expired sebelumnya
+        let baseStartDate = (existingEnd && existingEnd > now) ? existingEnd : now;
+        const newEndDate = new Date(baseStartDate);
+        newEndDate.setMonth(newEndDate.getMonth() + cycleMonths);
+        const newEndDateIso = newEndDate.toISOString();
 
-        if (botToken && chatId) {
-          try {
-            const text = `🎉 *PEMBAYARAN DITERIMA VIA PAKASIR!*\n\n` +
-              `🆔 Order ID: \`${orderId}\`\n` +
-              `🏢 Klien: *${order.client_name}*\n` +
-              `📱 WhatsApp: ${order.buyer_phone || '-'}\n` +
-              `💰 Jumlah: *Rp ${(amount || order.amount_paid_rp).toLocaleString('id-ID')}*\n` +
-              `🔑 Token Lisensi: \`${order.license_token}\`\n\n` +
-              `Pembeli kini dapat langsung melakukan 1-Click Onboarding ke Cloudflare mereka.`;
+        // 2. Update status order menjadi paid dan aktifkan subscription
+        await context.env.DB.prepare(`
+          UPDATE orders 
+          SET payment_status = 'paid',
+              activation_status = 'active',
+              subscription_status = 'active',
+              current_period_start = COALESCE(current_period_start, CURRENT_TIMESTAMP),
+              current_period_end = ?,
+              last_payment_amount = ?,
+              last_payment_date = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `).bind(newEndDateIso, amount || order.amount_paid_rp, orderId).run();
 
-            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'Markdown' }),
-            });
-          } catch (_) {}
+        // 3. Catat riwayat invoice baru
+        const invoiceId = `INV-${Date.now().toString(36).toUpperCase()}`;
+        await context.env.DB.prepare(`
+          INSERT INTO invoices (
+            id, order_id, client_slug, package_tier_id,
+            cycle_months, amount_rp, payment_status, payment_method,
+            due_date, paid_at, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, 'paid', 'pakasir_qris', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        `).bind(
+          invoiceId,
+          orderId,
+          order.client_slug,
+          order.package_tier_id || 'starter',
+          cycleMonths,
+          amount || order.amount_paid_rp,
+          newEndDateIso
+        ).run().catch((e: any) => console.error('Error creating invoice record:', e));
+
+        // 4. Update count pod jika belum tercatat
+        if (order.pod_id) {
+          await context.env.DB.prepare(
+            'UPDATE cloudflare_pods SET current_companies_count = current_companies_count + 1 WHERE id = ?'
+          ).bind(order.pod_id).run().catch(() => {});
         }
+
+        // 5. Kirim notifikasi Telegram ke Admin
+        const text =
+          `🎉 *PEMBAYARAN DITERIMA VIA PAKASIR!*\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `🆔 Order ID: \`${orderId}\`\n` +
+          `🏢 Klien: *${order.client_name}*\n` +
+          `📱 WhatsApp: ${order.buyer_phone || '-'}\n` +
+          `💰 Jumlah: *Rp ${(amount || order.amount_paid_rp).toLocaleString('id-ID')}*\n` +
+          `📦 Siklus: *${cycleMonths} Bulan*\n` +
+          `⏰ Masa Aktif Hingga: *${newEndDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}*\n` +
+          `🔑 Token Lisensi: \`${order.license_token}\`\n` +
+          `━━━━━━━━━━━━━━━━━━━━━━\n` +
+          `_Layanan aplikasi klien otomatis aktif kembali secara real-time._`;
+
+        await sendTelegramAlert(context.env, text);
       }
     }
 
-    return new Response(
-      JSON.stringify({ ok: true, message: 'Webhook Pakasir berhasil diproses', status: isPaid ? 'paid' : status }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
-    );
-  } catch (err: any) {
-    return new Response(JSON.stringify({ ok: false, error: err?.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
+    return jsonResponse({
+      ok: true,
+      message: 'Webhook Pakasir berhasil diproses',
+      status: isPaid ? 'paid' : status,
     });
+  } catch (err: any) {
+    console.error('Error handling Pakasir webhook:', err);
+    return jsonResponse({ ok: false, error: err?.message }, 500);
   }
 };

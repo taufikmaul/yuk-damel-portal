@@ -3,13 +3,18 @@ compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
 
+[vars]
+TELEGRAM_BOT_TOKEN = "8609932923:AAFTxIltgG5JGgR9wB-u4ue7YgrR2nLkzoU"
+AUTHORIZED_CHAT_ID = "115334079"
+TELEGRAM_BOT_USERNAME = "AkugawePortalBot"
+
 # Binding Database D1 untuk lisensi & konfigurasi portal
 [[d1_databases]]
 binding = "DB"
 database_name = "akugawe-portal-db"
-database_id = "b15f806b-7ea6-4caf-b68d-7ee3c8c8dbdb"
+database_id = "3c5d20ff-8062-4767-a051-ece70e8fac79"
 
 # Binding KV Namespace untuk cache konfigurasi
 [[kv_namespaces]]
 binding = "CONFIG_KV"
-id = "47184f1efc774c9f99039300cd00933e"
+id = "3338a80ac2c84d0eac1918f4cbd163ea"

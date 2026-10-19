@@ -224,7 +224,7 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
     cards: [
       {
         title: 'Server Gratis Rp 0 / Bulan',
-        description: 'Aplikasi berjalan di kuota gratis Cloudflare yang sangat besar (100.000 akses/hari), lebih dari cukup untuk usaha UMKM tanpa bayar server.',
+        description: 'Aplikasi berjalan di kuota gratis Serverless Edge yang sangat besar (100.000 akses/hari), lebih dari cukup untuk usaha UMKM tanpa bayar server.',
         icon: Sparkles,
         tag: 'Server Rp 0',
       },

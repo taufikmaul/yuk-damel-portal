@@ -43,7 +43,6 @@ import { loadSellerConfig } from '../services/config';
 import { Logo } from '../assets/logo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Onboarding1 } from '@/components/ui/onboarding1';
 import { toast } from 'sonner';
 
@@ -784,12 +783,9 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </div>
 
           <div className="space-y-2">
-            <Badge
-              variant="outline"
-              className="bg-rose-50 text-rose-700 border-rose-200 text-xs px-3 py-1 font-semibold uppercase tracking-wider"
-            >
+            <p className="text-xs font-bold uppercase tracking-wider text-rose-700">
               Akses Ditolak (403 Unauthorized)
-            </Badge>
+            </p>
             <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
               Token Lisensi Tidak Terdaftar
             </h1>
@@ -1590,16 +1586,13 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                       Silakan uji URL sistem di bawah dan konfirmasi status deployment Anda:
                     </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      isCompleted
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300 text-[11px] font-semibold self-start sm:self-auto'
-                        : 'bg-amber-50 text-amber-700 border-amber-300 text-[11px] font-semibold self-start sm:self-auto'
-                    }
+                  <span
+                    className={`text-xs font-bold ${
+                      isCompleted ? 'text-emerald-700' : 'text-amber-700'
+                    }`}
                   >
                     {isCompleted ? '✅ Sudah Selesai' : '⏳ Belum Selesai'}
-                  </Badge>
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1662,9 +1655,9 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 <div className="mt-6 max-w-2xl mx-auto p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-purple-50 via-[#faf5ff] to-purple-50 border-2 border-dashed border-purple-300 text-left shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-purple-700 text-white hover:bg-purple-800 text-[10px] font-bold px-2.5 py-0.5">
+                      <span className="text-[11px] font-bold text-purple-700 uppercase tracking-wider">
                         KONTROL ADMINISTRATOR
-                      </Badge>
+                      </span>
                       <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
                         <RefreshCw className="size-4 text-purple-700" /> Butuh Deploy Ulang (Redeploy)?
                       </h4>

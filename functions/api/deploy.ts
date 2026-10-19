@@ -1,24 +1,27 @@
-import { Env, getSystemConfig } from './_db';
+import { Env, getSystemConfig, jsonResponse } from './_db';
+import { checkRateLimit } from './_ratelimit';
 
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   try {
-    const body: any = await context.request.json();
+    // 1. Rate Limiting: Maksimal 5 deploy per 15 menit per IP
+    const rateCheck = await checkRateLimit(context.env, context.request, 'deploy', 5, 900);
+    if (!rateCheck.allowed && rateCheck.response) {
+      return rateCheck.response;
+    }
+
+    const body: any = await context.request.json().catch(() => ({}));
     
     // Ambil GitHub PAT Token dari Database D1 / KV (dengan fallback ke Environment Variables)
     const patToken = await getSystemConfig(context.env, 'GITHUB_DISPATCH_PAT');
 
     // Fail gracefully if PAT is not configured on Cloudflare Database / Secrets
     if (!patToken) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error:
-            'Serverless configuration error: GITHUB_DISPATCH_PAT belum dikonfigurasi di Cloudflare Database atau Environment Secrets.',
-        }),
+      return jsonResponse(
         {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
+          ok: false,
+          error: 'Serverless configuration error: GITHUB_DISPATCH_PAT belum dikonfigurasi di Cloudflare Database atau Environment Secrets.',
+        },
+        500
       );
     }
 
@@ -34,17 +37,20 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     } = body;
 
     // Strict input validation to prevent injection or malicious dispatch payloads
-    if (!clientName || !clientSlug || !cfAccountId || !cfApiToken) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: 'Missing required deployment fields (clientName, clientSlug, cfAccountId, cfApiToken).',
-        }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+    if (!clientName || typeof clientName !== 'string' || clientName.trim().length < 2 || clientName.trim().length > 100) {
+      return jsonResponse({ ok: false, error: 'clientName wajib diisi (2-100 karakter).' }, 400);
+    }
+
+    if (!clientSlug || typeof clientSlug !== 'string' || !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(clientSlug.trim()) || clientSlug.trim().length > 50) {
+      return jsonResponse({ ok: false, error: 'Format clientSlug tidak valid (hanya huruf kecil, angka, dan tanda hubung).' }, 400);
+    }
+
+    if (!cfAccountId || typeof cfAccountId !== 'string' || !cfApiToken || typeof cfApiToken !== 'string') {
+      return jsonResponse({ ok: false, error: 'cfAccountId dan cfApiToken wajib diisi.' }, 400);
+    }
+
+    if (cfApiToken.trim().length < 20 || cfApiToken.trim().length > 120) {
+      return jsonResponse({ ok: false, error: 'Format Cloudflare API Token tidak valid.' }, 400);
     }
 
     // Validate Cloudflare Account ID format (typically 32 hex characters)

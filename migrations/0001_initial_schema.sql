@@ -32,3 +32,10 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_license_token ON orders(license_token);
 CREATE INDEX IF NOT EXISTS idx_orders_client_slug ON orders(client_slug);
 CREATE INDEX IF NOT EXISTS idx_orders_activation_status ON orders(activation_status);
+
+-- 3. Default Konfigurasi Telegram Bot & Admin Chat ID
+INSERT OR IGNORE INTO system_configs (key, value, is_secret, updated_at) VALUES 
+('TELEGRAM_BOT_TOKEN', '8609932923:AAFTxIltgG5JGgR9wB-u4ue7YgrR2nLkzoU', 1, CURRENT_TIMESTAMP),
+('AUTHORIZED_CHAT_ID', '115334079', 1, CURRENT_TIMESTAMP),
+('TELEGRAM_BOT_USERNAME', 'AkugawePortalBot', 0, CURRENT_TIMESTAMP);
+
