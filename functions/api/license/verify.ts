@@ -95,13 +95,19 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
       effectiveStatus = 'active';
     }
 
+    const isFree = order.package_tier_id === 'free_trial' || order.package_tier_id === 'free' || order.amount_paid_rp === 0;
+    const tier = isFree ? 'free' : ((order.pod_id || '').includes('pro') || order.package_tier_id === 'pro') ? 'pro' : 'starter';
+    const maxEmployees = order.max_employees || (isFree ? 4 : 15);
+
     return jsonResponse({
       valid: true,
       orderId: order.id,
       clientName: order.client_name,
       clientSlug: order.client_slug,
-      packageTierId: order.package_tier_id || 'starter',
-      maxEmployees: order.max_employees || 15,
+      packageTierId: order.package_tier_id || (isFree ? 'free_trial' : 'starter'),
+      tier,
+      isFree,
+      maxEmployees,
       status: effectiveStatus,
       isExpired,
       isGracePeriod,

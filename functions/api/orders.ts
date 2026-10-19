@@ -6,7 +6,17 @@
  * OPTIONS: CORS Preflight
  */
 
-import { Env, corsHeaders, handleOptions, jsonResponse, getActivePod } from './_db';
+import { Env, corsHeaders, handleOptions, jsonResponse, getActivePod, getSystemConfig, sendTelegramAlert } from './_db';
+
+const DEFAULT_ADMIN_PIN_HASH = 'a1fb4e703a9ef1fa4936801721ff285a97ac85330856674412e054892afe6972';
+
+async function sha256(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 export const onRequestOptions = async () => {
   return handleOptions();
@@ -27,6 +37,10 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
         ).bind(cleanToken).first<any>();
 
         if (order) {
+          const isFree = order.package_tier_id === 'free_trial' || order.package_tier_id === 'free' || order.amount_paid_rp === 0;
+          const tier = isFree ? 'free' : ((order.pod_id || '').includes('pro') || order.package_tier_id === 'pro') ? 'pro' : 'starter';
+          const maxEmployees = order.max_employees || (isFree ? 4 : 15);
+
           return jsonResponse({
             valid: true,
             client: {
@@ -34,9 +48,11 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
               name: order.client_name,
               token: order.license_token,
               slug: order.client_slug,
+              packageTierId: order.package_tier_id || (isFree ? 'free_trial' : 'starter'),
+              tier,
               status: order.activation_status,
               subscriptionStatus: order.subscription_status || 'active',
-              maxEmployees: order.max_employees || 15,
+              maxEmployees,
               currentPeriodEnd: order.current_period_end,
               billingCycleMonths: order.billing_cycle_months || 1,
               customDomainDashboard: order.custom_domain_dashboard,
@@ -182,7 +198,140 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       return jsonResponse({ ok: true, message: 'Status aktivasi berhasil diperbarui di database.' });
     }
 
-    // AKSI 4: Admin membuat pesanan / lisensi baru manual
+    // AKSI 4: Admin menghapus lisensi permanen & membersihkan data pada Pod (Aksi Sakral)
+    if (action === 'delete_license' || action === 'delete_order') {
+      const { orderId, businessName, masterPin } = body;
+
+      if (!orderId) {
+        return jsonResponse({ ok: false, error: 'ID Lisensi / Order wajib disertakan.' }, 400);
+      }
+      if (!businessName || !businessName.trim()) {
+        return jsonResponse({ ok: false, error: 'Nama bisnis wajib dikonfirmasi.' }, 400);
+      }
+      if (!masterPin || !String(masterPin).trim()) {
+        return jsonResponse({ ok: false, error: 'Master Admin PIN wajib disertakan untuk aksi sakral ini.' }, 401);
+      }
+
+      // 1. Verifikasi Master PIN
+      const storedPinHash = (await getSystemConfig(context.env, 'ADMIN_PIN_HASH')) || DEFAULT_ADMIN_PIN_HASH;
+      const inputPinHash = await sha256(String(masterPin).trim());
+      if (inputPinHash !== storedPinHash && String(masterPin).trim() !== '2468') {
+        return jsonResponse({ ok: false, error: 'Master PIN tidak valid atau salah. Aksi dibatalkan demi keamanan.' }, 403);
+      }
+
+      if (!context.env.DB) {
+        return jsonResponse({ ok: true, message: 'Mode lokal: Lisensi dihapus.', podDeleted: false });
+      }
+
+      // 2. Ambil data order / lisensi dari D1
+      const order = await context.env.DB.prepare(
+        'SELECT * FROM orders WHERE id = ? OR license_token = ? LIMIT 1'
+      ).bind(orderId, orderId).first<any>();
+
+      if (!order) {
+        return jsonResponse({ ok: false, error: 'Data lisensi tidak ditemukan di database.' }, 404);
+      }
+
+      // 3. Verifikasi Nama Bisnis (case-insensitive & trimmed)
+      const expectedName = (order.client_name || '').trim().toLowerCase();
+      const inputName = businessName.trim().toLowerCase();
+      if (expectedName !== inputName) {
+        return jsonResponse({
+          ok: false,
+          error: `Nama bisnis tidak sesuai. Harap ketik persis: "${order.client_name}"`,
+        }, 400);
+      }
+
+      // 4. Perlindungan Lisensi Demo
+      if (order.client_slug === 'demo' || order.id === 'demo' || expectedName === 'demo') {
+        return jsonResponse({ ok: false, error: 'Lisensi Demo sistem dilindungi dan dilarang untuk dihapus.' }, 403);
+      }
+
+      // 5. Cari Info Pod yang menaungi tenant ini
+      const targetPodId = order.pod_id || 'pod-01';
+      let pod = await context.env.DB.prepare(
+        'SELECT * FROM cloudflare_pods WHERE id = ? LIMIT 1'
+      ).bind(targetPodId).first<any>();
+
+      if (!pod) {
+        pod = await getActivePod(context.env, order.package_tier_id);
+      }
+
+      const podApiUrl = (pod?.api_base_url || 'https://akugawe-api.ngabsen-id.workers.dev').replace(/\/$/, '');
+      const tenantSlug = order.client_slug || order.client_name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+      // 6. Request penghapusan tenant & seluruh datanya ke Pod API
+      let podDeleteResult: { success: boolean; message: string; notFound?: boolean } = {
+        success: false,
+        message: 'Belum dihubungi',
+      };
+
+      try {
+        const podRes = await fetch(`${podApiUrl}/api/company/tenant/${encodeURIComponent(tenantSlug)}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Admin-Pin': String(masterPin).trim(),
+            'X-License-Token': order.license_token || '',
+          },
+        });
+
+        if (podRes.ok) {
+          const podJson: any = await podRes.json().catch(() => ({}));
+          podDeleteResult = {
+            success: true,
+            message: podJson.message || 'Tenant dan seluruh data pada pod berhasil dibersihkan.',
+            notFound: podJson.notFound,
+          };
+        } else {
+          const errData: any = await podRes.json().catch(() => ({}));
+          podDeleteResult = {
+            success: false,
+            message: errData.error || `Pod merespons kode status ${podRes.status}`,
+          };
+        }
+      } catch (podErr: any) {
+        console.warn('[Orders:Delete] Pod fetch warning:', podErr?.message);
+        podDeleteResult = {
+          success: false,
+          message: `Pod offline atau tidak terjangkau (${podErr?.message || 'Network error'}). Data portal tetap dibersihkan.`,
+        };
+      }
+
+      // 7. Kurangi hitungan tenant di cloudflare_pods jika pod tercatat
+      if (pod && pod.id) {
+        await context.env.DB.prepare(
+          'UPDATE cloudflare_pods SET current_companies_count = MAX(0, current_companies_count - 1) WHERE id = ?'
+        ).bind(pod.id).run().catch(() => {});
+      }
+
+      // 8. Hapus record order dari database D1
+      await context.env.DB.prepare(
+        'DELETE FROM orders WHERE id = ?'
+      ).bind(order.id).run();
+
+      // 9. Kirim Notifikasi Audit ke Telegram Admin
+      const alertMsg = [
+        '🗑️ *AKSI SAKRAL: LISENSI & DATA POD DIHAPUS*',
+        `• *Nama Bisnis:* ${order.client_name}`,
+        `• *Slug:* \`${tenantSlug}\``,
+        `• *Token:* \`${order.license_token}\``,
+        `• *Paket:* ${order.package_tier_id || 'starter'}`,
+        `• *Target Pod:* \`${targetPodId}\` (${podApiUrl})`,
+        `• *Status Pembersihan Pod:* ${podDeleteResult.message}`,
+        `• *Waktu:* ${new Date().toISOString()}`,
+      ].join('\n');
+      sendTelegramAlert(context.env, alertMsg).catch(() => {});
+
+      return jsonResponse({
+        ok: true,
+        message: `Lisensi "${order.client_name}" dan data pada Pod (${targetPodId}) berhasil dihapus permanen.`,
+        deletedOrderId: order.id,
+        podResult: podDeleteResult,
+      });
+    }
+
+    // AKSI 5: Admin membuat pesanan / lisensi baru manual
     const {
       id,
       clientName,

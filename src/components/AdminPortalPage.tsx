@@ -62,6 +62,7 @@ import { generateLicenseToken } from '../services/licenseService';
 import { SellerConfigPage } from './SellerConfigPage';
 import { AdminLeadsTab } from './AdminLeadsTab';
 import { AdminFleetTab } from './AdminFleetTab';
+import { SacredConfirmModal } from './SacredConfirmModal';
 import { Logo } from '../assets/logo';
 import {
   SidebarProvider,
@@ -729,6 +730,19 @@ export function AdminPortalPage({
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'pending'>('all');
   const [lastGeneratedClient, setLastGeneratedClient] = useState<ClientRecord | null>(null);
 
+  // Sacred Action Modal State (Hapus Lisensi & Data Pod, Suspend Lisensi)
+  const [sacredModalState, setSacredModalState] = useState<{
+    isOpen: boolean;
+    client: ClientRecord | null;
+    actionType: 'delete_license' | 'suspend_license';
+    isLoading: boolean;
+  }>({
+    isOpen: false,
+    client: null,
+    actionType: 'delete_license',
+    isLoading: false,
+  });
+
   // Auto-polling mendeteksi chat masuk dengan PIN ke bot Telegram saat belum terhubung
   useEffect(() => {
     if (isAuthenticated || isBotConfigured) return;
@@ -1199,10 +1213,91 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
     }
   };
 
-  const handleDeleteClient = (clientId: string) => {
-    if (confirm('Hapus data lisensi klien ini dari daftar?')) {
-      setClients(clients.filter((c) => c.id !== clientId));
-      toast.info('Data lisensi dihapus');
+  const promptDeleteClient = (client: ClientRecord) => {
+    setSacredModalState({
+      isOpen: true,
+      client,
+      actionType: 'delete_license',
+      isLoading: false,
+    });
+  };
+
+  const promptSuspendClient = (client: ClientRecord) => {
+    setSacredModalState({
+      isOpen: true,
+      client,
+      actionType: 'suspend_license',
+      isLoading: false,
+    });
+  };
+
+  const handleSacredConfirm = async ({ businessName, pin }: { businessName: string; pin: string }) => {
+    if (!sacredModalState.client) return;
+    const client = sacredModalState.client;
+
+    if (sacredModalState.actionType === 'delete_license') {
+      setSacredModalState((prev) => ({ ...prev, isLoading: true }));
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'delete_license',
+            orderId: client.id,
+            businessName,
+            masterPin: pin,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const updated = clients.filter((c) => c.id !== client.id);
+          setClients(updated);
+          try {
+            localStorage.setItem(CLIENTS_STORAGE_KEY, JSON.stringify(updated));
+          } catch (_) {}
+
+          if (data.podDeleted) {
+            toast.success(data.message || `Lisensi "${client.name}" dan data tenant pada Pod berhasil dihapus permanen.`);
+          } else {
+            toast.success(data.message || `Lisensi "${client.name}" berhasil dihapus.`);
+          }
+
+          setSacredModalState({ isOpen: false, client: null, actionType: 'delete_license', isLoading: false });
+        } else {
+          toast.error(data.error || 'Gagal menghapus lisensi.');
+          setSacredModalState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } catch (err: any) {
+        toast.error('Gagal menghubungi server: ' + err?.message);
+        setSacredModalState((prev) => ({ ...prev, isLoading: false }));
+      }
+    } else if (sacredModalState.actionType === 'suspend_license') {
+      setSacredModalState((prev) => ({ ...prev, isLoading: true }));
+      try {
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'toggle_suspend',
+            orderId: client.id,
+            newStatus: 'suspended',
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          toast.success(data.message || `Lisensi "${client.name}" ditangguhkan (SUSPENDED).`);
+          setClients((prev) =>
+            prev.map((c) => (c.id === client.id ? { ...c, subscriptionStatus: 'suspended' } : c))
+          );
+          setSacredModalState({ isOpen: false, client: null, actionType: 'delete_license', isLoading: false });
+        } else {
+          toast.error(data.error || 'Gagal menangguhkan lisensi.');
+          setSacredModalState((prev) => ({ ...prev, isLoading: false }));
+        }
+      } catch (err: any) {
+        toast.error('Gagal menghubungi server: ' + err?.message);
+        setSacredModalState((prev) => ({ ...prev, isLoading: false }));
+      }
     }
   };
 
@@ -2374,7 +2469,13 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                           Perpanjang +1 Tahun
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
-                                          onClick={() => handleToggleSuspend(client.id, client.subscriptionStatus)}
+                                          onClick={() => {
+                                            if (isSuspended) {
+                                              handleToggleSuspend(client.id, client.subscriptionStatus);
+                                            } else {
+                                              promptSuspendClient(client);
+                                            }
+                                          }}
                                           className={`cursor-pointer ${isSuspended ? 'text-emerald-700 hover:bg-emerald-50' : 'text-amber-700 hover:bg-amber-50'}`}
                                         >
                                           {isSuspended ? (
@@ -2402,11 +2503,11 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                           Tandai Status: {client.status === 'active' ? 'Pending' : 'Live'}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
-                                          onClick={() => handleDeleteClient(client.id)}
+                                          onClick={() => promptDeleteClient(client)}
                                           className="text-rose-600 focus:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                         >
                                           <Trash2 className="size-3.5 mr-2" />
-                                          Hapus Lisensi
+                                          Hapus Lisensi & Pod
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
@@ -2503,6 +2604,48 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
           </Card>
         </div>
       )}
+
+      {/* Modal Sakral Konfirmasi Hapus Lisensi & Data Pod / Suspend */}
+      <SacredConfirmModal
+        isOpen={sacredModalState.isOpen}
+        onClose={() => !sacredModalState.isLoading && setSacredModalState((prev) => ({ ...prev, isOpen: false }))}
+        title={
+          sacredModalState.actionType === 'delete_license'
+            ? 'Hapus Lisensi & Data Pod Permanen'
+            : 'Tangguhkan (Suspend) Lisensi Klien'
+        }
+        subtitle={
+          sacredModalState.actionType === 'delete_license'
+            ? 'Aksi ini akan menghapus lisensi dari database D1 dan menghapus seluruh data tenant pada Cloudflare Pod.'
+            : 'Akses karyawan dan dashboard HRD untuk bisnis ini akan diblokir sementara.'
+        }
+        actionType={sacredModalState.actionType}
+        targetBusinessName={sacredModalState.client?.name || ''}
+        targetDetails={[
+          { label: 'Token Lisensi', value: sacredModalState.client?.token || '-' },
+          { label: 'ID Pesanan', value: sacredModalState.client?.id ? sacredModalState.client.id.slice(0, 16) : '-' },
+          {
+            label: 'Pod Cluster',
+            value: sacredModalState.client?.podId || (sacredModalState.client?.packageTierId === 'pro' ? 'pod-pro' : 'pod-01'),
+            badge: sacredModalState.client?.packageTierId === 'pro' ? 'Dedicated' : 'Shared Pod',
+          },
+        ]}
+        warningMessage={
+          sacredModalState.actionType === 'delete_license'
+            ? 'Penghapusan ini bersifat permanen. Seluruh data absensi, akun karyawan, payroll, shift, dan pengaturan cabang pada Pod cluster akan di-wipe habis tanpa bisa dipulihkan kembali.'
+            : 'Karyawan dan HRD tidak akan dapat melakukan presensi atau login ke sistem selama status ditangguhkan.'
+        }
+        requireBusinessName={true}
+        requirePin={true}
+        confirmButtonText={
+          sacredModalState.actionType === 'delete_license'
+            ? 'Hapus Permanen Lisensi & Pod'
+            : 'Tangguhkan Lisensi Klien'
+        }
+        confirmButtonVariant="destructive"
+        isLoading={sacredModalState.isLoading}
+        onConfirm={handleSacredConfirm}
+      />
     </SidebarProvider>
   );
 }

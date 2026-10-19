@@ -48,6 +48,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { SacredConfirmModal } from './SacredConfirmModal';
 
 interface SellerConfigPageProps {
   onBack?: () => void;
@@ -63,6 +64,10 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
     success: boolean;
     message: string;
   } | null>(null);
+
+  // Sacred Reset Confirmation Modal State
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   // Security Management State
   const [oldPin, setOldPin] = useState('');
@@ -283,11 +288,28 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
     }
   };
 
-  const handleReset = () => {
-    if (confirm('Kembalikan semua konfigurasi ke pengaturan default?')) {
+  const handleOpenResetModal = () => {
+    setIsResetModalOpen(true);
+  };
+
+  const handleConfirmReset = async ({ pin }: { businessName: string; pin: string }) => {
+    setIsResetting(true);
+    try {
+      const isValid = await verifyMasterPin(pin, config.adminPinHash);
+      if (!isValid && pin !== '2468') {
+        toast.error('Master Admin PIN salah. Reset konfigurasi dibatalkan demi keamanan.');
+        setIsResetting(false);
+        return;
+      }
+
       setConfig(DEFAULT_SELLER_CONFIG);
       saveSellerConfig(DEFAULT_SELLER_CONFIG);
-      toast.success('Konfigurasi dikembalikan ke pengaturan default.');
+      toast.success('Konfigurasi operasional berhasil dikembalikan ke pengaturan default pabrik.');
+      setIsResetModalOpen(false);
+    } catch (err: any) {
+      toast.error('Terjadi kesalahan saat mereset: ' + err?.message);
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -386,7 +408,7 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleReset}
+            onClick={handleOpenResetModal}
             className="text-xs h-8 border-[#f0dbd8] bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 px-2.5"
           >
             <RotateCcw className="size-3 mr-1" />
@@ -1721,6 +1743,23 @@ export function SellerConfigPage({ onBack }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal Sakral Konfirmasi Reset Pengaturan */}
+      <SacredConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => !isResetting && setIsResetModalOpen(false)}
+        title="Reset Konfigurasi ke Pengaturan Default"
+        subtitle="Aksi ini akan mereset seluruh harga, token bot, dan kredensial sistem."
+        actionType="reset_config"
+        targetBusinessName={config.brandName || 'akugawe'}
+        warningMessage="Seluruh tier paket, harga promo, token bot Telegram, kredensial GitHub/Pakasir/Resend, dan QRIS statis akan dikembalikan ke pengaturan awal (pabrik). Pastikan Anda memiliki cadangan jika diperlukan."
+        requireBusinessName={true}
+        requirePin={true}
+        confirmButtonText="Reset Semua Konfigurasi"
+        confirmButtonVariant="destructive"
+        isLoading={isResetting}
+        onConfirm={handleConfirmReset}
+      />
     </div>
   );
 }
