@@ -10,6 +10,8 @@ export interface SendEmailOptions {
   subject: string;
   html: string;
   text?: string;
+  apiKeyOverride?: string;
+  fromOverride?: string;
 }
 
 export interface SendEmailResult {
@@ -52,23 +54,30 @@ export async function ensureEmailVerificationsTable(env: Env): Promise<void> {
  * Mengirim email menggunakan Resend API atau MailChannels (Cloudflare)
  */
 export async function sendEmail(env: Env, options: SendEmailOptions): Promise<SendEmailResult> {
-  const { to, subject, html, text } = options;
+  const { to, subject, html, text, apiKeyOverride, fromOverride } = options;
   const cleanTo = to.trim().toLowerCase();
 
   // 1. Coba via Resend API jika API Key tersedia
-  const resendApiKey = await getSystemConfig(env, 'RESEND_API_KEY');
-  const configuredFrom = await getSystemConfig(env, 'EMAIL_FROM');
-  const senderEmail = configuredFrom ? configuredFrom.trim() : 'akugawe <onboarding@resend.dev>';
+  const resendApiKey = apiKeyOverride?.trim() || (await getSystemConfig(env, 'RESEND_API_KEY'))?.trim();
+  const configuredFrom = fromOverride?.trim() || (await getSystemConfig(env, 'EMAIL_FROM'))?.trim();
+  
+  // Normalisasi sender email:
+  // Fallback ke domain uji coba Resend jika belum ada konfigurasi domain khusus
+  const senderEmail = (configuredFrom && configuredFrom.length > 3)
+    ? configuredFrom
+    : 'akugawe <onboarding@resend.dev>';
 
-  if (resendApiKey && resendApiKey.trim().length > 5) {
+  let resendFailureDetail = '';
+
+  if (resendApiKey && resendApiKey.length > 5) {
     try {
       const abortCtrl = new AbortController();
-      const timeout = setTimeout(() => abortCtrl.abort(), 8000);
+      const timeout = setTimeout(() => abortCtrl.abort(), 9000);
 
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${resendApiKey.trim()}`,
+          'Authorization': `Bearer ${resendApiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -86,9 +95,25 @@ export async function sendEmail(env: Env, options: SendEmailOptions): Promise<Se
         return { success: true, provider: 'resend', details: data };
       }
 
-      console.warn('Resend API returned error:', data);
+      console.warn('Resend API returned error:', res.status, data);
+
+      const rawMsg = data?.message || data?.error || (res.statusText ? `HTTP ${res.status}: ${res.statusText}` : '');
+      const rawMsgLower = typeof rawMsg === 'string' ? rawMsg.toLowerCase() : '';
+
+      if (rawMsgLower.includes('testing emails') || rawMsgLower.includes('onboarding@resend.dev')) {
+        resendFailureDetail = `Domain uji coba Resend (onboarding@resend.dev) hanya mengizinkan pengiriman ke email akun pemilik Resend Anda. Untuk mengirim kode ke email publik (${cleanTo}), Anda wajib memverifikasi domain Anda di https://resend.com/domains atau ganti email tujuan ke email terdaftar Resend Anda. (${rawMsg})`;
+      } else if (rawMsgLower.includes('domain') && (rawMsgLower.includes('not verified') || rawMsgLower.includes('verify'))) {
+        resendFailureDetail = `Domain pengirim "${senderEmail}" belum terverifikasi di Resend. Harap verifikasi DNS domain di https://resend.com/domains atau gunakan domain default "akugawe <onboarding@resend.dev>". (${rawMsg})`;
+      } else if (res.status === 401 || rawMsgLower.includes('api key')) {
+        resendFailureDetail = `RESEND_API_KEY tidak valid atau ditolak oleh Resend (HTTP 401). Silakan cek kembali API Key di https://resend.com/api-keys. (${rawMsg})`;
+      } else if (rawMsg) {
+        resendFailureDetail = `Resend Error [HTTP ${res.status}]: ${rawMsg}`;
+      } else {
+        resendFailureDetail = `Resend API mengembalikan status HTTP ${res.status}`;
+      }
     } catch (err: any) {
       console.warn('Failed calling Resend API:', err?.message || err);
+      resendFailureDetail = `Gagal menghubungi endpoint Resend API: ${err?.message || err}`;
     }
   }
 
@@ -109,7 +134,7 @@ export async function sendEmail(env: Env, options: SendEmailOptions): Promise<Se
           },
         ],
         from: {
-          email: configuredFrom?.includes('@') ? configuredFrom.replace(/.*<([^>]+)>.*/, '$1').trim() : 'noreply@akugawe.id',
+          email: configuredFrom?.includes('@') ? configuredFrom.replace(/.*<([^>]+)>.*/, '$1').trim() : 'noreply@akugawe.web.id',
           name: 'akugawe',
         },
         subject,
@@ -133,10 +158,19 @@ export async function sendEmail(env: Env, options: SendEmailOptions): Promise<Se
     console.warn('Failed calling MailChannels:', mcErr?.message || mcErr);
   }
 
-  // 3. Jika kedua provider tidak tersedia / gagal
+  // 3. Jika Resend sudah dicoba tapi gagal, laporkan alasan spesifik dari Resend!
+  if (resendFailureDetail) {
+    return {
+      success: false,
+      provider: 'resend',
+      error: resendFailureDetail,
+    };
+  }
+
+  // 4. Jika RESEND_API_KEY sama sekali belum ada di database Cloudflare
   return {
     success: false,
-    error: 'Tidak dapat mengirim email aktivasi. Pastikan RESEND_API_KEY telah dikonfigurasi di Admin Portal atau hubungi admin.',
+    error: 'Tidak dapat mengirim email aktivasi. RESEND_API_KEY belum tersimpan di Cloudflare Database. Silakan buka Admin Portal > Pengaturan > Email & OTP, klik "Simpan Perubahan" dan masukkan Master PIN Anda.',
   };
 }
 

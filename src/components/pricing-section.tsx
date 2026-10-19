@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Check, Sparkles, MessageCircle, QrCode, Zap, Users } from "lucide-react";
-import { PricingTier, loadSellerConfig } from "@/services/config";
+import { PricingTier, SellerConfig, loadSellerConfig } from "@/services/config";
 import { CheckoutModal } from "./CheckoutModal";
 
 interface PricingSectionProps {
   onSelectTier?: (tier: PricingTier) => void;
   onProceedToOnboarding?: (token: string) => void;
+  sellerConfig?: SellerConfig;
 }
 
 const DURATION_OPTIONS = [
@@ -17,8 +18,23 @@ const DURATION_OPTIONS = [
   { value: "60", label: "5 Tahun" },
 ];
 
-export function PricingSection({ onSelectTier, onProceedToOnboarding }: PricingSectionProps) {
-  const sellerConfig = loadSellerConfig();
+export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConfig: propConfig }: PricingSectionProps) {
+  const [sellerConfig, setSellerConfig] = useState<SellerConfig>(() => propConfig || loadSellerConfig());
+
+  useEffect(() => {
+    if (propConfig) {
+      setSellerConfig(propConfig);
+    }
+  }, [propConfig]);
+
+  useEffect(() => {
+    const handleUpdate = (e: any) => {
+      if (e.detail) setSellerConfig(e.detail);
+    };
+    window.addEventListener('seller-config-updated', handleUpdate);
+    return () => window.removeEventListener('seller-config-updated', handleUpdate);
+  }, []);
+
   const tiers = sellerConfig.pricingTiers;
 
   const [selectedDuration, setSelectedDuration] = useState<string>("12"); // Default 1 Tahun
@@ -110,8 +126,8 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding }: PricingS
           </div>
         </div>
 
-        {/* Pricing Cards: Smooth horizontal scroll on mobile, responsive grid on desktop */}
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-5 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-zinc-200/80 rounded-2xl border border-zinc-200/90 shadow-xs bg-white">
+        {/* Pricing Cards: Smooth horizontal scroll on mobile, responsive grid on desktop (1 Brand Header + 3 Tiers) */}
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-zinc-200/80 rounded-2xl border border-zinc-200/90 shadow-xs bg-white">
           {/* Header Left Brand Card */}
           <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-zinc-900 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>

@@ -77,15 +77,44 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
       });
     }
 
-    // Ambil data Pods dari D1
+    // 1. Ambil data Pods dari D1
     const { results } = await context.env.DB.prepare(
       'SELECT * FROM cloudflare_pods ORDER BY id ASC'
     ).all();
 
+    // 2. Ambil hitungan tenant aktual secara real-time langsung dari tabel orders
+    const podOrderCounts: Record<string, number> = {};
+    try {
+      const { results: countResults } = await context.env.DB.prepare(`
+        SELECT COALESCE(pod_id, 'pod-01') as pod_id, COUNT(*) as cnt 
+        FROM orders 
+        WHERE activation_status != 'deleted'
+        GROUP BY COALESCE(pod_id, 'pod-01')
+      `).all();
+
+      if (countResults) {
+        for (const c of countResults as any[]) {
+          podOrderCounts[c.pod_id] = Number(c.cnt || 0);
+        }
+      }
+    } catch (countErr) {
+      console.warn('Notice: Could not aggregate orders by pod_id:', countErr);
+    }
+
     const fleet = (results || []).map((row: any) => {
       const maxComp = row.max_companies || 25;
-      const curComp = row.current_companies_count || 0;
+      // Gunakan live count dari orders jika tersedia, fallback ke row.current_companies_count
+      const curComp = (row.id in podOrderCounts)
+        ? podOrderCounts[row.id]
+        : (row.current_companies_count || 0);
       const capacityPercent = Math.min(100, Math.round((curComp / maxComp) * 100));
+
+      // Sinkronkan ke basis data cloudflare_pods jika terdapat selisih
+      if (curComp !== row.current_companies_count) {
+        context.env.DB.prepare(
+          'UPDATE cloudflare_pods SET current_companies_count = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+        ).bind(curComp, row.id).run().catch(() => {});
+      }
 
       return {
         id: row.id,

@@ -164,3 +164,14 @@ Sistem menganut arsitektur alokasi pod tetap:
 3. **Dokumentasi Baku**:
    - Selengkapnya di [`CLOUDFLARE_PODS_RULES.md`](file:///CLOUDFLARE_PODS_RULES.md).
 
+---
+
+## 🛡️ Standar UI/UX: Konfirmasi Aksi Hapus (Wajib Shadcn Confirmation Dialog)
+
+Seluruh aksi penghapusan data, pembatalan permanen, redeploy, reset konfigurasi, atau aksi destruktif lainnya di antarmuka portal:
+1. **WAJIB menggunakan komponen Shadcn `ConfirmationDialog`** (`@/components/ui/confirmation-dialog`) dengan prop `variant="destructive"`, judul pertanyaan yang jelas, dan deskripsi dampak aksi.
+2. **DILARANG KERAS** menggunakan `window.confirm()` atau `confirm()` bawaan browser.
+3. **DILARANG KERAS** mengeksekusi aksi hapus secara langsung saat tombol diklik tanpa modal konfirmasi.
+4. Untuk aksi dengan dampak sistemik tingkat tinggi (penghapusan lisensi, cascading drop tenant database D1 & Cloudflare Pod, reset konfigurasi pabrik), gunakan verifikasi berjenjang (`SacredConfirmModal` dengan verifikasi nama usaha & PIN master).
+
+

@@ -57,7 +57,7 @@ import {
   encryptData,
   decryptData,
 } from '../services/security';
-import { loadSellerConfig, saveSellerConfig } from '../services/config';
+import { loadSellerConfig, saveSellerConfig, fetchSellerConfig } from '../services/config';
 import { generateLicenseToken } from '../services/licenseService';
 import { SellerConfigPage } from './SellerConfigPage';
 import { AdminLeadsTab } from './AdminLeadsTab';
@@ -584,6 +584,16 @@ export function AdminPortalPage({
   const [isCopiedPin, setIsCopiedPin] = useState<boolean>(false);
   const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [manualChatIdInput, setManualChatIdInput] = useState<string>('');
+
+  useEffect(() => {
+    sessionStorage.setItem('ngabsen_admin_pin', displayPin);
+    fetchSellerConfig(displayPin).then((cfg) => {
+      if (cfg.authorizedChatId && cfg.authorizedChatId.trim() !== '') {
+        setConnectedChatId(cfg.authorizedChatId);
+        setIsBotConfigured(true);
+      }
+    });
+  }, [displayPin]);
 
   // Inactivity Guard (Auto-Lock on Idle)
   const [isIdleLocked, setIsIdleLocked] = useState<boolean>(false);
@@ -1849,10 +1859,13 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           <Sparkles className="size-3 text-[#a9484c]" />
                           1. Pilih Paket Lisensi (Tier)
                         </label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                           {configTiers.map((tier) => {
                             const isSelected = selectedTierId === tier.id;
                             const isFree = tier.isFree || tier.id === 'free_trial';
+                            const isPro = tier.id === 'pro' || tier.id === 'business' || tier.id === 'business_pro' || tier.name.toLowerCase().includes('pro');
+                            const isStarter = !isFree && !isPro;
+
                             return (
                               <button
                                 key={tier.id}
@@ -1869,10 +1882,12 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                   <span className={cn(
                                     "absolute top-2 right-2 text-[9px] font-bold px-1.5 py-0.5 rounded-md",
                                     isFree
-                                      ? "bg-emerald-100 text-emerald-800"
+                                      ? "bg-rose-100 text-rose-800"
+                                      : isPro
+                                      ? "bg-indigo-100 text-indigo-800"
                                       : isSelected
                                       ? "bg-[#a9484c] text-white"
-                                      : "bg-slate-100 text-slate-600"
+                                      : "bg-emerald-100 text-emerald-800"
                                   )}>
                                     {tier.badge}
                                   </span>
@@ -1889,11 +1904,13 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                 <div className="mt-1.5 pt-1 border-t border-slate-100 text-[9px]">
                                   <span className={cn(
                                     "font-semibold flex items-center gap-0.5 truncate",
-                                    tier.id === 'pro' ? "text-indigo-700" : "text-emerald-700"
+                                    isPro ? "text-indigo-700" : isStarter ? "text-emerald-700" : "text-slate-700"
                                   )}>
-                                    {tier.id === 'pro'
+                                    {isPro
                                       ? '🛡️ 1 Akun CF (Dedicated Pod)'
-                                      : '🌐 Shared Pod (Demo/Free)'}
+                                      : isStarter
+                                      ? '🌐 Shared Pod (Multi-Tenant)'
+                                      : '🌐 Shared Pod (Free & Demo)'}
                                   </span>
                                 </div>
                               </button>
@@ -1906,15 +1923,17 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           <div className="flex items-center gap-1.5">
                             <Cloud className="size-3.5 text-[#a9484c] shrink-0" />
                             <span>
-                              {selectedTierId === 'pro' ? (
-                                <span><b>Aturan Baku Pro Tier:</b> Klien dialokasikan ke <b>1 Dedicated Pod di 1 Akun Cloudflare tersendiri</b> (Worker, D1 DB, dan KV terisolasi penuh, custom URL).</span>
+                              {(selectedTierId === 'pro' || selectedTierId === 'business' || selectedTierId === 'business_pro') ? (
+                                <span><b>Aturan Baku Business Pro:</b> Klien dialokasikan ke <b>1 Dedicated Pod di 1 Akun Cloudflare mandiri</b> (Worker, D1 DB, KV, dan R2 terisolasi penuh, custom domain sendiri).</span>
+                              ) : selectedTierId === 'starter' ? (
+                                <span><b>Aturan Baku Starter UMKM:</b> Berada di <b>Shared Pod bersama</b> (Multi-tenant Cloudflare: <code className="font-mono">app.akugawe.web.id</code> &amp; <code className="font-mono">hrd.akugawe.web.id</code>, hingga 15 staf aktif).</span>
                               ) : (
-                                <span><b>Aturan Baku Shared Pod:</b> Demo dan Free Tier berada di <b>1 Pod bersama</b> (Multi-tenant Cloudflare: <code className="font-mono">app.akugawe.web.id</code> &amp; <code className="font-mono">hrd.akugawe.web.id</code>).</span>
+                                <span><b>Aturan Baku Free Trial UMKM:</b> Berada di <b>Shared Pod bersama</b> (Multi-tenant Cloudflare: <code className="font-mono">app.akugawe.web.id</code> &amp; <code className="font-mono">hrd.akugawe.web.id</code>, masa aktif 4 bulan gratis, hingga 4 staf).</span>
                               )}
                             </span>
                           </div>
-                          <Badge variant="outline" className={cn("text-[8px] font-bold px-1.5 py-0 shrink-0", selectedTierId === 'pro' ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
-                            {selectedTierId === 'pro' ? 'Dedicated Cloudflare' : 'Shared Multi-Tenant'}
+                          <Badge variant="outline" className={cn("text-[8px] font-bold px-1.5 py-0 shrink-0", (selectedTierId === 'pro' || selectedTierId === 'business' || selectedTierId === 'business_pro') ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-emerald-50 text-emerald-700 border-emerald-200")}>
+                            {(selectedTierId === 'pro' || selectedTierId === 'business' || selectedTierId === 'business_pro') ? '🛡️ Dedicated Cloudflare' : '🌐 Shared Multi-Tenant'}
                           </Badge>
                         </div>
                       </div>
@@ -2296,7 +2315,9 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                             </TableRow>
                           ) : (
                             filteredClients.map((client) => {
-                              const isFreeTier = client.amountPaidRp === 0 || client.packageTierId === 'free_trial';
+                              const isFreeTier = client.amountPaidRp === 0 || client.packageTierId === 'free_trial' || client.packageTierId === 'free';
+                              const isProTier = client.packageTierId === 'pro' || client.packageTierId === 'business_pro' || client.packageTierId === 'business' || Boolean(client.podId?.includes('pro'));
+                              const isStarterTier = !isFreeTier && !isProTier;
                               const isSuspended = client.subscriptionStatus === 'suspended';
                               const { appUrl, dashboardUrl, displayUrl } = resolveClientUrls(client);
 
@@ -2325,16 +2346,16 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                       </Button>
                                     </div>
                                     <div className="text-[10px] text-slate-400 font-sans mt-0.5 flex items-center gap-1">
-                                      <span>Pod: <span className="font-mono text-[#a9484c] font-semibold">{client.podId || (client.packageTierId === 'pro' ? 'pod-pro' : 'pod-01')}</span></span>
+                                      <span>Pod: <span className="font-mono text-[#a9484c] font-semibold">{client.podId || (isProTier ? 'pod-pro' : 'pod-01')}</span></span>
                                       <Badge
                                         variant="outline"
                                         className={`text-[8px] px-1 py-0 ${
-                                          client.packageTierId === 'pro'
+                                          isProTier
                                             ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
                                             : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                         }`}
                                       >
-                                        {client.packageTierId === 'pro' ? 'Dedicated CF' : 'Shared Pod'}
+                                        {isProTier ? '🛡️ Dedicated CF' : '🌐 Shared Pod'}
                                       </Badge>
                                     </div>
                                   </TableCell>
@@ -2345,13 +2366,19 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                         className={`text-[9px] font-semibold px-1.5 py-0 ${
                                           isFreeTier
                                             ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                            : isStarterTier
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                             : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                                         }`}
                                       >
-                                        {isFreeTier ? 'Free Tier (Rp 0)' : 'Starter / Pro'}
+                                        {isFreeTier
+                                          ? 'Free Trial (Rp 0)'
+                                          : isStarterTier
+                                          ? 'Starter UMKM'
+                                          : 'Business Pro'}
                                       </Badge>
                                       <div className="text-[10px] font-medium text-slate-600">
-                                        Maks {client.maxEmployees ? (client.maxEmployees === -1 ? 'Unlimited' : `${client.maxEmployees} Staf`) : '15 Staf'}
+                                        Maks {client.maxEmployees ? (client.maxEmployees === -1 ? 'Unlimited' : `${client.maxEmployees} Staf`) : (isFreeTier ? '4 Staf' : isStarterTier ? '15 Staf' : '50 Staf')} • {isProTier ? 'Dedicated CF' : 'Shared Pod'}
                                       </div>
                                     </div>
                                   </TableCell>
@@ -2529,7 +2556,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
             {activeTab === 'fleet' && <AdminFleetTab />}
 
             {activeTab === 'settings' && (
-              <SellerConfigPage onBack={() => setActiveTab('overview')} />
+              <SellerConfigPage onBack={() => setActiveTab('overview')} adminPin={displayPin} />
             )}
           </main>
         </SidebarInset>
@@ -2626,8 +2653,8 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
           { label: 'ID Pesanan', value: sacredModalState.client?.id ? sacredModalState.client.id.slice(0, 16) : '-' },
           {
             label: 'Pod Cluster',
-            value: sacredModalState.client?.podId || (sacredModalState.client?.packageTierId === 'pro' ? 'pod-pro' : 'pod-01'),
-            badge: sacredModalState.client?.packageTierId === 'pro' ? 'Dedicated' : 'Shared Pod',
+            value: sacredModalState.client?.podId || ((sacredModalState.client?.packageTierId === 'pro' || sacredModalState.client?.packageTierId === 'business_pro') ? 'pod-pro' : 'pod-01'),
+            badge: (sacredModalState.client?.packageTierId === 'pro' || sacredModalState.client?.packageTierId === 'business_pro' || Boolean(sacredModalState.client?.podId?.includes('pro'))) ? '🛡️ Dedicated Pod' : '🌐 Shared Pod',
           },
         ]}
         warningMessage={

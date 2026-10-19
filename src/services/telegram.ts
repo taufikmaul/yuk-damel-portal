@@ -8,7 +8,7 @@ export const BOT_USERNAME = 'AkugawePortalBot';
 export const DEFAULT_TELEGRAM_BOT_TOKEN = '';
 export const AUTHORIZED_SELLER_CHAT_ID = '';
 
-import { generateSecureOtp } from './security';
+import { generateSecureOtp, sha256 } from './security';
 
 export interface OtpSession {
   code: string;
@@ -238,3 +238,105 @@ export async function checkTelegramPairing(
     };
   }
 }
+
+/**
+ * Mereset Master Admin PIN dan mengirimkan PIN baru ke bot Telegram penjual.
+ * Digunakan saat penjual lupa PIN lama di halaman Settings.
+ */
+export async function resetMasterPinViaTelegram(config?: {
+  telegramBotToken?: string;
+  telegramBotUsername?: string;
+  authorizedChatId?: string;
+}): Promise<{
+  success: boolean;
+  newPinHash?: string;
+  newPin?: string;
+  error?: string;
+}> {
+  lastTelegramError = null;
+
+  const endpoints = ['/api/reset-pin'];
+  if (
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ) {
+    endpoints.push('https://akugawe-portal.pages.dev/api/reset-pin');
+  }
+
+  const payload = JSON.stringify({
+    telegramBotToken: config?.telegramBotToken,
+    authorizedChatId: config?.authorizedChatId,
+  });
+
+  // 1. Coba melalui serverless endpoint Cloudflare Worker
+  for (const endpoint of endpoints) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok === true && data.newPinHash) {
+          lastTelegramError = null;
+          return {
+            success: true,
+            newPinHash: data.newPinHash,
+          };
+        }
+        lastTelegramError = data.error || 'Gagal mereset PIN via server.';
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        lastTelegramError = errData.error || res.statusText || 'Gagal mereset PIN.';
+      }
+    } catch (err: any) {
+      lastTelegramError = err?.message || 'Gagal terhubung ke endpoint /api/reset-pin';
+    }
+  }
+
+  // 2. Client-side Direct Fallback (jika serverless proxy / worker offline di environment local dev)
+  try {
+    const targetChat = config?.authorizedChatId || AUTHORIZED_SELLER_CHAT_ID;
+    const token = config?.telegramBotToken || DEFAULT_TELEGRAM_BOT_TOKEN;
+
+    if (!targetChat || !token) {
+      return {
+        success: false,
+        error: 'Bot Telegram atau Chat ID belum terkonfigurasi. Silakan hubungkan bot Telegram terlebih dahulu.',
+      };
+    }
+
+    const newPin = generateOtp(); // 6-digit CSPRNG
+    const newHash = await sha256(newPin);
+
+    const message = `🔐 *RESET MASTER ADMIN PIN AKUGAWE*\n\nHalo Admin, permintaan reset Master PIN Anda berhasil diproses.\n\nMaster PIN baru Anda:\n\`${newPin}\`\n\n_(Ketuk angka di atas atau tombol di bawah untuk menyalin)_\n\n⚠️ *Perhatian:* PIN lama Anda tidak lagi berlaku. Gunakan Master PIN baru ini untuk login, membuka sesi (Auto-Lock), dan mengonfirmasi simpan konfigurasi di portal seller.`;
+
+    const ok = await sendTelegramOtp(newPin, targetChat, {
+      title: 'RESET MASTER ADMIN PIN',
+      message,
+      botToken: token,
+    });
+
+    if (ok) {
+      lastTelegramError = null;
+      return {
+        success: true,
+        newPinHash: newHash,
+        newPin: newPin,
+      };
+    } else {
+      return {
+        success: false,
+        error: lastTelegramError || 'Gagal mengirim Master PIN baru ke Telegram.',
+      };
+    }
+  } catch (directErr: any) {
+    return {
+      success: false,
+      error: directErr?.message || 'Terjadi kesalahan saat memproses reset PIN.',
+    };
+  }
+}
+

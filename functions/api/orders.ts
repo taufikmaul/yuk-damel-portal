@@ -298,17 +298,22 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
         };
       }
 
-      // 7. Kurangi hitungan tenant di cloudflare_pods jika pod tercatat
-      if (pod && pod.id) {
-        await context.env.DB.prepare(
-          'UPDATE cloudflare_pods SET current_companies_count = MAX(0, current_companies_count - 1) WHERE id = ?'
-        ).bind(pod.id).run().catch(() => {});
-      }
-
-      // 8. Hapus record order dari database D1
+      // 7. Hapus record order dari database D1
       await context.env.DB.prepare(
         'DELETE FROM orders WHERE id = ?'
       ).bind(order.id).run();
+
+      // 8. Sinkronkan ulang hitungan tenant di cloudflare_pods secara akurat
+      const effectivePodId = pod?.id || targetPodId || 'pod-01';
+      await context.env.DB.prepare(`
+        UPDATE cloudflare_pods 
+        SET current_companies_count = (
+          SELECT COUNT(*) FROM orders 
+          WHERE COALESCE(pod_id, 'pod-01') = ? AND activation_status != 'deleted'
+        ),
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(effectivePodId, effectivePodId).run().catch(() => {});
 
       // 9. Kirim Notifikasi Audit ke Telegram Admin
       const alertMsg = [
@@ -403,12 +408,16 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
         isSharedPod
       ).run();
 
-      // Update tenant count jika shared pod
-      if (isSharedPod) {
-        await context.env.DB.prepare(
-          'UPDATE cloudflare_pods SET current_companies_count = current_companies_count + 1 WHERE id = ?'
-        ).bind(podId).run().catch(() => {});
-      }
+      // Update tenant count pod secara akurat berdasarkan total order aktif
+      await context.env.DB.prepare(`
+        UPDATE cloudflare_pods 
+        SET current_companies_count = (
+          SELECT COUNT(*) FROM orders 
+          WHERE COALESCE(pod_id, 'pod-01') = ? AND activation_status != 'deleted'
+        ),
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `).bind(podId, podId).run().catch(() => {});
     }
 
     return jsonResponse({

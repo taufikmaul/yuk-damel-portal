@@ -125,10 +125,23 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     });
 
     if (!emailResult.success) {
+      // Kirim Notifikasi ke Telegram Admin tentang kegagalan pengiriman email
+      const failMsg =
+        `⚠️ *GAGAL KIRIM EMAIL KODE AKTIVASI*\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `🏢 Usaha: *${cleanClientName}*\n` +
+        `✉️ Email: \`${cleanEmail}\`\n` +
+        `📱 WhatsApp: ${cleanPhone}\n` +
+        `🔑 Kode Disiapkan: \`${activationCode}\`\n` +
+        `❌ Alasan: ${emailResult.error || 'Provider email gagal mengirim'}\n` +
+        `━━━━━━━━━━━━━━━━━━━━━━\n` +
+        `_Admin dapat membantu memberikan kode aktivasi manual jika diperlukan._`;
+      await sendTelegramAlert(context.env, failMsg).catch(() => {});
+
       return jsonResponse(
         {
           ok: false,
-          error: emailResult.error || 'Gagal mengirim email kode aktivasi. Silakan periksa kembali email Anda atau coba lagi.',
+          error: emailResult.error || 'Gagal mengirim email kode aktivasi. Silakan periksa kembali email Anda atau hubungi admin.',
         },
         500
       );

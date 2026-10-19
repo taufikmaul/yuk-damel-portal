@@ -88,6 +88,15 @@ export async function setSystemConfig(env: Env, key: string, value: string, isSe
   if (env.DB) {
     try {
       await env.DB.prepare(`
+        CREATE TABLE IF NOT EXISTS system_configs (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          is_secret INTEGER DEFAULT 0,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `).run().catch(() => {});
+
+      await env.DB.prepare(`
         INSERT INTO system_configs (key, value, is_secret, updated_at) 
         VALUES (?, ?, ?, CURRENT_TIMESTAMP)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, is_secret = excluded.is_secret, updated_at = CURRENT_TIMESTAMP

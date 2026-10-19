@@ -88,7 +88,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     maxEmployees: 4,
     normalPriceRp: 0,
     promoPriceRp: 0,
-    description: 'Uji coba penuh sistem absensi & payroll untuk usaha rintisan mikro tanpa biaya.',
+    description: 'Uji coba penuh sistem absensi & payroll untuk usaha rintisan mikro tanpa biaya (Shared Pod).',
     pricing: {
       '4': { normalRp: 0, promoRp: 0, discountPercent: 100, badge: 'Rp 0 Selama 4 Bulan', label: '4 Bulan' },
     },
@@ -98,6 +98,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
       'PWA Mobile Absensi GPS & Selfie',
       'Dashboard Owner & Rekap Kehadiran',
       'Subdomain Instan (app.akugawe.web.id/slug & hrd.akugawe.web.id/slug)',
+      'Multi-Tenant Shared Pod (Biaya Server Rp 0)',
       'Tanpa Kartu Kredit / Biaya Setup',
     ],
   },
@@ -109,7 +110,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     maxEmployees: 15,
     normalPriceRp: 15000,
     promoPriceRp: 15000,
-    description: 'Pilihan favorit untuk toko, kedai, kafe, atau bengkel dengan s/d 15 staf (Shared Pod).',
+    description: 'Pilihan favorit untuk toko, kedai, kafe, atau bengkel dengan s/d 15 staf di Shared Multi-Tenant Pod.',
     isPopular: true,
     pricing: {
       '1': { normalRp: 15000, promoRp: 15000, discountPercent: 0, label: '1 Bulan' },
@@ -121,6 +122,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     },
     features: [
       'Maksimal 15 Karyawan Aktif',
+      'Shared Multi-Tenant Cloudflare Pod',
       'Pilihan Durasi 1 Bulan s/d 5 Tahun',
       'Geofencing Radius GPS & Anti-Fake GPS',
       'Otomasi Payroll & Export Slip Gaji PDF',
@@ -131,13 +133,13 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
   },
   {
     id: 'pro',
-    name: 'Pro Dedicated',
+    name: 'Business Pro',
     badge: '1 Akun CF Dedicated',
     isFree: false,
     maxEmployees: 50,
     normalPriceRp: 49000,
     promoPriceRp: 39000,
-    description: '1 Dedicated Pod di 1 Akun Cloudflare mandiri dengan custom URL sendiri (misal: ngabsen.historycake.com).',
+    description: '1 Dedicated Pod di 1 Akun Cloudflare mandiri dengan custom domain sendiri (Database D1, Worker & KV terisolasi penuh).',
     isPopular: false,
     pricing: {
       '1': { normalRp: 49000, promoRp: 39000, discountPercent: 20, label: '1 Bulan' },
@@ -149,7 +151,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     },
     features: [
       '1 Dedicated Pod di 1 Akun Cloudflare Khusus',
-      'Bisa Custom URL (misal: ngabsen.historycake.com & dash-ngabsen...)',
+      'Bisa Custom Domain Sendiri (misal: absen.perusahaan.com)',
       'Database D1 & Worker Terisolasi Penuh Tanpa Berbagi',
       'Maksimal 50 Karyawan Aktif (Bisa Upgrade)',
       'Dukungan Multi-Cabang & Multi-Lokasi',
@@ -159,6 +161,78 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     ],
   },
 ];
+
+/**
+ * Sanitasi daftar Pricing Tier untuk memastikan:
+ * 1. Menghapus total paket Full White-Label & Source Code.
+ * 2. Normalisasi paket Pro menjadi Business Pro dengan Dedicated Pod.
+ * 3. Memastikan hanya ada 3 paket baku: Free Trial, Starter UMKM, dan Business Pro.
+ */
+export function sanitizePricingTiers(tiers?: any[]): PricingTier[] {
+  if (!Array.isArray(tiers) || tiers.length === 0) {
+    return DEFAULT_PRICING_TIERS;
+  }
+
+  // 1. Filter out White-Label / Source Code tier apapun
+  const filtered = tiers.filter((t) => {
+    const id = String(t?.id || '').toLowerCase();
+    const name = String(t?.name || '').toLowerCase();
+    const isWhiteLabel =
+      id.includes('white') ||
+      id.includes('enterprise') ||
+      name.includes('white') ||
+      name.includes('source code') ||
+      name.includes('hak cipta');
+    return !isWhiteLabel;
+  });
+
+  // 2. Normalisasi Pro tier & Starter tier
+  const normalized = filtered.map((t) => {
+    const id = String(t?.id || '').toLowerCase();
+    const name = String(t?.name || '').toLowerCase();
+
+    if (id === 'pro' || id === 'business' || id === 'business_pro' || name.includes('pro')) {
+      return {
+        ...t,
+        id: 'pro',
+        name: 'Business Pro',
+        badge: '1 Akun CF Dedicated',
+        maxEmployees: t.maxEmployees && t.maxEmployees > 15 ? t.maxEmployees : 50,
+      };
+    }
+    if (id === 'starter' || name.includes('starter')) {
+      return {
+        ...t,
+        id: 'starter',
+        name: 'Starter UMKM',
+        badge: 'Paling Hemat',
+        maxEmployees: 15,
+      };
+    }
+    if (id === 'free_trial' || id === 'free' || t.isFree) {
+      return {
+        ...t,
+        id: 'free_trial',
+        name: 'Free Trial UMKM',
+        badge: 'Gratis 4 Bulan',
+        isFree: true,
+        maxEmployees: 4,
+      };
+    }
+    return t;
+  });
+
+  // 3. Pastikan ketiga paket baku ada
+  const hasFree = normalized.some((t) => t.isFree || t.id === 'free_trial');
+  const hasStarter = normalized.some((t) => t.id === 'starter');
+  const hasPro = normalized.some((t) => t.id === 'pro');
+
+  if (!hasFree || !hasStarter || !hasPro) {
+    return DEFAULT_PRICING_TIERS;
+  }
+
+  return normalized;
+}
 
 export const DEFAULT_SELLER_CONFIG: SellerConfig = {
   brandName: 'akugawe',
@@ -205,7 +279,7 @@ export const DEFAULT_SELLER_CONFIG: SellerConfig = {
 
   // Email Notification & Verification
   resendApiKey: '',
-  emailFrom: 'akugawe <noreply@akugawe.id>',
+  emailFrom: 'akugawe <onboarding@resend.dev>',
 };
 
 export function loadSellerConfig(): SellerConfig {
@@ -217,12 +291,33 @@ export function loadSellerConfig(): SellerConfig {
         ? 'akugawe'
         : (parsed.brandName || DEFAULT_SELLER_CONFIG.brandName);
 
-      return {
+      // Jika emailFrom masih domain placeholder dummy yang belum diverifikasi, arahkan ke onboarding@resend.dev
+      const cleanEmailFrom = parsed.emailFrom && parsed.emailFrom.includes('noreply@akugawe.id')
+        ? 'akugawe <onboarding@resend.dev>'
+        : (parsed.emailFrom || DEFAULT_SELLER_CONFIG.emailFrom);
+
+      // Sanitasi tiers dari localStorage browser pembeli/admin
+      const cleanPricingTiers = sanitizePricingTiers(parsed.pricingTiers);
+
+      const loadedConfig: SellerConfig = {
         ...DEFAULT_SELLER_CONFIG,
         ...parsed,
         brandName: cleanBrandName,
-        pricingTiers: parsed.pricingTiers && parsed.pricingTiers.length > 0 ? parsed.pricingTiers : DEFAULT_PRICING_TIERS,
+        emailFrom: cleanEmailFrom,
+        pricingTiers: cleanPricingTiers,
       };
+
+      // Jika ada perubahan setelah sanitasi (misal whitelabel terhapus), simpan balik ke localStorage
+      if (
+        parsed.pricingTiers &&
+        JSON.stringify(parsed.pricingTiers) !== JSON.stringify(cleanPricingTiers)
+      ) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(loadedConfig));
+        } catch (_) {}
+      }
+
+      return loadedConfig;
     }
   } catch (err) {
     console.error('Error loading seller config:', err);
@@ -233,9 +328,114 @@ export function loadSellerConfig(): SellerConfig {
 export function saveSellerConfig(config: SellerConfig): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('seller-config-updated', { detail: config }));
+    }
     return true;
   } catch (err) {
     console.error('Error saving seller config:', err);
     return false;
+  }
+}
+
+/**
+ * Mengambil konfigurasi TERBARU langsung dari Database Cloudflare D1 (/api/config)
+ * Jika adminPin disertakan, server akan mengembalikan konfigurasi lengkap beserta kredensial sensitif
+ */
+export async function fetchSellerConfig(adminPin?: string): Promise<SellerConfig> {
+  try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (adminPin && adminPin.trim()) {
+      headers['x-admin-pin'] = adminPin.trim();
+    }
+
+    const res = await fetch('/api/config', { method: 'GET', headers });
+    const data = await res.json();
+
+    if (data.ok && data.config) {
+      const current = loadSellerConfig();
+      const dbConfig = data.config;
+
+      const merged: SellerConfig = {
+        ...current,
+        ...dbConfig,
+        brandName: dbConfig.brandName || current.brandName || DEFAULT_SELLER_CONFIG.brandName,
+        pricingTiers: sanitizePricingTiers(
+          Array.isArray(dbConfig.pricingTiers) && dbConfig.pricingTiers.length > 0
+            ? dbConfig.pricingTiers
+            : current.pricingTiers
+        ),
+      };
+
+      // Sinkronkan ke cache lokal dan beri tahu komponen
+      saveSellerConfig(merged);
+      return merged;
+    }
+  } catch (err) {
+    console.warn('Notice: Failed fetching seller config from DB, using cached fallback:', err);
+  }
+  return loadSellerConfig();
+}
+
+/**
+ * Menyimpan seluruh konfigurasi operasional dan kredensial langsung ke Cloudflare Database D1
+ */
+export async function saveSellerConfigToDb(
+  config: SellerConfig,
+  masterPin: string,
+  newAdminPin?: string
+): Promise<{ ok: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        masterPin: masterPin.trim(),
+        publicConfig: {
+          brandName: config.brandName,
+          whatsappNumber: config.whatsappNumber,
+          defaultSalesMessage: config.defaultSalesMessage,
+          isPromoActive: config.isPromoActive,
+          promoBannerText: config.promoBannerText,
+          pricingTiers: config.pricingTiers,
+          demoDashboardUrl: config.demoDashboardUrl,
+          demoAppUrl: config.demoAppUrl,
+          managedSetupEnabled: config.managedSetupEnabled,
+          managedSetupPriceRp: config.managedSetupPriceRp,
+          managedSetupTitle: config.managedSetupTitle,
+          managedSetupDescription: config.managedSetupDescription,
+          paymentMode: config.paymentMode,
+          pakasirProjectSlug: config.pakasirProjectSlug,
+          pakasirApiUrl: config.pakasirApiUrl,
+          staticQrisString: config.staticQrisString,
+          autoLockMinutes: config.autoLockMinutes,
+          githubRepoUrl: config.githubRepoUrl,
+          githubWorkflowFile: config.githubWorkflowFile,
+          activePodId: config.activePodId,
+          defaultCloudflareZoneId: config.defaultCloudflareZoneId,
+          emailFrom: config.emailFrom,
+        },
+        sensitiveSecrets: {
+          telegramBotToken: config.telegramBotToken || '',
+          telegramBotUsername: config.telegramBotUsername || '',
+          authorizedChatId: config.authorizedChatId || '',
+          githubPatToken: config.githubPatToken || '',
+          pakasirApiKey: config.pakasirApiKey || '',
+          resendApiKey: config.resendApiKey || '',
+          emailFrom: config.emailFrom || '',
+          staticQrisString: config.staticQrisString || '',
+          newAdminPin: newAdminPin && newAdminPin.trim().length >= 4 ? newAdminPin.trim() : undefined,
+        },
+      }),
+    });
+
+    const data = await res.json();
+    if (data.ok) {
+      saveSellerConfig(config);
+      return { ok: true, message: data.message };
+    }
+    return { ok: false, error: data.error || 'Gagal menyimpan ke Database D1.' };
+  } catch (err: any) {
+    return { ok: false, error: err?.message || 'Gagal menghubungi server database.' };
   }
 }

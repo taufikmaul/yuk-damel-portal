@@ -39,12 +39,13 @@ import {
   TokenVerificationResult,
 } from '../services/licenseService';
 import { sendTelegramOtp, getLastTelegramError } from '../services/telegram';
-import { loadSellerConfig } from '../services/config';
+import { loadSellerConfig, fetchSellerConfig, type SellerConfig } from '../services/config';
 import { Logo } from '../assets/logo';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Onboarding1 } from '@/components/ui/onboarding1';
 import { toast } from 'sonner';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
 interface OnboardingProps {
   initialToken?: string;
@@ -101,8 +102,12 @@ function formatSlug(name: string): string {
 }
 
 export function OnboardingPage({ initialToken = '', onBackToLanding }: OnboardingProps) {
-  const sellerConfig = loadSellerConfig();
+  const [sellerConfig, setSellerConfig] = useState<SellerConfig>(loadSellerConfig);
   const botUsername = sellerConfig.telegramBotUsername || 'AkugawePortalBot';
+
+  useEffect(() => {
+    fetchSellerConfig().then((cfg) => setSellerConfig(cfg));
+  }, []);
 
   // Token Verification State
   const [tokenInput, setTokenInput] = useState(initialToken);
@@ -198,6 +203,15 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     }
     return null;
   });
+
+  // Redeploy confirmation modal state
+  const [redeployConfirmOpen, setRedeployConfirmOpen] = useState(false);
+  const [redeployTargetInfo, setRedeployTargetInfo] = useState<{
+    targetName: string;
+    targetSlug: string;
+    accId: string;
+    tokenVal: string;
+  } | null>(null);
 
   // Admin State & Verification for Redeploy Capability
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
@@ -342,14 +356,20 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     const targetName = businessName || saved?.businessName || (verification.valid ? verification.client.name : 'Usaha Anda');
     const targetSlug = businessSlug || saved?.businessSlug || formatSlug(targetName);
 
-    const confirmDeploy = window.confirm(
-      `Picu ulang deployment ke Cloudflare dengan konfigurasi yang sama?\n\n` +
-      `• Nama Bisnis: ${targetName}\n` +
-      `• Slug: ${targetSlug}\n` +
-      `• Cloudflare Account ID: ${accId.slice(0, 8)}...${accId.slice(-4)}\n` +
-      `• Mode Database: ${deployMode}`
-    );
-    if (!confirmDeploy) return;
+    setRedeployTargetInfo({
+      targetName,
+      targetSlug,
+      accId,
+      tokenVal,
+    });
+    setRedeployConfirmOpen(true);
+  };
+
+  const executeDirectRedeploy = async () => {
+    if (!redeployTargetInfo) return;
+    const token = (verification.valid ? verification.client.token : tokenInput) || initialToken;
+    const saved = getSavedDeployState(token);
+    const { targetName, targetSlug, accId, tokenVal } = redeployTargetInfo;
 
     setIsDeploying(true);
     setDispatchError(null);
@@ -1961,6 +1981,31 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog Picu Ulang Deployment */}
+      <ConfirmationDialog
+        open={redeployConfirmOpen}
+        onOpenChange={setRedeployConfirmOpen}
+        title="Picu Ulang Deployment ke Cloudflare?"
+        description={
+          redeployTargetInfo ? (
+            <div className="space-y-1.5 text-xs text-slate-600 mt-2">
+              <p>Deployment akan dipicu ulang dengan konfigurasi yang sama:</p>
+              <ul className="list-disc list-inside space-y-0.5 font-mono text-[11px] bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                <li>Nama Bisnis: <span className="font-semibold text-slate-800">{redeployTargetInfo.targetName}</span></li>
+                <li>Slug: <span className="font-semibold text-slate-800">{redeployTargetInfo.targetSlug}</span></li>
+                <li>Cloudflare Account ID: <span className="font-semibold text-slate-800">{redeployTargetInfo.accId.slice(0, 8)}...{redeployTargetInfo.accId.slice(-4)}</span></li>
+                <li>Mode Database: <span className="font-semibold text-slate-800">{deployMode}</span></li>
+              </ul>
+            </div>
+          ) : undefined
+        }
+        confirmText="Picu Ulang Sekarang"
+        cancelText="Batal"
+        variant="destructive"
+        isLoading={isDeploying}
+        onConfirm={executeDirectRedeploy}
+      />
     </div>
   );
 }

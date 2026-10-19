@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { PricingSection } from './components/pricing-section';
 import { ScrollReveal } from './components/ScrollReveal';
-import { loadSellerConfig } from './services/config';
+import { loadSellerConfig, fetchSellerConfig, type SellerConfig } from './services/config';
 
 const OnboardingPage = lazy(() =>
   import('./components/OnboardingPage').then((m) => ({ default: m.OnboardingPage }))
@@ -37,7 +37,7 @@ const AdminPortalPage = lazy(() =>
 );
 
 export function App() {
-  const sellerConfig = loadSellerConfig();
+  const [sellerConfig, setSellerConfig] = useState<SellerConfig>(loadSellerConfig);
   const dashboardUrl =
     sellerConfig.demoDashboardUrl ||
     import.meta.env.VITE_DASHBOARD_URL ||
@@ -46,6 +46,15 @@ export function App() {
     sellerConfig.demoAppUrl ||
     import.meta.env.VITE_APP_URL ||
     'https://app.akugawe.web.id/demo';
+
+  useEffect(() => {
+    fetchSellerConfig().then((cfg) => setSellerConfig(cfg));
+    const handleUpdate = (e: any) => {
+      if (e.detail) setSellerConfig(e.detail);
+    };
+    window.addEventListener('seller-config-updated', handleUpdate);
+    return () => window.removeEventListener('seller-config-updated', handleUpdate);
+  }, []);
 
   // Routing view: 'landing' | 'onboarding' | 'admin'
   const [currentView, setCurrentView] = useState<'landing' | 'onboarding' | 'admin'>(() => {
@@ -1079,6 +1088,7 @@ export function App() {
         {/* 5. PRICING SECTION */}
         <ScrollReveal delayMs={0} yOffset={20}>
           <PricingSection
+            sellerConfig={sellerConfig}
             onProceedToOnboarding={(token) => {
               setActiveToken(token);
               setCurrentView('onboarding');

@@ -17,7 +17,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     }
 
     const body: any = await context.request.json().catch(() => ({}));
-    const { targetEmail } = body;
+    const { targetEmail, apiKey, emailFrom } = body;
 
     if (!targetEmail || typeof targetEmail !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(targetEmail.trim())) {
       return jsonResponse({ ok: false, error: 'Target email tidak valid.' }, 400);
@@ -27,6 +27,8 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
 
     const result = await sendEmail(context.env, {
       to: cleanEmail,
+      apiKeyOverride: typeof apiKey === 'string' && apiKey.trim() ? apiKey.trim() : undefined,
+      fromOverride: typeof emailFrom === 'string' && emailFrom.trim() ? emailFrom.trim() : undefined,
       subject: '✅ Uji Coba Pengiriman Email akugawe Berhasil',
       html: `
         <div style="font-family: sans-serif; padding: 24px; color: #1e293b; max-width: 500px; margin: 0 auto; border: 1px solid #f0dbd8; border-radius: 16px;">
