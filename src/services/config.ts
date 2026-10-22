@@ -154,6 +154,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
       'Bisa Custom Domain Sendiri (misal: absen.perusahaan.com)',
       'Database D1 & Worker Terisolasi Penuh Tanpa Berbagi',
       'Maksimal 50 Karyawan Aktif (Bisa Upgrade)',
+      'Fitur Canvasing Sales & Kunjungan Toko (Beat Plan, Live GPS, Taking Order, Tagihan)',
       'Dukungan Multi-Cabang & Multi-Lokasi',
       'Pengaturan Shift Kerja Fleksibel',
       'Laporan Analitik Kehadiran & Rekap PPh 21',
