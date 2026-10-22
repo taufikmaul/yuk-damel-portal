@@ -196,7 +196,7 @@ export interface CloudflarePod {
  *    - Isolasi infrastruktur penuh (Dedicated Workers, D1 DB, KV, dan R2).
  */
 export async function getActivePod(env: Env, tierId?: string): Promise<CloudflarePod | null> {
-  const isDedicated = tierId === 'pro' || tierId === 'enterprise';
+  const isDedicated = tierId === 'pro' || tierId === 'enterprise' || tierId === 'business_pro' || (tierId || '').includes('pro');
 
   const defaultSharedPod: CloudflarePod = {
     id: 'pod-01',
