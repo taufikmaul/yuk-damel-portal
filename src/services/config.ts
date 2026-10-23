@@ -139,7 +139,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
     maxEmployees: 50,
     normalPriceRp: 49000,
     promoPriceRp: 39000,
-    description: '1 Dedicated Pod di 1 Akun Cloudflare mandiri dengan custom domain sendiri (Database D1, Worker & KV terisolasi penuh).',
+    description: '1 Dedicated Pod di 1 Akun Cloudflare mandiri dengan custom domain sendiri & Fitur Canvasing Sales / Kunjungan Toko lengkap.',
     isPopular: false,
     pricing: {
       '1': { normalRp: 49000, promoRp: 39000, discountPercent: 20, label: '1 Bulan' },
@@ -154,7 +154,7 @@ export const DEFAULT_PRICING_TIERS: PricingTier[] = [
       'Bisa Custom Domain Sendiri (misal: absen.perusahaan.com)',
       'Database D1 & Worker Terisolasi Penuh Tanpa Berbagi',
       'Maksimal 50 Karyawan Aktif (Bisa Upgrade)',
-      'Fitur Canvasing Sales & Kunjungan Toko (Beat Plan, Live GPS, Taking Order, Tagihan)',
+      'Fitur Canvasing Sales & Kunjungan Toko (Beat Plan, Peta Sebaran, Live GPS, Taking Order, Tagihan)',
       'Dukungan Multi-Cabang & Multi-Lokasi',
       'Pengaturan Shift Kerja Fleksibel',
       'Laporan Analitik Kehadiran & Rekap PPh 21',
@@ -193,12 +193,27 @@ export function sanitizePricingTiers(tiers?: any[]): PricingTier[] {
     const name = String(t?.name || '').toLowerCase();
 
     if (id === 'pro' || id === 'business' || id === 'business_pro' || name.includes('pro')) {
+      const existingFeatures: string[] = Array.isArray(t.features) ? [...t.features] : [...DEFAULT_PRICING_TIERS[2].features];
+      const hasCanvasing = existingFeatures.some((f) => {
+        const lower = String(f || '').toLowerCase();
+        return lower.includes('canvasing') || lower.includes('kunjungan toko');
+      });
+      if (!hasCanvasing) {
+        const insertIndex = Math.min(4, existingFeatures.length);
+        existingFeatures.splice(
+          insertIndex,
+          0,
+          'Fitur Canvasing Sales & Kunjungan Toko (Beat Plan, Peta Sebaran, Live GPS, Taking Order, Tagihan)'
+        );
+      }
+
       return {
         ...t,
         id: 'pro',
         name: 'Business Pro',
         badge: '1 Akun CF Dedicated',
         maxEmployees: t.maxEmployees && t.maxEmployees > 15 ? t.maxEmployees : 50,
+        features: existingFeatures,
       };
     }
     if (id === 'starter' || name.includes('starter')) {

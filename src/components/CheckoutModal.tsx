@@ -63,6 +63,11 @@ export function CheckoutModal({
   const [resendCooldown, setResendCooldown] = useState(0);
 
   const isFreeTier = Boolean(selectedTier?.isFree || selectedTier?.id === 'free_trial');
+  const isProTier = Boolean(
+    selectedTier?.id === 'pro' ||
+      selectedTier?.id === 'business_pro' ||
+      selectedTier?.name?.toLowerCase().includes('pro')
+  );
   const durationMonths = isFreeTier ? (selectedTier.freeDurationMonths || 4) : selectedDurationMonths;
 
   // Auto pre-fill dari URL Parameters jika prospek datang dari Demo App
@@ -227,6 +232,7 @@ export function CheckoutModal({
         `📱 No WhatsApp: ${buyerPhone}\n` +
         `✉️ Email: ${buyerEmail || '-'}\n` +
         `👥 Kuota: Maks ${selectedTier.maxEmployees} Karyawan\n` +
+        (isProTier ? `✨ Fitur Pro: *Canvasing Sales & Kunjungan Toko + Dedicated Pod*\n` : '') +
         `🛠️ VIP Setup: *${hasManagedSetup ? 'YA' : 'Mandiri'}*\n` +
         `💰 Total: *Rp ${estimatedTotal.toLocaleString('id-ID')}*\n\n` +
         `Mohon info rekening & cara aktivasinya ya. Terima kasih!`;
@@ -451,6 +457,18 @@ export function CheckoutModal({
                       {durationMonths} Bulan Penuh
                     </span>
                   </div>
+
+                  {isProTier && (
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-slate-500 flex items-center gap-1.5">
+                        <Sparkles className="size-3.5 text-indigo-600" />
+                        Fitur Eksklusif Pro
+                      </span>
+                      <span className="font-bold text-indigo-700">
+                        Canvasing Sales & Dedicated Pod
+                      </span>
+                    </div>
+                  )}
 
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500">Biaya Langganan</span>

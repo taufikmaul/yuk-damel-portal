@@ -24,6 +24,10 @@ import {
   Sparkles,
   Calculator,
   Wallet,
+  Store,
+  Navigation,
+  ShoppingBag,
+  CheckCircle2,
 } from 'lucide-react';
 import { PricingSection } from './components/pricing-section';
 import { ScrollReveal } from './components/ScrollReveal';
@@ -216,6 +220,10 @@ export function App() {
       a: 'akugawe punya perlindungan ganda yang sangat ketat: karyawan wajib absen selfie langsung dari kamera HP dan harus berada di dalam radius kantor atau toko. Aplikasi otomatis menolak Fake GPS dan foto dari galeri. Ditambah fitur Kunci HP, di mana 1 akun karyawan hanya bisa login di 1 HP miliknya yang sudah diverifikasi oleh atasan.',
     },
     {
+      q: 'Apa saja yang ada di Fitur Canvasing Sales & Kunjungan Toko (Business Pro)?',
+      a: 'Khusus paket Business Pro, tim sales lapangan mendapat tab Kunjungan terdedikasi di HP mereka: jadwal rute kunjungan harian (Beat Plan) dengan tombol navigasi Google Maps, check-in & check-out toko dengan foto bukti, koordinat GPS & durasi kunjungan otomatis, pencatatan pesanan barang (Taking Order PO), penagihan pembayaran (Tunai/Transfer/Giro) beserta serah terima setoran ke kasir kantor, klaim BBM, peta sebaran kunjungan interaktif di dashboard, serta mode Offline-First yang tetap menyimpan data meski sinyal susah.',
+    },
+    {
       q: 'Bagaimana cara kerja Sistem Poin Hadiah & Streak kedisiplinan?',
       a: 'Setiap kali karyawan absen masuk tepat waktu sebelum batas toleransi habis, mereka otomatis dapat +10 poin harian dan lencana streak on-time (misal: 14 hari tanpa telat berturut-turut). Poin yang terkumpul bisa ditukar langsung lewat HP dengan voucher belanja (Indomaret/Alfamart), saldo e-wallet, atau tambahan hari libur cuti.',
     },
@@ -387,7 +395,7 @@ export function App() {
             <ScrollReveal delayMs={0} yOffset={16}>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-zinc-200 bg-zinc-50 text-[11px] sm:text-xs font-medium text-zinc-700 mb-6 shadow-2xs max-w-full">
                 <span className="size-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="truncate">Absen Selfie GPS Anti-Titip, Kasbon & Gaji Otomatis</span>
+                <span className="truncate">Absen Selfie GPS, Canvasing Sales Toko, Kasbon & Gaji Otomatis</span>
               </div>
             </ScrollReveal>
 
@@ -401,7 +409,7 @@ export function App() {
             {/* Subtitle tailored to general users */}
             <ScrollReveal delayMs={140} yOffset={24}>
               <p className="mt-5 text-base sm:text-lg text-zinc-600 max-w-2xl mx-auto leading-relaxed">
-                Tinggalkan cara absensi manual yang ribet dan bikin pusing. Karyawan cukup absen selfie lewat HP di lokasi toko, kumpulkan poin hadiah, ajukan kasbon & cuti. Gaji, uang lembur, dan slip PDF langsung terhitung rapi tanpa rumus Excel.
+                Tinggalkan cara absensi manual yang ribet dan bikin pusing. Karyawan cukup absen selfie lewat HP di lokasi toko, tim sales catat kunjungan toko & order (Canvasing), kumpulkan poin hadiah, ajukan kasbon & cuti. Gaji, uang lembur, dan slip PDF langsung terhitung rapi tanpa rumus Excel.
               </p>
             </ScrollReveal>
 
@@ -521,10 +529,10 @@ export function App() {
                             SM
                           </div>
                           <span className="font-semibold text-zinc-900 truncate">Salsa Mahardika</span>
-                          <span className="text-zinc-400 text-[11px] truncate hidden xs:inline">— Supervisor Sudirman</span>
+                          <span className="text-zinc-400 text-[11px] truncate hidden xs:inline">— Sales Canvasing (Beat Plan)</span>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-amber-600 text-[11px] font-medium hidden sm:inline">Dinas Luar</span>
+                          <span className="text-amber-600 text-[11px] font-medium hidden sm:inline">Kunjungan Toko</span>
                           <span className="text-zinc-500 font-mono text-[11px]">08:19 WIB</span>
                         </div>
                       </div>
@@ -577,6 +585,10 @@ export function App() {
                     <Calendar className="size-3 text-[#a9484c] mx-auto" />
                     <span className="text-[8px] font-bold text-[#a9484c] block mt-0.5">Cuti</span>
                   </div>
+                  <div className="p-1 rounded-lg bg-indigo-50 border border-indigo-100">
+                    <Store className="size-3 text-indigo-600 mx-auto" />
+                    <span className="text-[8px] font-bold text-indigo-700 block mt-0.5">Kunjungan</span>
+                  </div>
                   <div className="p-1 rounded-lg bg-emerald-50 border border-emerald-100">
                     <FileText className="size-3 text-emerald-600 mx-auto" />
                     <span className="text-[8px] font-bold text-emerald-700 block mt-0.5">Slip Gaji</span>
@@ -588,10 +600,6 @@ export function App() {
                   <div className="p-1 rounded-lg bg-sky-50 border border-sky-100">
                     <Receipt className="size-3 text-sky-600 mx-auto" />
                     <span className="text-[8px] font-bold text-sky-700 block mt-0.5">Reimburse</span>
-                  </div>
-                  <div className="p-1 rounded-lg bg-amber-50 border border-amber-100">
-                    <Gift className="size-3 text-amber-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-amber-700 block mt-0.5">Hadiah</span>
                   </div>
                   <div className="p-1 rounded-lg bg-purple-50 border border-purple-100">
                     <Bot className="size-3 text-purple-600 mx-auto" />
@@ -882,23 +890,110 @@ export function App() {
                   </div>
                 </div>
               </ScrollReveal>
+
+              {/* Feature 7: Canvasing Sales & Kunjungan Toko (Full-Width 12 cols - Business Pro) */}
+              <ScrollReveal delayMs={260} yOffset={24} className="lg:col-span-12 rounded-2xl border border-[#f0dbd8] bg-gradient-to-br from-[#fff9f8] via-white to-[#faf6f5] p-6 sm:p-8 shadow-xs">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                  <div className="lg:col-span-7">
+                    <div className="inline-flex items-center gap-2 mb-2.5">
+                      <span className="text-xs font-bold text-[#a9484c] uppercase tracking-wider">
+                        Canvasing Sales & Kunjungan Toko
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        ✨ Eksklusif Business Pro
+                      </span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl font-bold text-zinc-900">
+                      Jadwal Beat Plan, Peta Sebaran Kunjungan, Taking Order PO, & Setoran Tagihan Toko
+                    </h3>
+                    <p className="mt-2 text-sm text-zinc-600 leading-relaxed">
+                      Pantau tim sales lapangan secara menyeluruh dari tab <strong>Kunjungan</strong> khusus di aplikasi HP: supervisor atur master direktori toko & jadwal rute harian (Beat Plan) dengan navigasi Google Maps, sales wajib check-in & check-out di tiap toko (terkunci setelah clock-out harian) lengkap dengan foto, koordinat GPS, dan durasi kunjungan. Catat pesanan barang (Taking Order PO), tagihan tunai/transfer/giro beserta serah terima kasir kantor, hingga mode <em>Offline-First</em> saat sinyal lemah.
+                    </p>
+
+                    <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                      <div className="px-3 py-2.5 rounded-xl bg-white border border-zinc-200 flex items-center gap-2">
+                        <Navigation className="size-4 text-indigo-600 shrink-0" />
+                        <div className="truncate">
+                          <p className="font-bold text-zinc-900 truncate">Beat Plan & Peta</p>
+                          <p className="text-[11px] text-zinc-500 truncate">Navigasi Google Maps</p>
+                        </div>
+                      </div>
+                      <div className="px-3 py-2.5 rounded-xl bg-white border border-zinc-200 flex items-center gap-2">
+                        <ShoppingBag className="size-4 text-[#a9484c] shrink-0" />
+                        <div className="truncate">
+                          <p className="font-bold text-zinc-900 truncate">Taking Order (PO)</p>
+                          <p className="text-[11px] text-zinc-500 truncate">Catat Pesanan di Toko</p>
+                        </div>
+                      </div>
+                      <div className="px-3 py-2.5 rounded-xl bg-white border border-zinc-200 flex items-center gap-2">
+                        <Wallet className="size-4 text-emerald-600 shrink-0" />
+                        <div className="truncate">
+                          <p className="font-bold text-zinc-900 truncate">Inkaso & Setoran</p>
+                          <p className="text-[11px] text-zinc-500 truncate">Serah Terima Kasir</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Interactive Kunjungan Preview Card */}
+                  <div className="lg:col-span-5">
+                    <div className="rounded-xl border border-zinc-200/90 bg-white p-4 shadow-2xs space-y-2.5">
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-100">
+                        <div className="flex items-center gap-1.5">
+                          <Store className="size-4 text-[#a9484c]" />
+                          <span className="text-xs font-bold text-zinc-900">Pantauan Kunjungan Sales Hari Ini</span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          Live Peta & Offline Sync
+                        </span>
+                      </div>
+
+                      <div className="px-3 py-2 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2 truncate min-w-0">
+                          <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                          <span className="font-semibold text-zinc-900 truncate">Toko Sumber Makmur</span>
+                          <span className="text-zinc-400 text-[11px] truncate hidden sm:inline">— 42 Menit</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-emerald-700 shrink-0">PO Rp 4,2 Jt</span>
+                      </div>
+
+                      <div className="px-3 py-2 rounded-lg bg-zinc-50 border border-zinc-200/80 flex items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2 truncate min-w-0">
+                          <CheckCircle2 className="size-3.5 text-emerald-600 shrink-0" />
+                          <span className="font-semibold text-zinc-900 truncate">Grosir Berkah Jaya</span>
+                          <span className="text-zinc-400 text-[11px] truncate hidden sm:inline">— Setor Tunai</span>
+                        </div>
+                        <span className="text-[11px] font-bold text-indigo-700 shrink-0">Tagihan Lunas</span>
+                      </div>
+
+                      <div className="px-3 py-2 rounded-lg bg-[#fbf2f0]/70 border border-[#f0dbd8] flex items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2 truncate min-w-0">
+                          <MapPin className="size-3.5 text-[#a9484c] shrink-0" />
+                          <span className="font-semibold text-zinc-900 truncate">Minimarket Sentosa (Jadwal #3)</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-[#a9484c] shrink-0">Buka Rute Maps →</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ScrollReveal>
             </div>
 
-            {/* Spill 5 Fitur Unggulan (Detailed Spotlight Section) */}
+            {/* Spill 6 Fitur Unggulan (Detailed Spotlight Section) */}
             <div className="mt-20 pt-16 border-t border-zinc-200/80">
               <ScrollReveal delayMs={0} yOffset={20} className="text-center max-w-3xl mx-auto mb-14">
                 <p className="text-xs font-semibold text-[#a9484c] uppercase tracking-wider mb-3">
                   Keunggulan utama akugawe
                 </p>
                 <h3 className="text-3xl sm:text-4xl font-bold text-zinc-900 tracking-tight leading-tight">
-                  5 Hal yang bikin karyawan betah & pemilik usaha tenang
+                  6 Hal yang bikin karyawan betah & pemilik usaha tenang
                 </h3>
                 <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed">
-                  Bukan cuma alat catat jam kerja, tapi solusi lengkap untuk memotivasi karyawan dan mempermudah operasional harian usaha Anda.
+                  Bukan cuma alat catat jam kerja, tapi solusi lengkap untuk memotivasi karyawan, mengawal tim sales lapangan, dan mempermudah operasional harian usaha Anda.
                 </p>
               </ScrollReveal>
 
-              {/* 5 Keunggulan: Mobile horizontal scrollable, responsive grid on desktop */}
+              {/* 6 Keunggulan: Mobile horizontal scrollable, responsive grid on desktop */}
               <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0">
                 {/* 1. Sistem Poin & Hadiah */}
                 <ScrollReveal delayMs={0} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-zinc-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
@@ -922,8 +1017,35 @@ export function App() {
                   </div>
                 </ScrollReveal>
 
-                {/* 2. Kasbon Darurat */}
-                <ScrollReveal delayMs={60} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-zinc-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                {/* 2. Canvasing Sales & Kunjungan Toko */}
+                <ScrollReveal delayMs={40} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-indigo-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-3.5">
+                      <div className="size-10 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700">
+                        <Store className="size-5" />
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        Business Pro
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-1.5">
+                      Tim Sales & Distribusi
+                    </p>
+                    <h4 className="text-base sm:text-lg font-bold text-zinc-900">
+                      Canvasing Sales & Kunjungan Toko
+                    </h4>
+                    <p className="mt-2 text-xs text-zinc-600 leading-relaxed">
+                      Kelola jadwal rute kunjungan harian (Beat Plan) dengan pinpoint peta & navigasi Google Maps. Sales wajib check-in/out GPS di toko, input pesanan (Taking Order PO), catat penagihan tunai/transfer hingga serah terima kasir kantor, tetap jalan saat offline.
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500">
+                    <span>Beat Plan & Peta Sebaran</span>
+                    <span className="font-semibold text-indigo-700">Order PO & Setoran</span>
+                  </div>
+                </ScrollReveal>
+
+                {/* 3. Kasbon Darurat */}
+                <ScrollReveal delayMs={80} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-zinc-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="size-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 mb-3.5">
                       <Wallet className="size-5" />
@@ -944,7 +1066,7 @@ export function App() {
                   </div>
                 </ScrollReveal>
 
-                {/* 3. THR Proporsional */}
+                {/* 4. THR Proporsional */}
                 <ScrollReveal delayMs={120} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-zinc-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="size-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 mb-3.5">
@@ -966,7 +1088,7 @@ export function App() {
                   </div>
                 </ScrollReveal>
 
-                {/* 4. Reimbursement Kuitansi */}
+                {/* 5. Reimbursement Kuitansi */}
                 <ScrollReveal delayMs={180} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-white rounded-2xl border border-zinc-200/90 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="size-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-700 mb-3.5">
@@ -988,44 +1110,29 @@ export function App() {
                   </div>
                 </ScrollReveal>
 
-                {/* 5. Asisten AI & Bot Telegram */}
-                <ScrollReveal delayMs={240} yOffset={24} className="w-[88vw] max-w-[480px] md:w-auto md:max-w-none md:col-span-2 lg:col-span-2 shrink-0 snap-center bg-gradient-to-br from-zinc-900 to-zinc-950 text-white rounded-2xl border border-zinc-800 p-5 sm:p-7 shadow-xs flex flex-col justify-between">
+                {/* 6. Asisten AI & Bot Telegram */}
+                <ScrollReveal delayMs={240} yOffset={24} className="w-[84vw] max-w-[340px] md:w-auto md:max-w-none shrink-0 snap-center bg-gradient-to-br from-zinc-900 to-zinc-950 text-white rounded-2xl border border-zinc-800 p-5 sm:p-6 shadow-xs flex flex-col justify-between">
                   <div>
                     <div className="flex items-center justify-between mb-3.5">
                       <div className="size-10 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center text-rose-400">
                         <Bot className="size-5" />
                       </div>
-                      <span className="text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="size-3" /> Asisten Pintar 24 Jam
+                      <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles className="size-3" /> AI 24 Jam
                       </span>
                     </div>
 
-                    <h4 className="text-lg sm:text-xl font-bold text-white">
-                      Asisten AI & Bot Telegram (Tanya Jawab & ACC Lewat Chat)
+                    <h4 className="text-base sm:text-lg font-bold text-white">
+                      Asisten AI & Bot Telegram
                     </h4>
-                    <p className="mt-2.5 text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                      Dilengkapi asisten kecerdasan buatan (AI) yang terhubung ke bot Telegram dan standar terbuka (MCP). Anda bisa tanya ke bot seperti ngobrol dengan staf HR pribadi: <em>"Ada yang belum masuk hari ini?"</em>, <em>"Berapa kasbon staf bulan ini?"</em>, atau langsung klik tombol <strong>[Setujui Cuti]</strong> di chat tanpa perlu buka dashboard.
+                    <p className="mt-2 text-xs text-zinc-300 leading-relaxed">
+                      Tanya rekap harian ke bot seperti ngobrol dengan staf HR pribadi: <em>"Ada yang belum masuk hari ini?"</em>, <em>"Berapa kasbon staf bulan ini?"</em>, atau langsung klik tombol <strong>[Setujui Cuti]</strong> di chat Telegram tanpa perlu buka dashboard.
                     </p>
-
-                    <div className="mt-4 flex sm:grid sm:grid-cols-3 overflow-x-auto no-scrollbar gap-2.5 pb-1 -mx-1 px-1 sm:mx-0 sm:px-0 text-xs text-zinc-300">
-                      <div className="min-w-[170px] flex-1 p-3 rounded-xl bg-zinc-800/80 border border-zinc-700 shrink-0 sm:shrink">
-                        <p className="font-semibold text-white">Tanya Bahasa Sehari-hari</p>
-                        <p className="text-[11px] text-zinc-400 mt-1">"Siapa kasir yang telat?"</p>
-                      </div>
-                      <div className="min-w-[170px] flex-1 p-3 rounded-xl bg-zinc-800/80 border border-zinc-700 shrink-0 sm:shrink">
-                        <p className="font-semibold text-white">ACC Instan di Chat</p>
-                        <p className="text-[11px] text-zinc-400 mt-1">Tombol [✅ Setujui] di Telegram</p>
-                      </div>
-                      <div className="min-w-[170px] flex-1 p-3 rounded-xl bg-zinc-800/80 border border-zinc-700 shrink-0 sm:shrink">
-                        <p className="font-semibold text-white">Rekap & Laporan Cepat</p>
-                        <p className="text-[11px] text-zinc-400 mt-1">Cek estimasi THR & kasbon staf</p>
-                      </div>
-                    </div>
                   </div>
 
-                  <div className="mt-4 pt-3.5 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-400">
-                    <span>Terhubung ke Telegram & AI Assistant</span>
-                    <span className="font-semibold text-rose-400">Siap Pakai Kapan Saja</span>
+                  <div className="mt-4 pt-3 border-t border-zinc-800 flex items-center justify-between text-[11px] text-zinc-400">
+                    <span>Telegram & AI Assistant</span>
+                    <span className="font-semibold text-rose-400">ACC Lewat Chat</span>
                   </div>
                 </ScrollReveal>
               </div>
@@ -1044,7 +1151,7 @@ export function App() {
                 Cocok untuk berbagai jenis usaha di Indonesia
               </h2>
               <p className="mt-4 text-base sm:text-lg text-zinc-600 leading-relaxed">
-                Telah dirancang khusus untuk toko ritel, restoran, kafe, kantor cabang, hingga tim lapangan.
+                Telah dirancang khusus untuk toko ritel, restoran, kafe, distributor grosir, kantor cabang, hingga tim sales canvasing lapangan.
               </p>
             </ScrollReveal>
 
@@ -1064,10 +1171,10 @@ export function App() {
                 <div className="size-10 rounded-xl bg-[#fbf2f0] border border-[#f0dbd8] flex items-center justify-center text-[#a9484c] mb-4">
                   <MapPin className="size-5" />
                 </div>
-                <h3 className="text-base sm:text-lg font-bold text-zinc-900">Banyak Cabang Toko & Tim Lapangan</h3>
-                <p className="mt-1 text-xs font-semibold text-zinc-500">Multi-Cabang, Gudang, & Teknisi</p>
+                <h3 className="text-base sm:text-lg font-bold text-zinc-900">Distributor, Cabang & Sales Canvasing</h3>
+                <p className="mt-1 text-xs font-semibold text-zinc-500">Beat Plan Toko, Taking Order, & Inkaso</p>
                 <p className="mt-2.5 text-xs sm:text-sm text-zinc-600 leading-relaxed">
-                  Pantau kehadiran seluruh cabang toko dari satu layar HP secara langsung. Tim sales atau teknisi yang dinas luar bisa absen dengan foto di tempat tujuan lengkap dengan koordinat lokasi.
+                  Pantau kehadiran seluruh cabang toko & peta sebaran kunjungan tim sales dari satu layar. Sales mengikuti rute Beat Plan, check-in GPS di toko tujuan, catat pesanan PO, hingga setoran tagihan tunai ke kasir.
                 </p>
               </ScrollReveal>
 

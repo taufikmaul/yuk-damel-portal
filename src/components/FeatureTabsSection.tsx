@@ -17,6 +17,9 @@ import {
   Sparkles,
   Layers,
   Clock,
+  Store,
+  Navigation,
+  ShoppingBag,
 } from 'lucide-react';
 import { SpotlightCard } from './reactbits/SpotlightCard';
 import { ShinyText } from './reactbits/ShinyText';
@@ -75,6 +78,40 @@ const FEATURE_CATEGORIES: FeatureCategory[] = [
       value: '100% Jujur',
       label: 'Bebas Titip Absen',
       sublabel: 'Lokasi dan foto diverifikasi otomatis',
+    },
+  },
+  {
+    id: 'canvasing',
+    label: 'Canvasing & Kunjungan',
+    icon: Store,
+    color: '#4f46e5',
+    badge: 'Eksklusif Business Pro',
+    headline: 'Kawal Rute Kunjungan Sales, Taking Order PO, & Setoran Tagihan Toko',
+    subheadline: 'Pantau staf sales lapangan secara akurat: atur jadwal Beat Plan & direktori master toko, lihat peta sebaran kunjungan interaktif, catat order PO, hingga rekonsiliasi uang setoran ke kasir.',
+    cards: [
+      {
+        title: 'Beat Plan & Navigasi Google Maps',
+        description: 'Supervisor menyusun jadwal kunjungan toko harian untuk staf sales dilengkapi titik peta & tombol navigasi langsung ke Google Maps.',
+        icon: Navigation,
+        tag: 'Rute Harian',
+      },
+      {
+        title: 'Check-In/Out Toko & Mode Offline',
+        description: 'Sales wajib check-in & check-out di tiap toko dengan foto bukti, GPS & durasi kunjungan. Tetap tersimpan meski sinyal susah (Offline-First).',
+        icon: Store,
+        tag: 'Live GPS & Durasi',
+      },
+      {
+        title: 'Taking Order (PO) & Setoran Kasir',
+        description: 'Catat pesanan barang (PO), penagihan pembayaran (Tunai/Transfer/Giro), serah terima setoran ke kasir kantor, dan klaim BBM dari HP.',
+        icon: ShoppingBag,
+        tag: 'Order & Inkaso',
+      },
+    ],
+    statBox: {
+      value: 'Realtime',
+      label: 'Peta Sebaran Kunjungan',
+      sublabel: 'Order PO & setoran tagihan tercatat rapi',
     },
   },
   {

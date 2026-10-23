@@ -138,7 +138,7 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
                 Langganan hemat tanpa ribet
               </h3>
               <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
-                Semua paket sudah termasuk fitur presensi selfie, geofence radius, dan rekap slip gaji otomatis.
+                Semua paket sudah termasuk presensi selfie, geofence radius, dan slip gaji otomatis. Paket Business Pro dilengkapi fitur Canvasing Sales & Kunjungan Toko.
               </p>
             </div>
 
@@ -148,6 +148,9 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
               </div>
               <div className="text-xs text-zinc-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Starter Mulai Rp 15rb/bln
+              </div>
+              <div className="text-xs text-zinc-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Canvasing & Kunjungan Sales (Pro)
               </div>
               <div className="text-xs text-zinc-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Anti-Fake GPS & PWA Mobile
@@ -316,15 +319,28 @@ function PricingCard({
             FASILITAS PAKET:
           </p>
 
-          {tier.features.map((feature, idx) => (
-            <div
-              key={idx}
-              className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed"
-            >
-              <Check className="size-3.5 shrink-0 text-emerald-600 mt-0.5" />
-              <span>{feature}</span>
-            </div>
-          ))}
+          {tier.features.map((feature, idx) => {
+            const isCanvasingFeature =
+              feature.toLowerCase().includes('canvasing') ||
+              feature.toLowerCase().includes('kunjungan toko');
+            return (
+              <div
+                key={idx}
+                className={`flex items-start gap-2 text-xs leading-relaxed ${
+                  isCanvasingFeature
+                    ? 'p-2 -mx-2 rounded-lg bg-indigo-50/70 border border-indigo-200/80 text-indigo-950 font-semibold'
+                    : 'text-slate-700'
+                }`}
+              >
+                <Check
+                  className={`size-3.5 shrink-0 mt-0.5 ${
+                    isCanvasingFeature ? 'text-indigo-600' : 'text-emerald-600'
+                  }`}
+                />
+                <span>{feature}</span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

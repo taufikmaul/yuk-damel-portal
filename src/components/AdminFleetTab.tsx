@@ -337,7 +337,7 @@ export function AdminFleetTab() {
           </div>
           <p className="text-[11px] text-slate-600 leading-relaxed">
             • <b>Demo, Free Tier &amp; Starter:</b> Berada di <b>1 Pod Shared bersama</b> (multi-tenant grouping 25–50 tenant per akun Cloudflare) dengan biaya hosting Rp 0.<br />
-            • <b>Pro Tier:</b> Mendapatkan <b>1 Dedicated Pod di 1 Akun Cloudflare tersendiri</b> (Database D1, Worker, dan KV khusus terisolasi penuh).
+            • <b>Pro Tier (Business Pro):</b> Mendapatkan <b>1 Dedicated Pod di 1 Akun Cloudflare tersendiri</b> (Database D1, Worker, dan KV khusus terisolasi penuh) + akses eksklusif <b>Fitur Canvasing Sales &amp; Kunjungan Toko</b>.
           </p>
         </div>
       </div>

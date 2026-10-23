@@ -1127,11 +1127,20 @@ export function AdminPortalPage({
   const copyWhatsAppFormat = (client: ClientRecord) => {
     const { appUrl, dashboardUrl } = resolveClientUrls(client);
     const isFree = client.amountPaidRp === 0 || client.packageTierId === 'free_trial';
-    const tierName = isFree ? 'Free Trial UMKM (4 Bulan)' : (client.packageTierId || 'Starter UMKM');
+    const isPro =
+      client.packageTierId === 'pro' ||
+      client.packageTierId === 'business_pro' ||
+      client.packageTierId === 'business' ||
+      Boolean(client.podId?.includes('pro'));
+    const tierName = isFree
+      ? 'Free Trial UMKM (4 Bulan)'
+      : isPro
+      ? 'Business Pro (Dedicated Pod + Canvasing Sales)'
+      : client.packageTierId || 'Starter UMKM';
     const expireDate = client.currentPeriodEnd
       ? new Date(client.currentPeriodEnd).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
       : 'Aktif';
-    const maxStaff = client.maxEmployees ? (client.maxEmployees === -1 ? 'Tanpa Batas' : `${client.maxEmployees} Karyawan`) : '15 Karyawan';
+    const maxStaff = client.maxEmployees ? (client.maxEmployees === -1 ? 'Tanpa Batas' : `${client.maxEmployees} Karyawan`) : isPro ? '50 Karyawan' : '15 Karyawan';
 
     const text = `Halo Kak dari *${client.name}*! Terima kasih atas aktivasi aplikasi absensi & payroll akugawe.
 
@@ -1144,7 +1153,7 @@ export function AdminPortalPage({
 
 📋 *Detail Lisensi:*
 • Paket: *${tierName}*
-• Kuota Karyawan: *${maxStaff}*
+• Kuota Karyawan: *${maxStaff}*${isPro ? '\n• Fitur Eksklusif: *Canvasing Sales & Kunjungan Toko Aktif*' : ''}
 • Masa Aktif: s/d *${expireDate}*
 • Token Lisensi Resmi: \`${client.token}\`
 
@@ -1907,7 +1916,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                     isPro ? "text-indigo-700" : isStarter ? "text-emerald-700" : "text-slate-700"
                                   )}>
                                     {isPro
-                                      ? '🛡️ 1 Akun CF (Dedicated Pod)'
+                                      ? '🛡️ 1 Akun CF + Canvasing'
                                       : isStarter
                                       ? '🌐 Shared Pod (Multi-Tenant)'
                                       : '🌐 Shared Pod (Free & Demo)'}
@@ -1924,7 +1933,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                             <Cloud className="size-3.5 text-[#a9484c] shrink-0" />
                             <span>
                               {(selectedTierId === 'pro' || selectedTierId === 'business' || selectedTierId === 'business_pro') ? (
-                                <span><b>Aturan Baku Business Pro:</b> Klien dialokasikan ke <b>1 Dedicated Pod di 1 Akun Cloudflare mandiri</b> (Worker, D1 DB, KV, dan R2 terisolasi penuh, custom domain sendiri).</span>
+                                <span><b>Aturan Baku Business Pro:</b> Klien dialokasikan ke <b>1 Dedicated Pod di 1 Akun Cloudflare mandiri</b> (Worker, D1 DB, KV, dan R2 terisolasi penuh, custom domain sendiri) serta membuka akses <b>Fitur Canvasing Sales & Kunjungan Toko</b>.</span>
                               ) : selectedTierId === 'starter' ? (
                                 <span><b>Aturan Baku Starter UMKM:</b> Berada di <b>Shared Pod bersama</b> (Multi-tenant Cloudflare: <code className="font-mono">app.akugawe.web.id</code> &amp; <code className="font-mono">hrd.akugawe.web.id</code>, hingga 15 staf aktif).</span>
                               ) : (
@@ -2378,7 +2387,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                           : 'Business Pro'}
                                       </Badge>
                                       <div className="text-[10px] font-medium text-slate-600">
-                                        Maks {client.maxEmployees ? (client.maxEmployees === -1 ? 'Unlimited' : `${client.maxEmployees} Staf`) : (isFreeTier ? '4 Staf' : isStarterTier ? '15 Staf' : '50 Staf')} • {isProTier ? 'Dedicated CF' : 'Shared Pod'}
+                                        Maks {client.maxEmployees ? (client.maxEmployees === -1 ? 'Unlimited' : `${client.maxEmployees} Staf`) : (isFreeTier ? '4 Staf' : isStarterTier ? '15 Staf' : '50 Staf')} • {isProTier ? 'Dedicated CF + Canvasing' : 'Shared Pod'}
                                       </div>
                                     </div>
                                   </TableCell>
