@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Sparkles, MessageCircle, QrCode, Zap, Users } from "lucide-react";
+import { Check, Tag, MessageCircle, QrCode, Zap, Users, ShieldCheck } from "lucide-react";
 import { PricingTier, SellerConfig, loadSellerConfig } from "@/services/config";
 import { CheckoutModal } from "./CheckoutModal";
 
@@ -86,7 +86,7 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
         {sellerConfig.isPromoActive && (
           <div className="mb-8 max-w-xl mx-auto p-3 rounded-xl bg-white border border-zinc-200/90 text-center shadow-xs">
             <span className="font-semibold text-xs text-[#a9484c] tracking-wide flex items-center justify-center gap-2">
-              <Sparkles className="size-4 shrink-0 text-[#a9484c]" />
+              <Tag className="size-4 shrink-0 text-[#a9484c]" />
               {sellerConfig.promoBannerText}
             </span>
           </div>
@@ -132,7 +132,7 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
           <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-zinc-900 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>
               <p className="mb-2 text-xs font-bold text-[#cf807c] uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="size-3.5" /> AKUGAWE SAAS
+                <ShieldCheck className="size-3.5" /> AKUGAWE SAAS
               </p>
               <h3 className="font-bold text-xl sm:text-2xl leading-tight text-white tracking-tight">
                 Langganan hemat tanpa ribet

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   X,
-  Sparkles,
   Check,
   Copy,
   CheckCircle2,
@@ -461,7 +460,7 @@ export function CheckoutModal({
                   {isProTier && (
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-slate-500 flex items-center gap-1.5">
-                        <Sparkles className="size-3.5 text-indigo-600" />
+                        <ShieldCheck className="size-3.5 text-indigo-600" />
                         Fitur Eksklusif Pro
                       </span>
                       <span className="font-bold text-indigo-700">
@@ -500,7 +499,7 @@ export function CheckoutModal({
                         <div className="flex-1 text-left">
                           <div className="flex items-center justify-between">
                             <span className="text-[11px] font-bold text-slate-900 flex items-center gap-1">
-                              <Sparkles className="size-3 text-amber-600" />
+                              <CheckCircle2 className="size-3 text-amber-600" />
                               {sellerConfig.managedSetupTitle}
                             </span>
                             <span className="text-[11px] font-mono font-extrabold text-amber-700">
