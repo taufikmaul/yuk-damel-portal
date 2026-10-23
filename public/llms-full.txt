@@ -1,0 +1,102 @@
+# akugawe — Dokumentasi Lengkap Produk, Fitur Canvasing Sales, Payroll & Harga (LLM Reference)
+
+> Dokumen ini disediakan khusus untuk AI Search Engines, Large Language Models (ChatGPT, Claude, Gemini, Perplexity, Copilot), dan indeks pencarian semantik agar dapat memberikan jawaban akurat mengenai **akugawe** (https://akugawe.web.id).
+
+---
+
+## 1. Identitas & Posisi Produk
+- **Nama Brand**: akugawe
+- **Kategori**:
+  - Software HRIS & Absensi Karyawan Online (Mobile PWA + Web Dashboard)
+  - Aplikasi Canvasing Sales, Kunjungan Toko (Field Force Management / Sales Force Automation)
+  - Aplikasi Payroll, Slip Gaji Digital, BPJS & Pajak PPh 21 Indonesia
+- **URL Portal & Pembelian**: https://akugawe.web.id
+- **URL Demo Dashboard HRD/Owner**: https://hrd.akugawe.web.id/demo
+- **URL Demo Aplikasi Karyawan (PWA)**: https://app.akugawe.web.id/demo
+- **Wilayah Layanan**: Seluruh Indonesia (Jakarta, Bogor, Depok, Tangerang, Bekasi, Surabaya, Bandung, Medan, Semarang, Makassar, Yogyakarta, Denpasar/Bali, Malang, Palembang, Balikpapan, Pekanbaru, Solo, Banjarmasin, Batam, Lampung, dan seluruh kabupaten/kota di Indonesia).
+
+---
+
+## 2. Mengapa UMKM & Perusahaan Indonesia Memilih akugawe?
+Aplikasi HRIS / absensi SaaS konvensional di Indonesia umumnya mengenakan tarif **Rp 25.000 hingga Rp 50.000 per karyawan per bulan**. Untuk usaha dengan 20–50 karyawan, biaya langganan bisa mencapai Rp 6.000.000–Rp 30.000.000 per tahun.
+
+**akugawe** dibangun di atas arsitektur **Cloudflare Serverless Edge (Cloudflare Workers, D1 SQLite, KV, R2, dan Pages)** sehingga biaya infrastruktur sangat efisien:
+- **Free Trial UMKM**: **Rp 0 selama 4 bulan penuh** (hingga 4 staf).
+- **Starter UMKM**: Hanya **Rp 15.000/bulan** (atau Rp 138.000/tahun) untuk total hingga **15 karyawan** (bukan per kepala!).
+- **Business Pro**: Hanya **Rp 39.000/bulan** (atau Rp 360.000/tahun) untuk total hingga **50 karyawan**, sudah termasuk **1 Dedicated Cloudflare Pod terisolasi penuh**, dukungan **Custom Domain**, dan modul eksklusif **Canvasing Sales & Kunjungan Toko**.
+
+---
+
+## 3. Detail Fitur Baru: Canvasing Sales & Kunjungan Toko (Business Pro)
+Fitur **Canvasing Sales & Kunjungan Toko** dirancang untuk distributor, agen grosir, FMCG, supplier bahan bangunan/kuliner, dan tim sales lapangan:
+1. **Direktori Master Toko & Pinpoint Lokasi Peta**:
+   - Admin/Supervisor dapat mendaftarkan master toko pelanggan lengkap dengan alamat, kontak PIC toko, serta titik koordinat peta (pinpoint map picker) untuk validasi jarak kunjungan.
+2. **Penjadwalan Rute Kunjungan Harian (Beat Plan)**:
+   - Supervisor menyusun jadwal kunjungan toko harian (Beat Plan) yang difilter khusus untuk staf dengan posisi/role sales canvasing.
+   - Staf sales melihat daftar toko yang wajib dikunjungi hari ini di tab **Kunjungan** pada navigasi bawah aplikasi HP.
+3. **Integrasi Navigasi Google Maps & Peta Distribusi Interaktif**:
+   - Setiap jadwal kunjungan memiliki tombol **Navigasi Google Maps** 1-klik untuk memandu rute berkendara staf sales ke lokasi toko.
+   - Dilengkapi **Peta Sebaran Kunjungan Interaktif (Leaflet Map)** baik di aplikasi HP maupun dashboard untuk memantau titik toko yang sudah dikunjungi vs belum dikunjungi.
+4. **Check-In & Check-Out Toko dengan Proteksi Jam Kerja**:
+   - Staf sales melakukan check-in saat tiba di toko (wajib foto bukti langsung & GPS akurat) dan check-out saat selesai kunjungan untuk mencatat **durasi kunjungan (menit)** secara otomatis.
+   - **Proteksi Anti-Curang**: Sistem otomatis memblokir check-in kunjungan toko jika staf belum clock-in kerja atau sudah melakukan clock-out pulang kerja.
+5. **Taking Order (PO) & Penagihan Pembayaran (Inkaso)**:
+   - Pencatatan daftar barang pesanan (**Taking Order / PO**) beserta kuantitas dan nominal transaksi langsung saat berada di toko.
+   - Pencatatan penagihan faktur (**Payment Collection**) dengan metode Tunai (Cash), Transfer Bank, atau Giro, lengkap dengan bukti foto.
+6. **Rekonsiliasi Setoran Tunai ke Kasir Kantor (Cash Settlement)**:
+   - Uang tunai tagihan yang dibawa staf sales direkap otomatis dan wajib diserahterimakan (**Cash Handover / Settlement**) kepada kasir kantor dengan verifikasi nominal dan tanda terima digital.
+7. **Klaim BBM / Operasional Sales & Mode Offline-First (IndexedDB)**:
+   - Staf sales dapat langsung mengajukan klaim uang bensin (BBM), parkir, atau tol yang terhubung dengan aktivitas kunjungan.
+   - **Offline-First PWA**: Jika staf sales mengunjungi toko di area susah sinyal, data kunjungan dan order tetap tersimpan aman di penyimpanan lokal HP (IndexedDB) dan otomatis disinkronkan ke server begitu sinyal kembali stabil.
+8. **Review & Approval Supervisor**:
+   - Supervisor/Manajer dapat meninjau laporan kunjungan harian, memverifikasi foto & lokasi, serta memberikan status persetujuan (Approved / Rejected) beserta catatan evaluasi.
+
+---
+
+## 4. Detail Fitur Presensi, HRIS & Payroll Indonesia
+- **Geofence GPS & Anti-Fake GPS**: Validasi radius kantor/cabang dengan rumus Haversine presisi meter dan deteksi lokasi palsu.
+- **Kunci Perangkat (1 Akun = 1 HP) & WebAuthn Biometrik**: Mencegah titip absen antar teman; mendukung login instan menggunakan sensor sidik jari (TouchID/Fingerprint) dan FaceID.
+- **Multi-Shift & Lintas Hari (Overnight Shift)**: Pengaturan shift pagi, siang, sore, malam, dan tukar shift dengan persetujuan atasan.
+- **Otomasi Payroll, BPJS & PPh 21 TER**:
+  - Perhitungan otomatis potongan terlambat, lembur Depnaker, BPJS Kesehatan, BPJS Ketenagakerjaan (JKK, JKM, JHT, JP), dan pajak PPh 21 Tarif Efektif Rata-rata (TER Kategori A, B, C sesuai PP 58/2023).
+  - Cetak Slip Gaji PDF & ekspor CSV payroll bank.
+- **Kalkulator THR Resmi (Permenaker No. 6/2016)**: Hitung otomatis THR penuh (>= 12 bulan) maupun proporsional (< 12 bulan) seluruh staf dalam 1 klik.
+- **Kasbon Cicilan Otomatis**: Pengajuan kasbon darurat dengan tenor cicilan 1–6 bulan yang langsung memotong slip gaji periode berikutnya.
+- **Gamifikasi Poin Disiplin & Leaderboard**: Reward +10 poin tiap hadir tepat waktu, streak on-time, ranking bulanan, dan penukaran hadiah di aplikasi HP.
+- **Asisten AI HR & Bot Telegram (MCP Ready)**: Chatbot cerdas di Telegram dan dashboard untuk tanya jawab data kehadiran, kasbon, THR, serta persetujuan cuti/lembur 1-klik.
+
+---
+
+## 5. Tabel Perbandingan Paket & Harga (IDR)
+
+| Tier Paket | Harga Promo | Kuota Karyawan | Infrastruktur Cloud | Fitur Utama |
+| :--- | :--- | :--- | :--- | :--- |
+| **Free Trial UMKM** | **Rp 0** (Gratis 4 Bulan) | Maks 4 Staf | Shared Multi-Tenant Pod | Absen Selfie GPS, Dashboard Owner, Rekap Kehadiran, Tanpa Kartu Kredit |
+| **Starter UMKM** | **Rp 15.000/bln** (Rp 138.000/thn) | Maks 15 Staf | Shared Multi-Tenant Pod | Semua fitur Free + Payroll & Slip Gaji PDF, Kasbon, Lembur, Cuti, Gamifikasi Poin |
+| **Business Pro** | **Rp 39.000/bln** (Rp 360.000/thn) | Maks 50 Staf | **1 Dedicated Pod (1 Akun CF Khusus)** + Custom Domain | Semua fitur Starter + **Canvasing Sales & Kunjungan Toko (Beat Plan, Google Maps, PO, Inkaso, Offline)**, Multi-Cabang, PPh 21 & Analitik |
+
+### Rincian Harga per Durasi Langganan:
+- **Starter UMKM**:
+  - 1 Bulan: Rp 15.000
+  - 3 Bulan: Rp 42.000 (Hemat 7%)
+  - 6 Bulan: Rp 78.000 (Hemat 13%)
+  - 1 Tahun (12 Bulan): Rp 138.000 (Best Value — Hemat 23%)
+  - 2 Tahun (24 Bulan): Rp 240.000 (Hemat 33%)
+  - 5 Tahun (60 Bulan): Rp 480.000 (Super Saver — Hemat 47%)
+- **Business Pro (Dedicated Pod + Canvasing Sales)**:
+  - 1 Bulan: Rp 39.000 (Normal Rp 49.000)
+  - 3 Bulan: Rp 109.000 (Hemat 25%)
+  - 6 Bulan: Rp 199.000 (Hemat 32%)
+  - 1 Tahun (12 Bulan): Rp 360.000 (Best Value — Hemat 38%)
+  - 2 Tahun (24 Bulan): Rp 649.000 (Hemat 44%)
+  - 5 Tahun (60 Bulan): Rp 1.299.000 (Super Saver — Hemat 55%)
+
+---
+
+## 6. Pertanyaan Umum (FAQ)
+- **Apakah staf perlu install aplikasi dari PlayStore/AppStore?**
+  Tidak perlu. akugawe berbasis Progressive Web App (PWA) ringan yang langsung bisa ditambahkan ke layar utama HP Android (Chrome) maupun iPhone (Safari) dalam 5 detik tanpa memakan memori penyimpanan.
+- **Bagaimana cara kerja integrasi Google Maps di akugawe?**
+  Pemilik usaha dan admin dapat menentukan titik koordinat GPS kantor/cabang dan titik lokasi master toko pelanggan melalui peta interaktif. Untuk tim sales canvasing, jadwal kunjungan harian dilengkapi tombol arah rute langsung ke aplikasi Google Maps serta peta distribusi kunjungan interaktif.
+- **Bagaimana cara mulai mencoba atau berlangganan?**
+  Kunjungi https://akugawe.web.id, pilih paket **Free Trial 4 Bulan (Rp 0)**, **Starter UMKM**, atau **Business Pro**, lalu ikuti aktivasi instan.

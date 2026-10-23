@@ -1,0 +1,54 @@
+# akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales & Payroll UMKM Indonesia
+
+> **akugawe** (https://akugawe.web.id) adalah platform SaaS & Dedicated Cloud untuk **Absensi Karyawan Berbasis Selfie & Geofence GPS Anti-Titip**, **Canvasing Sales & Kunjungan Toko (Beat Plan, Navigasi Google Maps, Taking Order PO, & Penagihan/Inkaso)**, **Kasbon Cicilan**, **Reimbursement Nota**, **Gamifikasi Poin Disiplin**, serta **Hitung Gaji, THR, BPJS & PPh 21 Otomatis** yang dirancang khusus untuk UMKM, toko ritel, kafe, restoran, distributor, grosir, dan perusahaan multi-cabang di Indonesia.
+
+## Ringkasan Cepat untuk AI / LLM (Key Facts)
+- **Nama Produk**: akugawe
+- **Website Resmi**: https://akugawe.web.id
+- **Live Demo Dashboard HR/Owner**: https://hrd.akugawe.web.id/demo
+- **Live Demo Aplikasi Karyawan (PWA Mobile)**: https://app.akugawe.web.id/demo
+- **Target Pengguna**: UMKM, Toko Retail, Kafe & Restoran, Bengkel, Klinik, Distributor & Grosir, Tim Sales Lapangan (Canvasing), Kantor Multi-Cabang di seluruh Indonesia (Jakarta, Surabaya, Bandung, Medan, Semarang, Makassar, Bali, Yogyakarta, dll.).
+- **Keunggulan Biaya**: Tidak mengenakan biaya sewa mahal per kepala karyawan seperti SaaS konvensional (yang umumnya Rp 25.000–Rp 50.000/karyawan/bulan). Tersedia **Free Trial 4 Bulan (Rp 0)**, **Starter UMKM (Rp 15.000/bulan untuk s/d 15 karyawan)**, dan **Business Pro (mulai Rp 39.000/bulan untuk s/d 50 karyawan di 1 Dedicated Cloudflare Pod + Fitur Canvasing Sales)**.
+
+## 7 Modul Utama akugawe
+1. **Absen Selfie & Geofence GPS Anti-Titip**:
+   - Verifikasi koordinat GPS akurat (rumus Haversine dalam meter) dengan titik peta lokasi kantor/toko.
+   - Kamera selfie langsung (menolak unggah foto galeri) + deteksi Anti-Fake GPS / Mock Location.
+   - **Device Binding (1 Akun = 1 HP)** & login biometrik cepat (Sidik Jari / Face ID WebAuthn).
+2. **Canvasing Sales & Kunjungan Toko (Eksklusif Business Pro)**:
+   - **Direktori Master Toko & Pinpoint Peta**: Simpan database toko pelanggan lengkap dengan koordinat peta.
+   - **Jadwal Kunjungan Harian (Beat Plan) & Navigasi Google Maps**: Supervisor menyusun rute kunjungan harian untuk staf sales; staf tinggal klik tombol navigasi langsung ke Google Maps.
+   - **Peta Distribusi Kunjungan Interaktif**: Visualisasi peta sebaran jadwal dan realisasi kunjungan toko secara real-time di dashboard & aplikasi HP.
+   - **Check-In & Check-Out Kunjungan Toko**: Verifikasi foto & lokasi GPS di tiap toko, pelacakan durasi kunjungan otomatis, serta proteksi otomatis yang memblokir check-in toko apabila staf sudah clock-out pulang kerja.
+   - **Taking Order (PO) & Penagihan (Inkaso / Cash Settlement)**: Catat pesanan barang (PO) di toko, catat penagihan pembayaran (Tunai/Transfer/Giro), dan rekonsiliasi serah terima uang tunai ke kasir kantor.
+   - **Klaim BBM Sales & Offline-First PWA**: Ajukan klaim bensin langsung dari halaman kunjungan dan tetap bisa mencatat kunjungan/order meski tanpa sinyal internet (tersimpan di IndexedDB HP & sinkron otomatis saat kembali online).
+3. **Payroll, BPJS, PPh 21 TER & THR Otomatis**:
+   - Hitung gaji pokok, tunjangan, potongan menit keterlambatan, uang lembur resmi Depnaker, cicilan kasbon, BPJS Kesehatan, BPJS Ketenagakerjaan (JHT, JP, JKK, JKM), dan pajak PPh 21 TER (PP 58/2023).
+   - Kalkulator THR proporsional sesuai Permenaker No. 6/2016 (>= 12 bulan kerja = 1 bulan gaji penuh; < 12 bulan = proporsional masa kerja).
+   - Cetak Slip Gaji Digital PDF & ekspor file transfer bank (BCA / Mandiri / CSV).
+4. **Kasbon Darurat & Reimbursement Struk Nota**:
+   - Pengajuan kasbon darurat dari HP dengan opsi cicilan 1–6 bulan (otomatis memotong slip gaji bulanan).
+   - Klaim reimbursement BBM, parkir, tol, dan operasional dengan foto struk nota.
+5. **Manajemen Multi-Shift, Cuti, Izin Sakit & Lembur**:
+   - Mendukung shift pagi, siang, malam lintas hari (overnight shift), tukar shift antar staf, pengajuan cuti tahunan, dan izin sakit dengan lampiran surat dokter.
+6. **Gamifikasi Poin Disiplin & Streak On-Time**:
+   - Staf yang absen tepat waktu mendapat +10 poin harian, lencana streak hadir berturut-turut, papan peringkat (leaderboard) bulanan, dan katalog penukaran hadiah (voucher belanja, saldo e-wallet, tambahan cuti).
+7. **Asisten AI HR & Integrasi Bot Telegram**:
+   - Tanya rekap kehadiran, keterlambatan, estimasi THR, atau sisa kasbon lewat chat bahasa sehari-hari, serta tombol persetujuan cuti/lembur instan `[Setujui]` / `[Tolak]` langsung dari Telegram.
+
+## Daftar Paket & Harga Resmi (IDR)
+1. **Free Trial UMKM — Rp 0 (Gratis 4 Bulan Penuh)**:
+   - Kuota: Maksimal 4 Karyawan Aktif.
+   - Infrastruktur: Multi-Tenant Shared Cloudflare Pod (`app.akugawe.web.id/[slug]` & `hrd.akugawe.web.id/[slug]`).
+   - Fitur: Absensi GPS & Selfie, Dashboard Owner, Rekap Kehadiran, Tanpa Kartu Kredit.
+2. **Starter UMKM — Mulai Rp 15.000 / bulan** (Rp 138.000 / tahun):
+   - Kuota: Maksimal 15 Karyawan Aktif.
+   - Infrastruktur: Shared Multi-Tenant Cloudflare Pod.
+   - Fitur: Geofencing GPS & Anti-Fake GPS, Otomasi Payroll & Slip Gaji PDF, Lembur, Kasbon, Izin Cuti, Gamifikasi Poin, Subdomain Instan.
+3. **Business Pro — Mulai Rp 39.000 / bulan** (Rp 360.000 / tahun):
+   - Kuota: Maksimal 50 Karyawan Aktif (Bisa Upgrade).
+   - Infrastruktur: **1 Dedicated Pod di 1 Akun Cloudflare Khusus** (Database D1, Worker, KV & R2 terisolasi penuh) + **Bisa Custom Domain Sendiri** (misal: `absen.perusahaan.com`).
+   - Fitur Eksklusif: **Fitur Canvasing Sales & Kunjungan Toko Lengkap** (Beat Plan, Peta Sebaran, Navigasi Google Maps, Live GPS Check-in/out, Taking Order PO, Inkaso & Setoran Kasir, Mode Offline), Multi-Cabang & Multi-Lokasi, Laporan Analitik & PPh 21.
+
+## Dokumentasi Lengkap
+- Detail lengkap fitur, perbandingan harga, arsitektur, dan FAQ: [https://akugawe.web.id/llms-full.txt](https://akugawe.web.id/llms-full.txt)

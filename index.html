@@ -1,15 +1,374 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO Meta Tags (Google Search) -->
+    <title>akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM Indonesia</title>
+    <meta
+      name="description"
+      content="Aplikasi absensi karyawan selfie GPS anti-titip, Canvasing Sales &amp; Kunjungan Toko (Beat Plan, Navigasi Google Maps, Taking Order PO, Inkaso), kasbon, hitung gaji BPJS &amp; PPh 21 otomatis. Mulai Rp 0 (Gratis 4 Bulan) &amp; Rp 15.000/bulan."
+    />
+    <meta
+      name="keywords"
+      content="aplikasi absensi karyawan, aplikasi absensi selfie gps, aplikasi canvasing sales, aplikasi kunjungan toko sales, beat plan sales, taking order toko, aplikasi payroll umkm, hitung gaji bpjs pph 21 otomatis, aplikasi kasbon karyawan, absensi anti fake gps, software hris umkm indonesia, akugawe"
+    />
+    <meta name="author" content="akugawe Indonesia" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="theme-color" content="#a9484c" />
+
+    <!-- Canonical & Language / Regional Alternate -->
+    <link rel="canonical" href="https://akugawe.web.id/" />
+    <link rel="alternate" hreflang="id-ID" href="https://akugawe.web.id/" />
+    <link rel="alternate" hreflang="x-default" href="https://akugawe.web.id/" />
+
+    <!-- AI / LLM Search Engine Discovery (ChatGPT, Perplexity, Claude, Gemini) -->
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="akugawe LLM Summary (llms.txt)" />
+    <link rel="alternate" type="text/plain" href="/llms-full.txt" title="akugawe Full LLM Reference (llms-full.txt)" />
+
+    <!-- Google Maps & Local SEO Geo Meta Tags (Indonesia) -->
+    <meta name="geo.region" content="ID-JK" />
+    <meta name="geo.placename" content="Jakarta, Indonesia" />
+    <meta name="geo.position" content="-6.2088;106.8456" />
+    <meta name="ICBM" content="-6.2088, 106.8456" />
+
+    <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>akugawe — Aplikasi Absensi Digital & Payroll untuk Tim Modern</title>
-    <meta name="description" content="Sistem absensi digital berbasis GPS & foto selfie untuk check-in real-time, kontrol shift, dan rekap slip gaji otomatis." />
+    <link rel="apple-touch-icon" href="/icon.png" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="akugawe" />
+    <meta property="og:url" content="https://akugawe.web.id/" />
+    <meta
+      property="og:title"
+      content="akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM Indonesia"
+    />
+    <meta
+      property="og:description"
+      content="Bikin absen &amp; gaji tim jadi lebih mudah. Absen selfie GPS anti-titip, Canvasing Sales &amp; Kunjungan Toko (Beat Plan, Google Maps, PO &amp; Setoran), kasbon cicilan, poin disiplin, dan slip gaji PDF otomatis. Gratis 4 bulan!"
+    />
+    <meta property="og:image" content="https://akugawe.web.id/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="akugawe — Dashboard HRD &amp; Aplikasi Mobile PWA Presensi Selfie GPS, Canvasing Sales &amp; Payroll"
+    />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://akugawe.web.id/" />
+    <meta
+      name="twitter:title"
+      content="akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM"
+    />
+    <meta
+      name="twitter:description"
+      content="Absen selfie GPS anti-titip, Canvasing Sales &amp; Kunjungan Toko (Beat Plan, Google Maps, Taking Order PO, Inkaso), kasbon, THR &amp; slip gaji otomatis. Mulai Rp 0!"
+    />
+    <meta name="twitter:image" content="https://akugawe.web.id/og-image.jpg" />
+
+    <!-- Structured Data JSON-LD: SoftwareApplication, LocalBusiness (Google Maps), Organization, WebSite, FAQPage -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://akugawe.web.id/#website",
+            "url": "https://akugawe.web.id/",
+            "name": "akugawe",
+            "alternateName": ["akugawe Indonesia", "akugawe Absensi & Payroll", "akugawe Canvasing Sales"],
+            "description": "Aplikasi Absensi Karyawan Selfie GPS Anti-Titip, Canvasing Sales & Kunjungan Toko, Kasbon, dan Payroll Otomatis untuk UMKM Indonesia.",
+            "inLanguage": "id-ID",
+            "publisher": {
+              "@id": "https://akugawe.web.id/#organization"
+            }
+          },
+          {
+            "@type": ["Organization", "ProfessionalService", "LocalBusiness"],
+            "@id": "https://akugawe.web.id/#organization",
+            "name": "akugawe — Aplikasi Absensi, Canvasing Sales & Payroll Indonesia",
+            "legalName": "akugawe Indonesia",
+            "url": "https://akugawe.web.id/",
+            "logo": "https://akugawe.web.id/icon.png",
+            "image": "https://akugawe.web.id/og-image.jpg",
+            "description": "Penyedia layanan aplikasi absensi karyawan berbasis selfie & geofence GPS, modul Canvasing Sales & Kunjungan Toko (Beat Plan, Navigasi Google Maps, Taking Order PO, Inkaso Tagihan), kasbon darurat, serta penggajian BPJS & PPh 21 otomatis untuk UMKM dan perusahaan di seluruh Indonesia.",
+            "priceRange": "Rp 0 - Rp 39.000",
+            "currenciesAccepted": "IDR",
+            "paymentAccepted": "QRIS, Transfer Bank, E-Wallet",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Jakarta",
+              "addressRegion": "DKI Jakarta",
+              "addressCountry": "ID"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": -6.2088,
+              "longitude": 106.8456
+            },
+            "hasMap": "https://www.google.com/maps/search/?api=1&query=-6.2088,106.8456",
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": [
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday"
+                ],
+                "opens": "00:00",
+                "closes": "23:59"
+              }
+            ],
+            "areaServed": [
+              { "@type": "Country", "name": "Indonesia" },
+              { "@type": "City", "name": "Jakarta" },
+              { "@type": "City", "name": "Surabaya" },
+              { "@type": "City", "name": "Bandung" },
+              { "@type": "City", "name": "Medan" },
+              { "@type": "City", "name": "Semarang" },
+              { "@type": "City", "name": "Makassar" },
+              { "@type": "City", "name": "Tangerang" },
+              { "@type": "City", "name": "Bekasi" },
+              { "@type": "City", "name": "Depok" },
+              { "@type": "City", "name": "Bogor" },
+              { "@type": "City", "name": "Yogyakarta" },
+              { "@type": "City", "name": "Denpasar" },
+              { "@type": "City", "name": "Malang" },
+              { "@type": "City", "name": "Palembang" },
+              { "@type": "City", "name": "Balikpapan" },
+              { "@type": "City", "name": "Pekanbaru" },
+              { "@type": "City", "name": "Surakarta" },
+              { "@type": "City", "name": "Banjarmasin" },
+              { "@type": "City", "name": "Batam" },
+              { "@type": "City", "name": "Bandar Lampung" }
+            ],
+            "hasOfferCatalog": {
+              "@type": "OfferCatalog",
+              "name": "Layanan Sistem HRIS, Presensi GPS, Canvasing Sales & Payroll akugawe",
+              "itemListElement": [
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Sistem Absensi Karyawan Selfie & Geofence GPS Toko/Kantor",
+                    "description": "Absensi biometrik selfie langsung dengan validasi radius GPS Haversine, deteksi Anti-Fake GPS, dan penguncian 1 Akun 1 HP."
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Aplikasi Canvasing Sales & Kunjungan Toko (Beat Plan & Navigasi Google Maps)",
+                    "description": "Manajemen rute kunjungan harian sales (Beat Plan), pinpoint lokasi toko di peta, navigasi langsung ke Google Maps, check-in/out GPS & durasi kunjungan, pencatatan Taking Order (PO), penagihan pembayaran (Inkaso), serah terima setoran tunai ke kasir kantor, dan mode Offline-First PWA."
+                  }
+                },
+                {
+                  "@type": "Offer",
+                  "itemOffered": {
+                    "@type": "Service",
+                    "name": "Aplikasi Payroll, Slip Gaji PDF, BPJS & PPh 21 TER Otomatis",
+                    "description": "Otomasi hitung gaji bulanan, potongan telat, uang lembur Depnaker, cicilan kasbon, THR proporsional, BPJS Kesehatan & Ketenagakerjaan, serta pajak PPh 21 TER."
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://akugawe.web.id/#software",
+            "name": "akugawe",
+            "applicationCategory": "BusinessApplication",
+            "applicationSubCategory": "HRIS, Attendance, Sales Canvasing & Payroll Software",
+            "operatingSystem": "Web, Android, iOS (Progressive Web App / PWA)",
+            "url": "https://akugawe.web.id/",
+            "downloadUrl": "https://app.akugawe.web.id/demo",
+            "screenshot": "https://akugawe.web.id/og-image.jpg",
+            "inLanguage": "id-ID",
+            "description": "Aplikasi Absensi Selfie GPS Anti-Titip, Canvasing Sales & Kunjungan Toko (Beat Plan, Peta Sebaran, Navigasi Google Maps, Taking Order PO, Setoran Tagihan), Kasbon, THR, dan Hitung Gaji BPJS & PPh 21 Otomatis untuk UMKM Indonesia.",
+            "featureList": [
+              "Absen Selfie Kamera Langsung & Geofence Radius GPS Kantor/Toko",
+              "Deteksi Anti-Fake GPS & Kunci 1 Akun di 1 HP (WebAuthn Sidik Jari & Face ID)",
+              "Canvasing Sales & Kunjungan Toko (Jadwal Beat Plan, Direktori Master Toko & Pinpoint Peta)",
+              "Peta Sebaran Kunjungan Interaktif & Tombol Navigasi Rute Google Maps",
+              "Check-In & Check-Out Kunjungan Toko dengan Durasi Otomatis & Proteksi Jam Kerja",
+              "Taking Order (PO), Penagihan (Tunai/Transfer/Giro) & Rekonsiliasi Setoran Kasir Kantor",
+              "Mode Offline-First PWA (IndexedDB Auto-Sync) untuk Area Sinyal Lemah",
+              "Hitung Gaji, Lembur, Potongan Telat, BPJS Kesehatan/TK & Pajak PPh 21 TER Otomatis",
+              "Kalkulator THR Proporsional Resmi (Permenaker No. 6/2016) & Cetak Slip Gaji PDF",
+              "Kasbon Darurat Cicilan 1-6 Bulan Auto-Potong Slip Gaji & Klaim Reimbursement Foto Struk BBM",
+              "Sistem Poin Disiplin Harian, Streak On-Time, Leaderboard & Tukar Hadiah Voucher",
+              "Asisten AI HR & Bot Telegram untuk Rekap Cepat dan Persetujuan Cuti/Lembur 1-Klik"
+            ],
+            "offers": {
+              "@type": "AggregateOffer",
+              "lowPrice": "0",
+              "highPrice": "39000",
+              "priceCurrency": "IDR",
+              "offerCount": "3",
+              "offers": [
+                {
+                  "@type": "Offer",
+                  "name": "Free Trial UMKM (Gratis 4 Bulan)",
+                  "price": "0",
+                  "priceCurrency": "IDR",
+                  "availability": "https://schema.org/InStock",
+                  "url": "https://akugawe.web.id/?checkout=free_trial",
+                  "description": "Gratis 4 bulan penuh untuk maksimal 4 karyawan aktif di Shared Pod. Termasuk PWA Mobile Absensi GPS & Selfie dan Dashboard Owner."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Starter UMKM",
+                  "price": "15000",
+                  "priceCurrency": "IDR",
+                  "availability": "https://schema.org/InStock",
+                  "url": "https://akugawe.web.id/?checkout=starter",
+                  "description": "Mulai Rp 15.000/bulan (Rp 138.000/tahun) untuk maksimal 15 karyawan aktif. Termasuk Geofence GPS, Otomasi Payroll & Slip Gaji PDF, Lembur, Kasbon, dan Cuti."
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Business Pro (Dedicated Pod + Canvasing Sales)",
+                  "price": "39000",
+                  "priceCurrency": "IDR",
+                  "availability": "https://schema.org/InStock",
+                  "url": "https://akugawe.web.id/?checkout=pro",
+                  "description": "Mulai Rp 39.000/bulan (Rp 360.000/tahun) untuk maksimal 50 karyawan aktif di 1 Dedicated Cloudflare Pod dengan Custom Domain sendiri + Fitur Eksklusif Canvasing Sales & Kunjungan Toko (Beat Plan, Peta Sebaran, Taking Order PO, Inkaso Tagihan) & Multi-Cabang."
+                }
+              ]
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "ratingCount": "128",
+              "bestRating": "5",
+              "worstRating": "1"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://akugawe.web.id/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Bagaimana akugawe mencegah karyawan titip absen atau curang lokasi?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "akugawe memiliki perlindungan ganda: karyawan wajib absen selfie langsung dari kamera HP dan berada di dalam radius GPS kantor atau toko. Aplikasi menolak Fake GPS dan foto galeri, ditambah fitur Kunci HP di mana 1 akun karyawan hanya bisa login di 1 HP terdaftar."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Apa saja yang ada di Fitur Canvasing Sales & Kunjungan Toko (Business Pro)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Khusus paket Business Pro, tim sales lapangan mendapat tab Kunjungan terdedikasi di HP: jadwal rute kunjungan harian (Beat Plan) dengan tombol navigasi Google Maps, check-in & check-out toko dengan foto bukti, koordinat GPS & durasi kunjungan otomatis, pencatatan pesanan barang (Taking Order PO), penagihan pembayaran (Tunai/Transfer/Giro) beserta serah terima setoran ke kasir kantor, klaim BBM, peta sebaran kunjungan interaktif di dashboard, serta mode Offline-First yang tetap menyimpan data meski sinyal susah."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Bagaimana cara kerja Sistem Poin Hadiah & Streak kedisiplinan?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Setiap kali karyawan absen masuk tepat waktu sebelum batas toleransi habis, mereka otomatis mendapat +10 poin harian dan lencana streak on-time. Poin yang terkumpul bisa ditukar langsung lewat HP dengan voucher belanja, saldo e-wallet, atau tambahan hari libur cuti."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Bagaimana aturan cicilan Kasbon Darurat dan potong gajinya?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Staf bisa mengajukan kasbon langsung dari HP dengan pilihan cicilan 1 sampai 6 bulan. Begitu disetujui atasan/owner, angsuran bulanan otomatis memotong gaji pada slip gaji periode berikutnya tanpa perlu dicatat manual di Excel."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Bagaimana cara akugawe menghitung THR karyawan?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Perhitungan THR 100% otomatis sesuai Permenaker No. 6/2016. Karyawan dengan masa kerja 1 tahun atau lebih mendapat 1 bulan upah penuh, sedangkan masa kerja 1 sampai 11 bulan dihitung proporsional sesuai jumlah bulan kerja."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Bagaimana cara karyawan mengajukan klaim uang bensin (reimbursement)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Karyawan cukup memotret nota atau kuitansi (BBM, parkir, tol, konsumsi lembur) lewat kamera HP di aplikasi. Setelah disetujui atasan, uang penggantian langsung masuk sebagai tambahan di slip gaji berikutnya."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Apa gunanya Asisten AI & Bot Telegram di akugawe?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pemilik usaha dan HR cukup tanya ke Bot Telegram dengan bahasa sehari-hari seperti 'Siapa yang belum absen hari ini?' atau 'Berapa sisa kasbon staf?', serta menyetujui cuti dan lembur langsung lewat tombol [Setujui] di chat Telegram."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Apakah potongan pajak PPh 21 dan BPJS sudah otomatis?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ya, sudah otomatis sesuai aturan terbaru Indonesia: pajak PPh 21 mekanisme TER (PP 58/2023), BPJS Ketenagakerjaan (JHT, JP, JKK, JKM), BPJS Kesehatan, serta hitungan upah lembur resmi Depnaker."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Apakah karyawan harus download aplikasi berukuran besar di PlayStore?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Tidak perlu. akugawe menggunakan teknologi Progressive Web App (PWA). Karyawan cukup membuka link di Chrome (Android) atau Safari (iPhone) lalu klik 'Tambahkan ke Layar Utama'."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body class="bg-white text-zinc-900 antialiased selection:bg-[#a9484c]/15 selection:text-[#a9484c]">
-    <div id="root"></div>
+    <div id="root">
+      <!-- Pre-rendered Semantic Content for Search Engine Crawlers, Google Maps Local Bot & LLM Agents -->
+      <main>
+        <header>
+          <h1>akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM Indonesia</h1>
+          <p>
+            Solusi lengkap absensi karyawan selfie &amp; geofence GPS anti-titip, modul Canvasing Sales &amp; Kunjungan Toko (Jadwal Beat Plan, Navigasi Google Maps, Peta Sebaran Kunjungan, Taking Order PO, Inkaso &amp; Setoran Kasir Kantor), kasbon darurat cicilan, poin disiplin, serta hitung gaji BPJS, THR &amp; PPh 21 otomatis.
+          </p>
+        </header>
+        <section>
+          <h2>Fitur Unggulan akugawe untuk Toko, Kafe, Distributor &amp; Kantor Cabang</h2>
+          <ul>
+            <li><strong>Absen Selfie &amp; Geofence GPS:</strong> Wajib selfie kamera langsung di radius lokasi toko/kantor, deteksi Anti-Fake GPS, dan kunci 1 akun di 1 HP (WebAuthn Sidik Jari &amp; Face ID).</li>
+            <li><strong>Canvasing Sales &amp; Kunjungan Toko (Business Pro):</strong> Direktori master toko dengan titik koordinat peta, jadwal rute kunjungan harian (Beat Plan) dengan tombol navigasi Google Maps, peta distribusi kunjungan interaktif, check-in/out GPS &amp; durasi kunjungan, pencatatan pesanan (Taking Order PO), penagihan pembayaran (Tunai/Transfer/Giro) &amp; serah terima setoran kasir, klaim BBM, serta mode Offline-First PWA.</li>
+            <li><strong>Payroll, Slip Gaji PDF, BPJS &amp; PPh 21 TER:</strong> Rekap gaji bulanan, potongan telat, lembur Depnaker, kalkulator THR proporsional (Permenaker No. 6/2016), BPJS Kesehatan &amp; Ketenagakerjaan, serta PPh 21 TER otomatis.</li>
+            <li><strong>Kasbon Cicilan, Reimbursement Nota &amp; Poin Hadiah:</strong> Kasbon 1–6 bulan potong slip gaji otomatis, klaim struk BBM/parkir via foto, dan poin disiplin harian (+10 poin on-time).</li>
+            <li><strong>Asisten AI HR &amp; Bot Telegram:</strong> Tanya rekap kehadiran dan setujui cuti/lembur langsung dari chat Telegram.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Pilihan Paket Harga Langganan Hemat</h2>
+          <ul>
+            <li><strong>Free Trial UMKM (Rp 0 / Gratis 4 Bulan):</strong> Maksimal 4 karyawan aktif, Shared Pod, PWA Mobile Absensi GPS &amp; Selfie, Dashboard Owner.</li>
+            <li><strong>Starter UMKM (Mulai Rp 15.000/bulan atau Rp 138.000/tahun):</strong> Maksimal 15 karyawan aktif, Geofencing GPS, Otomasi Payroll &amp; Slip Gaji PDF, Lembur, Kasbon &amp; Cuti.</li>
+            <li><strong>Business Pro (Mulai Rp 39.000/bulan atau Rp 360.000/tahun):</strong> Maksimal 50 karyawan aktif, 1 Dedicated Pod Cloudflare terisolasi penuh, Custom Domain sendiri, Fitur Canvasing Sales &amp; Kunjungan Toko Lengkap, dan Multi-Cabang.</li>
+          </ul>
+        </section>
+        <footer>
+          <p>Layanan tersedia untuk bisnis dan UMKM di Jakarta, Surabaya, Bandung, Medan, Semarang, Makassar, Tangerang, Bekasi, Depok, Bogor, Yogyakarta, Bali, Malang, Palembang, Balikpapan, Pekanbaru, dan seluruh Indonesia.</p>
+        </footer>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

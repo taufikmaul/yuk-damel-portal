@@ -1228,6 +1228,7 @@ export function App() {
                       <button
                         type="button"
                         onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                        aria-expanded={isOpen}
                         className="w-full flex items-center justify-between text-left gap-4 font-semibold text-base sm:text-lg text-zinc-900 hover:text-[#a9484c] transition-colors"
                       >
                         <span>{item.q}</span>
@@ -1236,11 +1237,15 @@ export function App() {
                         </span>
                       </button>
 
-                      {isOpen && (
-                        <p className="mt-3 text-sm text-zinc-600 leading-relaxed pr-8">
-                          {item.a}
-                        </p>
-                      )}
+                      <p
+                        className={
+                          isOpen
+                            ? 'mt-3 text-sm text-zinc-600 leading-relaxed pr-8'
+                            : 'sr-only'
+                        }
+                      >
+                        {item.a}
+                      </p>
                     </div>
                   );
                 })}
@@ -1256,7 +1261,7 @@ export function App() {
               Siap bikin absensi & gaji tim jadi lebih mudah?
             </h2>
             <p className="mt-4 text-base sm:text-lg text-rose-100 max-w-xl mx-auto leading-relaxed">
-              Mulai gunakan akugawe hari ini. Pantau kehadiran tim toko dan cabang secara langsung tanpa ribet.
+              Mulai gunakan akugawe hari ini. Pantau kehadiran tim toko, sales canvasing, dan cabang secara langsung tanpa ribet.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
@@ -1282,43 +1287,63 @@ export function App() {
         </section>
       </main>
 
-      {/* 8. FOOTER */}
+      {/* 8. FOOTER (With Local SEO / Google Maps Regional Coverage & AI/LLM Index Links) */}
       <footer className="border-t border-zinc-200/80 bg-white py-12 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-zinc-500">
-          <div className="flex items-center gap-2.5">
-            <div className="size-7 rounded-lg bg-white border border-zinc-200 flex items-center justify-center p-0.5 shadow-2xs">
-              <Logo className="w-full h-full" />
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-zinc-500">
+            <div className="flex items-center gap-2.5">
+              <div className="size-7 rounded-lg bg-white border border-zinc-200 flex items-center justify-center p-0.5 shadow-2xs">
+                <Logo className="w-full h-full" />
+              </div>
+              <span className="font-bold text-sm text-zinc-900">akugawe</span>
+              <span className="text-zinc-400">|</span>
+              <span>Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll Indonesia</span>
             </div>
-            <span className="font-bold text-sm text-zinc-900">akugawe</span>
-            <span className="text-zinc-400">|</span>
-            <span>Sistem Presensi Biometrik & Payroll Indonesia</span>
+
+            <div className="flex flex-wrap items-center justify-center gap-6">
+              <a href="#hero" className="hover:text-zinc-900 transition-colors">
+                Beranda
+              </a>
+              <a href="#fitur" className="hover:text-zinc-900 transition-colors">
+                Fitur App
+              </a>
+              <a href="#solusi" className="hover:text-zinc-900 transition-colors">
+                Skenario
+              </a>
+              <a href="#harga" className="hover:text-zinc-900 transition-colors">
+                Harga
+              </a>
+              <a href="#faq" className="hover:text-zinc-900 transition-colors">
+                FAQ
+              </a>
+              <a
+                href="/llms.txt"
+                className="text-zinc-400 hover:text-zinc-700 transition-colors"
+                title="Ringkasan Produk untuk AI & LLM"
+              >
+                AI / LLMs
+              </a>
+              <a
+                href="/salesAdmin"
+                className="text-zinc-400 hover:text-[#a9484c] flex items-center gap-1 transition-colors"
+              >
+                <Key className="size-3" /> Area Penjual
+              </a>
+            </div>
+
+            <p>© 2026 akugawe. Hak cipta dilindungi.</p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6">
-            <a href="#hero" className="hover:text-zinc-900 transition-colors">
-              Beranda
-            </a>
-            <a href="#fitur" className="hover:text-zinc-900 transition-colors">
-              Fitur App
-            </a>
-            <a href="#solusi" className="hover:text-zinc-900 transition-colors">
-              Skenario
-            </a>
-            <a href="#harga" className="hover:text-zinc-900 transition-colors">
-              Harga
-            </a>
-            <a href="#faq" className="hover:text-zinc-900 transition-colors">
-              FAQ
-            </a>
-            <a
-              href="/salesAdmin"
-              className="text-zinc-400 hover:text-[#a9484c] flex items-center gap-1 transition-colors"
-            >
-              <Key className="size-3" /> Area Penjual
-            </a>
+          {/* Local SEO & Google Maps Service Coverage Footnote */}
+          <div className="pt-6 border-t border-zinc-100 text-[11px] text-zinc-400 leading-relaxed text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <p>
+              <strong className="text-zinc-500 font-medium">Jangkauan Layanan UMKM &amp; Perusahaan Indonesia:</strong>{' '}
+              Jakarta, Bogor, Depok, Tangerang, Bekasi (Jabodetabek), Surabaya, Bandung, Medan, Semarang, Makassar, Yogyakarta, Denpasar (Bali), Malang, Palembang, Balikpapan, Pekanbaru, Solo, Banjarmasin, Batam &amp; seluruh wilayah Indonesia.
+            </p>
+            <p className="shrink-0 text-zinc-400">
+              Terintegrasi Titik Koordinat Geofence &amp; Navigasi Rute Google Maps
+            </p>
           </div>
-
-          <p>© 2026 akugawe. Hak cipta dilindungi.</p>
         </div>
       </footer>
     </div>

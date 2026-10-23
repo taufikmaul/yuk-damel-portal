@@ -1,0 +1,60 @@
+# akugawe.web.id — Robots & AI Crawler Policy
+# Optimized for Google Search, Google Maps/Local, and LLM Search Engines (ChatGPT, Perplexity, Gemini, Claude)
+
+User-agent: *
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.xml
+Disallow: /salesAdmin
+Disallow: /api/
+
+# Google Search, Mobile & Images
+User-agent: Googlebot
+Allow: /
+Disallow: /salesAdmin
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+# AI & LLM Search Crawlers (AEO / GEO Optimization)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+Sitemap: https://akugawe.web.id/sitemap.xml

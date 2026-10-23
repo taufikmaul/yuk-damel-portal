@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://akugawe.web.id/</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="id-ID" href="https://akugawe.web.id/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://akugawe.web.id/" />
+    <image:image>
+      <image:loc>https://akugawe.web.id/og-image.jpg</image:loc>
+      <image:title>akugawe — Aplikasi Absensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM Indonesia</image:title>
+      <image:caption>Platform Presensi Biometrik Selfie GPS Anti-Titip, Canvasing Sales &amp; Kunjungan Toko (Beat Plan, Google Maps, Taking Order PO, Inkaso), Kasbon, THR &amp; Slip Gaji Otomatis</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://akugawe.web.id/llms.txt</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://akugawe.web.id/llms-full.txt</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
