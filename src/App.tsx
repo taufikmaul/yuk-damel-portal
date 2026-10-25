@@ -30,6 +30,7 @@ import {
 import { PricingSection } from './components/pricing-section';
 import { ScrollReveal } from './components/ScrollReveal';
 import { ScrollProgressBar } from './components/ScrollProgressBar';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { loadSellerConfig, fetchSellerConfig, type SellerConfig } from './services/config';
 
 const OnboardingPage = lazy(() =>
@@ -139,53 +140,57 @@ export function App() {
 
   if (currentView === 'onboarding') {
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          </div>
-        }
-      >
-        <OnboardingPage
-          initialToken={activeToken}
-          onBackToLanding={() => {
-            setCurrentView('landing');
-            sessionStorage.setItem('ngabsen_current_view', 'landing');
-            window.history.pushState({ view: 'landing' }, '', '/');
-          }}
-        />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+              <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            </div>
+          }
+        >
+          <OnboardingPage
+            initialToken={activeToken}
+            onBackToLanding={() => {
+              setCurrentView('landing');
+              sessionStorage.setItem('ngabsen_current_view', 'landing');
+              window.history.pushState({ view: 'landing' }, '', '/');
+            }}
+          />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
   if (currentView === 'admin') {
     return (
-      <Suspense
-        fallback={
-          <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          </div>
-        }
-      >
-        <AdminPortalPage
-          onBackToLanding={() => {
-            setCurrentView('landing');
-            sessionStorage.setItem('ngabsen_current_view', 'landing');
-            window.history.pushState({ view: 'landing' }, '', '/');
-          }}
-          onOpenOnboardingWithToken={(tok) => {
-            setActiveToken(tok);
-            setCurrentView('onboarding');
-            sessionStorage.setItem('ngabsen_current_view', 'onboarding');
-            sessionStorage.setItem('ngabsen_admin_mode', 'true');
-            if (tok) sessionStorage.setItem('ngabsen_active_token', tok);
-            const targetUrl = tok
-              ? `/?onboarding=true&token=${encodeURIComponent(tok)}&admin=true`
-              : '/?onboarding=true&admin=true';
-            window.history.pushState({ view: 'onboarding', token: tok }, '', targetUrl);
-          }}
-        />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense
+          fallback={
+            <div className="min-h-screen bg-white flex items-center justify-center">
+              <div className="size-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            </div>
+          }
+        >
+          <AdminPortalPage
+            onBackToLanding={() => {
+              setCurrentView('landing');
+              sessionStorage.setItem('ngabsen_current_view', 'landing');
+              window.history.pushState({ view: 'landing' }, '', '/');
+            }}
+            onOpenOnboardingWithToken={(tok) => {
+              setActiveToken(tok);
+              setCurrentView('onboarding');
+              sessionStorage.setItem('ngabsen_current_view', 'onboarding');
+              sessionStorage.setItem('ngabsen_admin_mode', 'true');
+              if (tok) sessionStorage.setItem('ngabsen_active_token', tok);
+              const targetUrl = tok
+                ? `/?onboarding=true&token=${encodeURIComponent(tok)}&admin=true`
+                : '/?onboarding=true&admin=true';
+              window.history.pushState({ view: 'onboarding', token: tok }, '', targetUrl);
+            }}
+          />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
@@ -229,7 +234,8 @@ export function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-primary/15 selection:text-primary antialiased">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-primary/15 selection:text-primary antialiased">
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border">
         <ScrollProgressBar />
 
@@ -282,7 +288,7 @@ export function App() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg border border-border text-slate-700 hover:bg-slate-50 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center p-2 rounded-lg border border-border text-slate-700 hover:bg-slate-50 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
               aria-label="Buka navigasi menu"
               aria-expanded={mobileMenuOpen}
             >
@@ -293,39 +299,39 @@ export function App() {
 
         {mobileMenuOpen && (
           <div className="md:hidden border-b border-border bg-white px-4 pt-3 pb-5 space-y-3">
-            <nav className="flex flex-col space-y-2 text-sm font-medium text-slate-700">
+            <nav className="flex flex-col space-y-1 text-sm font-medium text-slate-700">
               <a
                 href="#hero"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50"
+                className="min-h-[44px] flex items-center px-3.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 Beranda
               </a>
               <a
                 href="#fitur"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50"
+                className="min-h-[44px] flex items-center px-3.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 Fitur App
               </a>
               <a
                 href="#solusi"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50"
+                className="min-h-[44px] flex items-center px-3.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 Skenario
               </a>
               <a
                 href="#harga"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50"
+                className="min-h-[44px] flex items-center px-3.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 Harga
               </a>
               <a
                 href="#faq"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2 rounded-lg hover:bg-slate-50"
+                className="min-h-[44px] flex items-center px-3.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 FAQ
               </a>
@@ -335,7 +341,7 @@ export function App() {
                 href={`${dashboardUrl}/login`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 py-2 text-center text-xs font-semibold rounded-lg border border-border text-slate-800"
+                className="flex-1 min-h-[44px] flex items-center justify-center text-xs font-semibold rounded-lg border border-border text-slate-800 hover:bg-slate-50 transition-colors"
               >
                 Masuk
               </a>
@@ -343,7 +349,7 @@ export function App() {
                 href={`${dashboardUrl}/login`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 py-2 text-center text-xs font-semibold rounded-lg bg-primary text-white"
+                className="flex-1 min-h-[44px] flex items-center justify-center text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-white transition-colors"
               >
                 Coba Demo
               </a>
@@ -374,13 +380,13 @@ export function App() {
                   href={`${dashboardUrl}/login`}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all shadow-xs flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="w-full sm:w-auto min-h-[44px] px-6 py-3 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold text-sm transition-all shadow-xs flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   Coba Demo Langsung
                 </a>
                 <a
                   href="#fitur"
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl border border-border bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm transition-all focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="w-full sm:w-auto min-h-[44px] px-6 py-3 rounded-xl border border-border bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm transition-all flex items-center justify-center focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   Pelajari Fitur Lengkap
                 </a>
@@ -391,17 +397,16 @@ export function App() {
           <ScrollReveal delayMs={240} yOffset={32} className="max-w-5xl mx-auto mt-12 sm:mt-16">
             <div className="relative mx-auto w-full">
               <div className="rounded-xl sm:rounded-2xl border border-border bg-white shadow-xl overflow-hidden">
-                <div className="bg-slate-50/80 border-b border-border px-4 py-3 flex items-center justify-between">
+                <div className="bg-slate-50/80 border-b border-border px-4 py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="size-3 rounded-full bg-rose-400" />
-                    <span className="size-3 rounded-full bg-amber-400" />
-                    <span className="size-3 rounded-full bg-emerald-400" />
+                    <span className="size-2 rounded-full bg-emerald-500" />
+                    <span className="text-xs font-medium text-slate-700">Sistem Presensi Aktif</span>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-500 bg-white px-3 py-1 rounded-md border border-border shadow-2xs">
-                    dash.akugawe.id/overview
+                  <div className="text-[11px] text-slate-600 bg-white px-3 py-1 rounded-md border border-border shadow-2xs">
+                    dash.akugawe.web.id
                   </div>
                   <div className="text-xs text-slate-500 font-medium hidden sm:inline">
-                    Pratinjau Antarmuka
+                    Pratinjau Dashboard
                   </div>
                 </div>
 
@@ -487,14 +492,15 @@ export function App() {
                 </div>
               </div>
 
+              {/* Floating employee preview on sm+ screens */}
               <div className="hidden sm:block absolute -right-4 -bottom-8 w-68 rounded-3xl border-4 border-slate-900 bg-white shadow-2xl p-3.5 z-20">
                 <div className="flex justify-center mb-1.5">
                   <div className="w-16 h-3 bg-slate-900 rounded-full" />
                 </div>
                 
                 <div className="text-center py-1 border-b border-slate-100">
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">
-                    akugawe Aplikasi Karyawan
+                  <p className="text-[10px] font-semibold text-slate-500">
+                    Aplikasi Karyawan
                   </p>
                   <p className="text-xs font-bold text-slate-800">Nadia Putri</p>
                   <p className="text-[9px] text-slate-500">Shift Pagi (08:00 - 17:00)</p>
@@ -522,29 +528,29 @@ export function App() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-1.5 mb-2.5 text-center">
-                  <div className="p-1 rounded-lg bg-secondary border border-border">
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
                     <Calendar className="size-3 text-primary mx-auto" />
-                    <span className="text-[8px] font-bold text-primary block mt-0.5">Cuti</span>
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Cuti</span>
                   </div>
-                  <div className="p-1 rounded-lg bg-indigo-50 border border-indigo-100">
-                    <Store className="size-3 text-indigo-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-indigo-700 block mt-0.5">Kunjungan</span>
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <Store className="size-3 text-slate-700 mx-auto" />
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Kunjungan</span>
                   </div>
-                  <div className="p-1 rounded-lg bg-emerald-50 border border-emerald-100">
-                    <FileText className="size-3 text-emerald-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-emerald-700 block mt-0.5">Slip Gaji</span>
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <FileText className="size-3 text-emerald-700 mx-auto" />
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Slip Gaji</span>
                   </div>
-                  <div className="p-1 rounded-lg bg-rose-50 border border-rose-100">
-                    <CreditCard className="size-3 text-rose-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-rose-700 block mt-0.5">Kasbon</span>
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <CreditCard className="size-3 text-rose-700 mx-auto" />
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Kasbon</span>
                   </div>
-                  <div className="p-1 rounded-lg bg-sky-50 border border-sky-100">
-                    <Receipt className="size-3 text-sky-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-sky-700 block mt-0.5">Reimburse</span>
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <Receipt className="size-3 text-slate-700 mx-auto" />
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Reimburse</span>
                   </div>
-                  <div className="p-1 rounded-lg bg-purple-50 border border-purple-100">
-                    <Bot className="size-3 text-purple-600 mx-auto" />
-                    <span className="text-[8px] font-bold text-purple-700 block mt-0.5">Telegram</span>
+                  <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <Bot className="size-3 text-slate-700 mx-auto" />
+                    <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Telegram</span>
                   </div>
                 </div>
 
@@ -552,11 +558,83 @@ export function App() {
                   href={`${appUrl}/login`}
                   target="_blank"
                   rel="noreferrer"
-                  className="block w-full py-2 rounded-xl bg-primary text-white font-bold text-[11px] shadow-xs text-center hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  className="block w-full min-h-[44px] flex items-center justify-center py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-xs text-center hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                   Absen Masuk (+10 Poin)
                 </a>
               </div>
+            </div>
+
+            {/* Mobile Employee App Preview (Stacked on phone widths) */}
+            <div className="sm:hidden mt-6 max-w-[280px] mx-auto rounded-3xl border-4 border-slate-900 bg-white shadow-xl p-3.5">
+              <div className="flex justify-center mb-1.5">
+                <div className="w-16 h-3 bg-slate-900 rounded-full" />
+              </div>
+              
+              <div className="text-center py-1 border-b border-slate-100">
+                <p className="text-[10px] font-semibold text-slate-500">
+                  Aplikasi Karyawan (PWA)
+                </p>
+                <p className="text-xs font-bold text-slate-800">Nadia Putri</p>
+                <p className="text-[9px] text-slate-500">Shift Pagi (08:00 - 17:00)</p>
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] bg-amber-50/90 border border-amber-200 rounded-xl px-2.5 py-1.5 my-2">
+                <div className="flex items-center gap-1 font-bold text-amber-900">
+                  <Flame className="size-3.5 text-rose-500 fill-rose-500" />
+                  <span>14 Hari On-Time</span>
+                </div>
+                <div className="flex items-center gap-1 font-bold text-primary">
+                  <Gift className="size-3 text-primary" />
+                  <span>140 Poin Disiplin</span>
+                </div>
+              </div>
+
+              <div className="mb-2 p-2 rounded-xl bg-slate-50 border border-border text-center">
+                <div className="size-10 rounded-full bg-emerald-50 border-2 border-dashed border-emerald-500 mx-auto flex items-center justify-center text-emerald-600 mb-1">
+                  <ScanFace className="size-5" />
+                </div>
+                <p className="text-[10px] font-bold text-slate-900">Foto Selfie & Lokasi Valid</p>
+                <p className="text-[9px] text-emerald-600 font-semibold">
+                  Radius Toko Valid (8m)
+                </p>
+              </div>
+
+              <div className="grid grid-cols-3 gap-1.5 mb-2.5 text-center">
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <Calendar className="size-3 text-primary mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Cuti</span>
+                </div>
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <Store className="size-3 text-slate-700 mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Kunjungan</span>
+                </div>
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <FileText className="size-3 text-emerald-700 mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Slip Gaji</span>
+                </div>
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <CreditCard className="size-3 text-rose-700 mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Kasbon</span>
+                </div>
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <Receipt className="size-3 text-slate-700 mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Reimburse</span>
+                </div>
+                <div className="p-1 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                  <Bot className="size-3 text-slate-700 mx-auto" />
+                  <span className="text-[8px] font-semibold text-slate-700 block mt-0.5">Telegram</span>
+                </div>
+              </div>
+
+              <a
+                href={`${appUrl}/login`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full min-h-[44px] flex items-center justify-center py-2.5 rounded-xl bg-primary text-white font-bold text-xs shadow-xs text-center hover:bg-primary/90 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+              >
+                Absen Masuk (+10 Poin)
+              </a>
             </div>
           </ScrollReveal>
         </section>
@@ -565,7 +643,7 @@ export function App() {
         <section id="fitur" className="py-16 sm:py-24 px-4 sm:px-6 bg-white border-b border-slate-200">
           <div className="max-w-6xl mx-auto">
             <ScrollReveal delayMs={0} yOffset={20} className="text-center max-w-3xl mx-auto mb-14">
-              <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
+              <p className="text-xs font-semibold text-primary mb-2">
                 Fitur Utama
               </p>
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
@@ -582,12 +660,12 @@ export function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-7 space-y-4">
                     <div className="inline-flex items-center gap-2">
-                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                        Pilar 01 • Presensi Akurat
+                      <span className="text-xs font-semibold text-primary">
+                        Presensi Akurat
                       </span>
                     </div>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      Wajib selfie kamera langsung dan verifikasi radius geofence toko
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                      Presensi selfie terkunci di radius toko kerja
                     </h3>
                     <p className="text-sm text-slate-600 leading-relaxed">
                       Karyawan hanya dapat mencatatkan kehadiran ketika posisi GPS ponsel berada di dalam radius resmi kantor atau cabang toko. Sistem secara aktif menolak Fake GPS dan foto unggahan galeri. Jam presensi disinkronkan langsung ke waktu server resmi untuk mencegah manipulasi jam ponsel.
@@ -665,16 +743,16 @@ export function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-7 space-y-4">
                     <div className="inline-flex items-center gap-2">
-                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                        Pilar 02 • Canvasing Sales & Distribusi
+                      <span className="text-xs font-semibold text-primary">
+                        Canvasing Sales & Distribusi
                       </span>
-                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                         Paket Business Pro
                       </span>
                     </div>
 
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      Jadwal Beat Plan, navigasi Google Maps, taking order PO, dan serah terima setoran
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                      Rute harian sales, navigasi peta, dan setoran pesanan toko
                     </h3>
 
                     <p className="text-sm text-slate-600 leading-relaxed">
@@ -760,10 +838,10 @@ export function App() {
                     <div className="size-10 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 mb-3.5">
                       <Wallet className="size-5" />
                     </div>
-                    <p className="text-xs font-bold text-rose-700 uppercase tracking-wider mb-1.5">
-                      Pilar 03A • Finansial Staf
+                    <p className="text-xs font-semibold text-rose-700 mb-1.5">
+                      Finansial Karyawan
                     </p>
-                    <h3 className="text-xl font-bold text-slate-900">
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                       Kasbon darurat cicilan dan klaim reimbursement foto nota
                     </h3>
                     <p className="mt-2 text-sm text-slate-600 leading-relaxed">
@@ -788,10 +866,10 @@ export function App() {
                     <div className="size-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 mb-3.5">
                       <Gift className="size-5" />
                     </div>
-                    <p className="text-xs font-bold text-amber-700 uppercase tracking-wider mb-1.5">
-                      Pilar 03B • Motivasi Positif
+                    <p className="text-xs font-semibold text-amber-700 mb-1.5">
+                      Apresiasi & Kedisiplinan
                     </p>
-                    <h3 className="text-xl font-bold text-slate-900">
+                    <h3 className="text-xl font-bold text-slate-900 tracking-tight">
                       Sistem poin hadiah dan streak kehadiran tepat waktu
                     </h3>
                     <p className="mt-2 text-sm text-slate-600 leading-relaxed">
@@ -817,13 +895,13 @@ export function App() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
                   <div className="lg:col-span-7 space-y-4">
                     <div className="inline-flex items-center gap-2">
-                      <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                        Pilar 04 • Penggajian & Otomasi HR
+                      <span className="text-xs font-semibold text-primary">
+                        Penggajian & Otomasi HR
                       </span>
                     </div>
 
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      Hitung gaji, lembur, BPJS, pajak PPh 21 TER, dan THR tanpa rumus manual
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                      Kalkulasi gaji, lembur, BPJS, THR, dan pajak PPh 21 otomatis
                     </h3>
 
                     <p className="text-sm text-slate-600 leading-relaxed">
@@ -869,11 +947,11 @@ export function App() {
 
                     <div className="space-y-2 text-xs">
                       <div className="p-2.5 rounded-lg bg-slate-800/80 text-slate-200 text-[11px] leading-relaxed">
-                        <p className="font-semibold text-slate-400 text-[10px] uppercase mb-0.5">Pesan Masuk Admin:</p>
+                        <p className="font-semibold text-slate-400 text-[10px] mb-0.5">Pesan Masuk Admin:</p>
                         "Siapa staf toko cabang yang belum absen hari ini?"
                       </div>
                       <div className="p-2.5 rounded-lg bg-primary/20 border border-primary/40 text-rose-100 text-[11px] leading-relaxed">
-                        <p className="font-semibold text-rose-300 text-[10px] uppercase mb-0.5">Balasan Bot:</p>
+                        <p className="font-semibold text-rose-300 text-[10px] mb-0.5">Balasan Bot:</p>
                         Semua staf cabang Tebet dan Kemang sudah hadir tepat waktu. Staf Salsa Mahardika mengajukan izin sakit (1 hari).
                       </div>
                     </div>
@@ -893,7 +971,7 @@ export function App() {
         <section id="solusi" className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-50/60 border-b border-slate-200">
           <div className="max-w-6xl mx-auto">
             <ScrollReveal delayMs={0} yOffset={20} className="text-center max-w-3xl mx-auto mb-14">
-              <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
+              <p className="text-xs font-semibold text-primary mb-2">
                 Skenario Penggunaan
               </p>
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
@@ -957,8 +1035,8 @@ export function App() {
         <section id="faq" className="py-16 sm:py-24 px-4 sm:px-6 bg-white border-t border-slate-200">
           <div className="max-w-3xl mx-auto">
             <ScrollReveal delayMs={0} yOffset={20} className="text-center mb-12">
-              <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-3">
-                FAQ
+              <p className="text-xs font-semibold text-primary mb-2">
+                Tanya Jawab
               </p>
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight">
                 Pertanyaan yang Sering Ditanyakan
@@ -980,10 +1058,10 @@ export function App() {
                         aria-controls={`faq-panel-${idx}`}
                         onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
                         aria-expanded={isOpen}
-                        className="w-full flex items-center justify-between text-left gap-4 font-semibold text-base sm:text-lg text-slate-900 hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-lg p-1"
+                        className="w-full min-h-[44px] flex items-center justify-between text-left gap-4 font-semibold text-base sm:text-lg text-slate-900 hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded-lg py-2.5 px-2"
                       >
                         <span>{item.q}</span>
-                        <span className="p-1 rounded-md text-slate-500 shrink-0">
+                        <span className="size-8 flex items-center justify-center rounded-md text-slate-500 shrink-0">
                           {isOpen ? <Minus className="size-4" /> : <Plus className="size-4" />}
                         </span>
                       </button>
@@ -1022,7 +1100,7 @@ export function App() {
                 href={`${dashboardUrl}/login`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-lg bg-white text-brand-700 font-semibold text-sm hover:bg-brand-50 transition-all shadow-md focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                className="w-full sm:w-auto min-h-[44px] px-6 py-3 rounded-lg bg-white text-brand-700 font-semibold text-sm hover:bg-brand-50 transition-all shadow-md flex items-center justify-center focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
               >
                 Coba Demo Sekarang
               </a>
@@ -1030,7 +1108,7 @@ export function App() {
                 href={getWaLink()}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-lg border border-white/40 text-white font-semibold text-sm hover:bg-white/10 transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                className="w-full sm:w-auto min-h-[44px] px-6 py-3 rounded-lg border border-white/40 text-white font-semibold text-sm hover:bg-white/10 transition-all flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
               >
                 <MessageCircle className="size-4" />
                 <span>Konsultasi via WhatsApp</span>
@@ -1053,32 +1131,41 @@ export function App() {
               <span>Aplikasi Presensi Selfie GPS, Canvasing Sales, dan Payroll Indonesia</span>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              <a href="#hero" className="hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+              <a href="#hero" className="min-h-[44px] inline-flex items-center px-2 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
                 Beranda
               </a>
-              <a href="#fitur" className="hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
+              <a href="#fitur" className="min-h-[44px] inline-flex items-center px-2 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
                 Fitur App
               </a>
-              <a href="#solusi" className="hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
+              <a href="#solusi" className="min-h-[44px] inline-flex items-center px-2 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
                 Skenario
               </a>
-              <a href="#harga" className="hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
+              <a href="#harga" className="min-h-[44px] inline-flex items-center px-2 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
                 Harga
               </a>
-              <a href="#faq" className="hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
+              <a href="#faq" className="min-h-[44px] inline-flex items-center px-2 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded">
                 FAQ
               </a>
               <a
+                href="/presentation.html"
+                target="_blank"
+                rel="noreferrer"
+                className="min-h-[44px] inline-flex items-center px-2 text-slate-600 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
+                title="Presentasi Slide Pitch Deck Akugawe"
+              >
+                Pitch Deck
+              </a>
+              <a
                 href="/llms.txt"
-                className="text-slate-600 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
+                className="min-h-[44px] inline-flex items-center px-2 text-slate-600 hover:text-slate-900 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
                 title="Ringkasan Produk untuk AI & LLM"
               >
                 AI / LLMs
               </a>
               <a
                 href="/salesAdmin"
-                className="text-slate-600 hover:text-primary flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
+                className="min-h-[44px] inline-flex items-center px-2 text-slate-600 hover:text-primary flex items-center gap-1 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
               >
                 <Key className="size-3" /> Area Penjual
               </a>
@@ -1100,6 +1187,7 @@ export function App() {
         </div>
       </footer>
     </div>
+  </ErrorBoundary>
   );
 }
 

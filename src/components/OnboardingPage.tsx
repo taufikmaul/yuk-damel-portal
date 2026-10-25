@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import confetti from 'canvas-confetti';
 import {
   Rocket,
   ShieldCheck,
@@ -99,6 +98,17 @@ function formatSlug(name: string): string {
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+}
+
+/**
+ * Lazy-loads canvas-confetti only when a celebratory action occurs.
+ * Prevents bundling confetti in the initial critical path.
+ */
+async function triggerConfetti(options: { particleCount?: number; spread?: number; origin?: { y: number } } = {}) {
+  try {
+    const { default: confetti } = await import('canvas-confetti');
+    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, ...options });
+  } catch (_) {}
 }
 
 export function OnboardingPage({ initialToken = '', onBackToLanding }: OnboardingProps) {
@@ -378,7 +388,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     setIsDeploying(false);
 
     if (dispatchRes.success) {
-      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+      triggerConfetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
       toast.success('Redeploy berhasil dipicu ke Cloudflare dengan konfigurasi yang sama! 🚀');
       setIsCompleted(false);
       if (saved) {
@@ -716,7 +726,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         isCompleted: false,
       });
 
-      confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
+      triggerConfetti({ particleCount: 120, spread: 70, origin: { y: 0.6 } });
     } else {
       setDispatchError(dispatchRes.message);
     }
@@ -754,7 +764,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     }
 
     if (completed) {
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+      triggerConfetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
       toast.success('Status dikonfirmasi: Deployment Sudah Selesai! 🎉 Sistem siap digunakan.');
     } else {
       toast.info('Status dikonfirmasi: Belum Selesai. Silakan tunggu proses selesai atau hubungi kami via WhatsApp jika ada kendala.');
@@ -1067,7 +1077,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                           disabled={telegramPinInput.length < 4}
                           className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-11 px-5 cursor-pointer shrink-0 shadow-sm"
                         >
-                          <Check className="size-4 mr-1.5" /> Verifikasi PIN & Lanjut Setup →
+                          <Check className="size-4 mr-1.5" /> Verifikasi PIN & Lanjut Setup
                         </Button>
                       </div>
                     </div>
@@ -1136,7 +1146,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
 
                 <form onSubmit={handleStartDeploy} className="space-y-5">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2">
                       Nama Bisnis / Toko / Perusahaan
                     </label>
                     <input
@@ -1153,7 +1163,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-semibold text-slate-700 mb-2">
                       Slug URL Sistem
                     </label>
                     <div className="flex items-center bg-white border border-[#f0dbd8] rounded-xl px-4 py-3 text-sm text-slate-500 focus-within:border-[#a9484c] focus-within:ring-2 focus-within:ring-[#a9484c]/20 transition shadow-xs">
@@ -1194,7 +1204,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     {useCustomDomain && (
                       <div className="space-y-3 pt-3 border-t border-[#f0dbd8]">
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                             Domain Dashboard Owner (Admin HR)
                           </label>
                           <input
@@ -1206,7 +1216,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-semibold text-slate-600 uppercase tracking-wider mb-1">
+                          <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                             Domain Absensi Karyawan (Mobile PWA)
                           </label>
                           <input
@@ -1226,7 +1236,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
 
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <label className="block text-xs font-semibold text-slate-700">
                         Mode Inisialisasi Database
                       </label>
                       <span className="text-[11px] text-slate-500">Pilih salah satu</span>

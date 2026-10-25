@@ -319,7 +319,7 @@ export function CheckoutModal({
       aria-modal="true"
       aria-label="Modal Checkout Paket"
     >
-      <div className="relative w-full max-w-lg bg-white border border-[#f0dbd8] rounded-3xl shadow-2xl text-slate-800 p-6 sm:p-8 my-8 transition-all">
+      <div className="relative w-full max-w-lg bg-white border border-[#f0dbd8] rounded-3xl shadow-2xl text-slate-800 p-6 sm:p-8 my-auto max-h-[92dvh] overflow-y-auto transition-all">
         <button
           type="button"
           onClick={onClose}
@@ -377,7 +377,7 @@ export function CheckoutModal({
                   <Button
                     type="submit"
                     disabled={isLoading || activationCode.length !== 6}
-                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 cursor-pointer"
+                    className="w-full min-h-[44px] py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center"
                   >
                     {isLoading ? (
                       <>
@@ -399,7 +399,7 @@ export function CheckoutModal({
                         setFreeTierStep('form');
                         setActivationCode('');
                       }}
-                      className="text-slate-500 hover:text-slate-800 flex items-center gap-1 cursor-pointer transition-colors"
+                      className="min-h-[44px] inline-flex items-center text-slate-500 hover:text-slate-800 gap-1 cursor-pointer transition-colors"
                     >
                       <ArrowLeft className="size-3.5" />
                       Ubah Data / Email
@@ -409,7 +409,7 @@ export function CheckoutModal({
                       type="button"
                       disabled={isSendingCode || resendCooldown > 0}
                       onClick={handleSendActivationCode}
-                      className={`font-semibold cursor-pointer transition-colors ${
+                      className={`min-h-[44px] inline-flex items-center font-semibold cursor-pointer transition-colors ${
                         resendCooldown > 0
                           ? 'text-slate-400 cursor-not-allowed'
                           : 'text-[#a9484c] hover:underline'
@@ -487,15 +487,15 @@ export function CheckoutModal({
                   {!isFreeTier && sellerConfig.managedSetupEnabled && (
                     <div
                       onClick={() => setHasManagedSetup(!hasManagedSetup)}
-                      className={`mt-2 p-3 rounded-xl border transition-all cursor-pointer select-none ${
+                      className={`min-h-[44px] mt-2 p-3 rounded-xl border transition-all cursor-pointer select-none flex items-center ${
                         hasManagedSetup
                           ? 'bg-amber-50 border-amber-300 text-amber-900'
                           : 'bg-white border-[#f0dbd8] hover:border-slate-300 text-slate-700'
                       }`}
                     >
-                      <div className="flex items-start gap-2.5">
+                      <div className="flex items-start gap-2.5 w-full">
                         <div
-                          className={`size-4 rounded mt-0.5 flex items-center justify-center border transition-colors ${
+                          className={`size-4 rounded mt-0.5 flex items-center justify-center border transition-colors shrink-0 ${
                             hasManagedSetup
                               ? 'bg-amber-500 border-amber-500 text-white'
                               : 'border-slate-300 bg-slate-50'
@@ -545,7 +545,7 @@ export function CheckoutModal({
                       placeholder="Contoh: Kedai Kopi Senja / Bengkel Prima"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs py-2 focus-visible:ring-[#a9484c]"
+                      className="min-h-[44px] bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-sm py-2 focus-visible:ring-[#a9484c]"
                       required
                     />
                   </div>
@@ -560,7 +560,7 @@ export function CheckoutModal({
                         placeholder="Contoh: 081234567890"
                         value={buyerPhone}
                         onChange={(e) => setBuyerPhone(e.target.value)}
-                        className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs py-2 focus-visible:ring-[#a9484c]"
+                        className="min-h-[44px] bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-sm py-2 focus-visible:ring-[#a9484c]"
                         required
                       />
                     </div>
@@ -574,7 +574,7 @@ export function CheckoutModal({
                         placeholder="nama@email.com"
                         value={buyerEmail}
                         onChange={(e) => setBuyerEmail(e.target.value)}
-                        className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs py-2 focus-visible:ring-[#a9484c]"
+                        className="min-h-[44px] bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-sm py-2 focus-visible:ring-[#a9484c]"
                         required={isFreeTier}
                       />
                     </div>
@@ -585,11 +585,11 @@ export function CheckoutModal({
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
                         Pilih Cara Pembayaran
                       </label>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => setSelectedMethod('qris')}
-                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`min-h-[44px] p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                             selectedMethod === 'qris'
                               ? 'bg-[#fbf2f0] border-[#a9484c] text-slate-900 shadow-xs ring-1 ring-[#a9484c]'
                               : 'bg-[#faf6f5] border-[#f0dbd8] text-slate-600 hover:bg-white'
@@ -607,7 +607,7 @@ export function CheckoutModal({
                         <button
                           type="button"
                           onClick={() => setSelectedMethod('whatsapp')}
-                          className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                          className={`min-h-[44px] p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                             selectedMethod === 'whatsapp'
                               ? 'bg-emerald-50 border-emerald-500 text-slate-900 shadow-xs ring-1 ring-emerald-500'
                               : 'bg-[#faf6f5] border-[#f0dbd8] text-slate-600 hover:bg-white'
@@ -628,7 +628,7 @@ export function CheckoutModal({
                   <Button
                     type="submit"
                     disabled={isLoading || isSendingCode}
-                    className={`w-full mt-2 py-3 text-white font-bold text-xs rounded-xl transition-all shadow-md cursor-pointer ${
+                    className={`w-full min-h-[44px] mt-2 py-3 text-white font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md cursor-pointer flex items-center justify-center ${
                       isFreeTier
                         ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
                         : 'bg-[#a9484c] hover:bg-[#8f3b3f] shadow-[#a9484c]/20'
@@ -706,7 +706,7 @@ export function CheckoutModal({
                 </span>
                 <button
                   onClick={() => copyNominal(orderData.finalAmount)}
-                  className="p-1 rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                  className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
                   title="Salin Nominal"
                 >
                   {copiedNominal ? <Check className="size-4 text-emerald-600" /> : <Copy className="size-4" />}
@@ -725,7 +725,7 @@ export function CheckoutModal({
                   href={orderData.pakasirCheckoutUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#a9484c] hover:bg-[#8f3b3f] text-white transition-all shadow-sm cursor-pointer"
+                  className="w-full min-h-[44px] py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 bg-[#a9484c] hover:bg-[#8f3b3f] text-white transition-all shadow-sm cursor-pointer"
                 >
                   <ExternalLink className="size-3.5" />
                   Buka Halaman Pembayaran Pakasir
@@ -735,7 +735,7 @@ export function CheckoutModal({
               <Button
                 onClick={handleManualCheckPaid}
                 disabled={isLoading}
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm"
+                className="w-full min-h-[44px] py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm flex items-center justify-center"
               >
                 {isLoading ? (
                   <Loader2 className="size-4 mr-2 animate-spin" />
@@ -750,7 +750,7 @@ export function CheckoutModal({
                   const waText = `Halo Admin akugawe, saya sudah transfer via QRIS sebesar *Rp ${orderData.finalAmount.toLocaleString('id-ID')}* untuk pesanan *${clientName}* (#${orderData.id}). Mohon konfirmasi aktivasi layanan ya. Terima kasih!`;
                   window.open(`https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(waText)}`, '_blank');
                 }}
-                className="w-full py-2 text-xs text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full min-h-[44px] py-2 text-xs text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <MessageCircle className="size-3.5 text-emerald-600" />
                 Konfirmasi Manual via WhatsApp Admin
@@ -784,7 +784,7 @@ export function CheckoutModal({
                   size="sm"
                   variant="outline"
                   onClick={() => copyToken(orderData.licenseToken)}
-                  className="border-[#f0dbd8] bg-white text-slate-700 text-xs h-8 cursor-pointer shadow-xs"
+                  className="min-h-[44px] min-w-[44px] border-[#f0dbd8] bg-white text-slate-700 text-xs cursor-pointer shadow-xs flex items-center justify-center"
                 >
                   {copiedToken ? <Check className="size-3 text-emerald-600" /> : <Copy className="size-3" />}
                 </Button>
@@ -811,7 +811,7 @@ export function CheckoutModal({
                   const targetApp = orderData.appUrl || `https://app.akugawe.web.id/${orderData.clientSlug || ''}`;
                   window.open(targetApp, '_blank');
                 }}
-                className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 cursor-pointer"
+                className="flex-1 min-h-[44px] py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center"
               >
                 📱 Buka Presensi
               </Button>
@@ -821,7 +821,7 @@ export function CheckoutModal({
                   const targetDash = orderData.dashboardUrl || `https://hrd.akugawe.web.id/${orderData.clientSlug || ''}`;
                   window.open(targetDash, '_blank');
                 }}
-                className="flex-1 py-2.5 bg-[#a9484c] hover:bg-[#8f3b3f] text-white font-bold text-xs rounded-xl shadow-md shadow-[#a9484c]/20 cursor-pointer"
+                className="flex-1 min-h-[44px] py-2.5 bg-[#a9484c] hover:bg-[#8f3b3f] text-white font-bold text-xs rounded-xl shadow-md shadow-[#a9484c]/20 cursor-pointer flex items-center justify-center"
               >
                 💻 Buka HRD &rarr;
               </Button>

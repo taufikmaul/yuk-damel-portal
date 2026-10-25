@@ -95,8 +95,8 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
         )}
 
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
-            Paket Harga
+          <p className="text-xs font-semibold text-primary mb-2">
+            Pilihan Paket
           </p>
           <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Mulai hemat, tanpa biaya bulanan tak terduga
@@ -129,8 +129,8 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
         <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-slate-200/80 rounded-2xl border border-border shadow-xs bg-white">
           <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-slate-950 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>
-              <p className="mb-2 text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="size-3.5" /> AKUGAWE SAAS
+              <p className="mb-2 text-xs font-semibold text-rose-300 flex items-center gap-1.5">
+                <ShieldCheck className="size-3.5" /> akugawe Cloudflare Pod
               </p>
               <h3 className="font-bold text-xl sm:text-2xl leading-tight text-white tracking-tight">
                 Langganan terencana untuk usaha Anda
@@ -235,7 +235,7 @@ function PricingCard({
     >
       <div>
         <div className="flex items-center justify-between mb-3">
-          <p className={`text-xs font-bold uppercase tracking-wider ${tier.isPopular ? 'text-primary' : 'text-slate-600'}`}>
+          <p className={`text-xs font-bold ${tier.isPopular ? 'text-primary' : 'text-slate-700'}`}>
             {tier.name}
           </p>
         </div>
@@ -244,7 +244,7 @@ function PricingCard({
           {isFree ? (
             <div>
               <div className="flex items-baseline gap-1">
-                <h3 className="font-black text-3xl font-mono text-emerald-600">
+                <h3 className="font-black text-3xl tabular-nums text-emerald-600">
                   Rp 0
                 </h3>
                 <span className="text-slate-500 text-xs font-semibold">/ 4 Bulan</span>
@@ -256,7 +256,7 @@ function PricingCard({
           ) : (
             <div>
               <div className="flex items-baseline gap-1">
-                <h3 className="font-black text-2xl sm:text-3xl font-mono text-slate-900">
+                <h3 className="font-black text-2xl sm:text-3xl tabular-nums text-slate-900">
                   Rp {displayPriceMonthly.toLocaleString("id-ID")}
                 </h3>
                 <span className="text-slate-500 text-xs font-medium">/ bulan</span>
@@ -281,7 +281,7 @@ function PricingCard({
           <button
             type="button"
             onClick={onSelect}
-            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
+            className={`w-full min-h-[44px] py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
               isFree
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
                 : tier.isPopular
@@ -309,8 +309,8 @@ function PricingCard({
         </div>
 
         <div className="space-y-2.5 pt-5 border-t border-border">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            FASILITAS PAKET:
+          <p className="text-[11px] font-semibold text-slate-500">
+            Fasilitas paket:
           </p>
 
           {tier.features.map((feature, idx) => {

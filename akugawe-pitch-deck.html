@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>akugawe | Pitch Deck: Presensi Selfie GPS, Canvasing Sales &amp; Payroll UMKM</title>
+
+    <!-- Typography: Plus Jakarta Sans via Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (THEME TOKENS)
+           =========================================== */
+        :root {
+            --bg-primary: #090d16;
+            --bg-card: rgba(22, 29, 46, 0.75);
+            --bg-card-hover: rgba(30, 41, 64, 0.9);
+            --border-subtle: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(169, 72, 76, 0.5);
+
+            --brand-primary: #a9484c;
+            --brand-light: #fbeee2;
+            --brand-glow: rgba(169, 72, 76, 0.35);
+
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --emerald-accent: #10b981;
+            --emerald-bg: rgba(16, 185, 129, 0.12);
+            --amber-accent: #f59e0b;
+            --amber-bg: rgba(245, 158, 11, 0.12);
+            --indigo-accent: #6366f1;
+
+            --font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+            /* Fluid Typography via clamp() */
+            --title-size: clamp(2rem, 5.2vw, 4.2rem);
+            --h2-size: clamp(1.4rem, 3.2vw, 2.6rem);
+            --h3-size: clamp(1.05rem, 2vw, 1.5rem);
+            --body-size: clamp(0.85rem, 1.35vw, 1.1rem);
+            --small-size: clamp(0.72rem, 1vw, 0.9rem);
+
+            /* Fluid Spacing via clamp() */
+            --slide-padding: clamp(1.5rem, 5vw, 4.5rem);
+            --content-gap: clamp(1rem, 2.5vw, 2.2rem);
+            --element-gap: clamp(0.5rem, 1.2vw, 1.2rem);
+
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.65s;
+        }
+
+        /* ===========================================
+           VIEWPORT FITTING: MANDATORY BASE STYLES
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background: radial-gradient(circle at 80% 20%, rgba(169, 72, 76, 0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(15, 23, 42, 0.9) 0%, transparent 60%),
+                        var(--bg-primary);
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: 100%;
+            overflow: hidden;
+            padding: var(--slide-padding);
+            max-width: min(92vw, 1200px);
+            margin: 0 auto;
+            width: 100%;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Ambient Glow & Grid Backdrop */
+        .ambient-grid {
+            position: absolute;
+            inset: 0;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 48px 48px;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* ===========================================
+           NAVIGATION UI: PROGRESS & DOTS
+           =========================================== */
+        .progress-bar-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--brand-primary), var(--emerald-accent));
+            transition: width 0.3s ease;
+        }
+
+        .slide-counter {
+            position: fixed;
+            top: 1.5rem;
+            right: 2rem;
+            z-index: 90;
+            font-size: var(--small-size);
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .slide-counter span {
+            color: var(--text-primary);
+        }
+
+        .nav-dots {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 90;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: var(--brand-primary);
+            box-shadow: 0 0 10px var(--brand-glow);
+            transform: scale(1.3);
+        }
+
+        .nav-dot:hover::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            background: rgba(15, 23, 42, 0.9);
+            color: #fff;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+            pointer-events: none;
+        }
+
+        .keyboard-hint {
+            position: fixed;
+            bottom: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 90;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            padding: 0.35rem 1rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-subtle);
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* ===========================================
+           ANIMATIONS & REVEAL SYSTEM
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .slide.visible .reveal:nth-child(1) { transition-delay: 0.08s; }
+        .slide.visible .reveal:nth-child(2) { transition-delay: 0.16s; }
+        .slide.visible .reveal:nth-child(3) { transition-delay: 0.24s; }
+        .slide.visible .reveal:nth-child(4) { transition-delay: 0.32s; }
+        .slide.visible .reveal:nth-child(5) { transition-delay: 0.40s; }
+
+        /* ===========================================
+           SLIDE COMPONENTS & LAYOUTS
+           =========================================== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            font-size: var(--small-size);
+            font-weight: 600;
+            border: 1px solid var(--border-accent);
+            background: rgba(169, 72, 76, 0.12);
+            color: #fca5a5;
+            width: fit-content;
+            margin-bottom: 0.75rem;
+        }
+
+        .badge-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            box-shadow: 0 0 6px var(--brand-primary);
+        }
+
+        .slide-title {
+            font-size: var(--title-size);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+            margin-bottom: 0.75rem;
+        }
+
+        .slide-title-gradient {
+            background: linear-gradient(135deg, #ffffff 40%, #e2e8f0 70%, var(--brand-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .slide-subtitle {
+            font-size: var(--body-size);
+            line-height: 1.55;
+            color: var(--text-secondary);
+            max-width: 65ch;
+            margin-bottom: var(--content-gap);
+        }
+
+        /* Grid Cards */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+            gap: clamp(0.75rem, 1.8vw, 1.5rem);
+            width: 100%;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: clamp(1rem, 2vw, 1.6rem);
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-accent);
+            background: var(--bg-card-hover);
+            transform: translateY(-3px);
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.85rem;
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .card-title {
+            font-size: var(--h3-size);
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.4rem;
+            letter-spacing: -0.01em;
+        }
+
+        .card-desc {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Split Layout */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--content-gap);
+            align-items: center;
+            width: 100%;
+        }
+
+        .panel-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            padding: clamp(1.2rem, 2.5vw, 2rem);
+            backdrop-filter: blur(12px);
+        }
+
+        /* Pricing Columns */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.75rem, 1.5vw, 1.5rem);
+            width: 100%;
+        }
+
+        .pricing-tier-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 18px;
+            padding: clamp(1.2rem, 2vw, 1.8rem);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .pricing-tier-card.featured {
+            border-color: var(--brand-primary);
+            background: rgba(169, 72, 76, 0.14);
+            box-shadow: 0 0 24px var(--brand-glow);
+        }
+
+        .tier-price {
+            font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0.5rem 0;
+            letter-spacing: -0.02em;
+        }
+
+        .tier-price span {
+            font-size: var(--small-size);
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .check-list {
+            list-style: none;
+            margin: 1rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .check-list li {
+            font-size: var(--small-size);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .check-list li::before {
+            content: "✓";
+            color: var(--emerald-accent);
+            font-weight: 800;
+        }
+
+        /* Buttons & CTA */
+        .action-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.8rem;
+            border-radius: 12px;
+            font-size: var(--small-size);
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .action-button.primary {
+            background: var(--brand-primary);
+            color: #ffffff;
+            border: 1px solid var(--brand-primary);
+            box-shadow: 0 4px 18px var(--brand-glow);
+        }
+
+        .action-button.primary:hover {
+            background: #933d40;
+            transform: translateY(-2px);
+        }
+
+        .action-button.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .action-button.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ===========================================
+           RESPONSIVE VIEWPORT BREAKPOINTS
+           =========================================== */
+        @media (max-height: 720px) {
+            :root {
+                --slide-padding: clamp(1rem, 3.5vw, 2.5rem);
+                --content-gap: clamp(0.6rem, 1.8vw, 1.2rem);
+                --title-size: clamp(1.6rem, 4vw, 2.8rem);
+                --h2-size: clamp(1.2rem, 2.5vw, 1.8rem);
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2.5vw, 1.5rem);
+                --content-gap: 0.6rem;
+                --title-size: clamp(1.3rem, 3.5vw, 2rem);
+                --body-size: 0.85rem;
+            }
+            .keyboard-hint, .nav-dots {
+                display: none;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .split-layout, .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.1s !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progressBar"></div>
+    </div>
+
+    <!-- Live Slide Index Indicator -->
+    <div class="slide-counter" id="slideCounter">
+        <span id="currentSlide">01</span> / 07
+    </div>
+
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="navDots" aria-label="Navigasi Slide"></nav>
+
+    <!-- Keyboard Navigation Toast -->
+    <div class="keyboard-hint" id="keyboardHint">
+        Gunakan tombol arah ↓ atau Spasi untuk lanjut
+    </div>
+
+    <main>
+        <!-- ==========================================
+             SLIDE 1: COVER / TITLE
+             ========================================== -->
+        <section class="slide" id="slide-1" data-title="Pembuka">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Platform HRIS &amp; Operasional Lapangan UMKM
+                    </div>
+                </div>
+                <h1 class="slide-title slide-title-gradient reveal">
+                    akugawe
+                </h1>
+                <p class="slide-subtitle reveal" style="font-size: clamp(1.1rem, 2vw, 1.6rem); color: #cbd5e1; font-weight: 600;">
+                    Presensi Selfie GPS, Canvasing Sales Toko, dan Payroll Otomatis dalam Satu Sistem Terpadu.
+                </p>
+                <p class="slide-subtitle reveal">
+                    Menghilangkan praktik titip absen dan manipulasi lokasi, memetakan kunjungan tim sales, serta menuntaskan perhitungan gaji, lembur, dan BPJS bulanan dalam hitungan menit.
+                </p>
+                <div class="reveal" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <a href="#slide-2" class="action-button primary">Jelajahi Produk</a>
+                    <a href="https://hrd.akugawe.web.id/demo" target="_blank" rel="noreferrer" class="action-button secondary">Coba Demo Langsung</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 2: THE PROBLEM
+             ========================================== -->
+        <section class="slide" id="slide-2" data-title="Tantangan">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot" style="background: #f87171;"></span>
+                        Masalah Lapangan
+                    </div>
+                </div>
+                <h2 class="slide-title reveal" style="font-size: var(--h2-size);">
+                    Tantangan Nyata Operasional Bisnis &amp; Toko
+                </h2>
+                <p class="slide-subtitle reveal">
+                    Tiga kendala utama yang kerap menguras waktu, biaya, dan menurunkan disiplin kerja di sektor ritel, kafe, distributor, dan cabang.
+                </p>
+
+                <div class="cards-grid reveal">
+                    <div class="feature-card">
+                        <div>
+                            <div class="card-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">01</div>
+                            <h3 class="card-title">Kecurangan Presensi</h3>
+                            <p class="card-desc">
+                                Mesin fingerprint fisik rentan antrean dan titip absen. Presensi ponsel standar mudah diakali memakai aplikasi Fake GPS atau foto dari galeri HP.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div>
+                            <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">02</div>
+                            <h3 class="card-title">Rute Sales Tak Terpantau</h3>
+                            <p class="card-desc">
+                                Kunjungan sales canvasing ke toko rawan fiktif. Tidak ada bukti foto toko berkoordinat, pencatatan pesanan terpisah, dan setoran kasir rawan selisih.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="feature-card">
+                        <div>
+                            <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">03</div>
+                            <h3 class="card-title">Pusing Payroll Akhir Bulan</h3>
+                            <p class="card-desc">
+                                Rekap Excel manual memakan waktu berhari-hari. Rentan salah hitung potongan menit telat, lembur Depnaker, cicilan kasbon, BPJS, dan pajak PPh 21 TER.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 3: FOUR CORE PILLARS
+             ========================================== -->
+        <section class="slide" id="slide-3" data-title="Empat Pilar">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot" style="background: var(--emerald-accent);"></span>
+                        Solusi Holistik
+                    </div>
+                </div>
+                <h2 class="slide-title reveal" style="font-size: var(--h2-size);">
+                    Empat Solusi Inti akugawe
+                </h2>
+                <p class="slide-subtitle reveal">
+                    Membangun tata kelola karyawan yang transparan, adil, dan otomatis dari presensi hingga pencairan upah.
+                </p>
+
+                <div class="cards-grid reveal" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));">
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">📷</div>
+                        <h3 class="card-title">Presensi Selfie GPS</h3>
+                        <p class="card-desc">
+                            Kamera selfie langsung dengan geofence radius toko. Validasi anti-fake GPS dan penguncian 1 akun di 1 HP resmi.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc;">📍</div>
+                        <h3 class="card-title">Canvasing Sales Toko</h3>
+                        <p class="card-desc">
+                            Jadwal Beat Plan, navigasi Google Maps, check-in toko berbasis GPS, input Taking Order (PO), dan rekonsiliasi setoran kasir.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(245, 158, 11, 0.15); color: #fcd34d;">🎁</div>
+                        <h3 class="card-title">Kasbon &amp; Poin Disiplin</h3>
+                        <p class="card-desc">
+                            Pengajuan kasbon cicilan 1-6 bulan auto-potong slip gaji, klaim foto struk BBM, serta reward poin harian on-time.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(169, 72, 76, 0.2); color: #fca5a5;">🧾</div>
+                        <h3 class="card-title">Otomasi Payroll &amp; Pajak</h3>
+                        <p class="card-desc">
+                            Kalkulasi gaji otomatis: potongan telat, lembur resmi, BPJS Kesehatan/Ketenagakerjaan, THR Permenaker, dan PPh 21 TER.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 4: USER EXPERIENCE & TELEGRAM
+             ========================================== -->
+        <section class="slide" id="slide-4" data-title="Antarmuka">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot"></span>
+                        Kemudahan Operasional
+                    </div>
+                </div>
+                <h2 class="slide-title reveal" style="font-size: var(--h2-size);">
+                    Ringan untuk Karyawan, Praktis untuk Owner
+                </h2>
+                <p class="slide-subtitle reveal">
+                    Tidak membebani memori ponsel staf, dan memudahkan atasan memantau cabang tanpa harus selalu membuka laptop.
+                </p>
+
+                <div class="split-layout reveal">
+                    <div class="panel-box">
+                        <h3 class="card-title" style="color: var(--emerald-accent); font-size: 1.15rem; margin-bottom: 0.6rem;">
+                            Aplikasi Karyawan (Progressive Web App)
+                        </h3>
+                        <p class="card-desc" style="margin-bottom: 0.8rem;">
+                            Karyawan tidak perlu mengunduh aplikasi berukuran ratusan MB dari app store. Cukup buka link peramban lalu pilih "Tambahkan ke Layar Utama".
+                        </p>
+                        <ul class="check-list">
+                            <li>Hemat memori ponsel dan kuota data internet</li>
+                            <li>Buka cepat via sidik jari / Face ID (WebAuthn)</li>
+                            <li>Mode Offline-First untuk sales di area minim sinyal</li>
+                        </ul>
+                    </div>
+
+                    <div class="panel-box">
+                        <h3 class="card-title" style="color: #60a5fa; font-size: 1.15rem; margin-bottom: 0.6rem;">
+                            Asisten Bot HR Telegram untuk Owner
+                        </h3>
+                        <p class="card-desc" style="margin-bottom: 0.8rem;">
+                            Dapatkan notifikasi instan dan kendalikan persetujuan staf langsung melalui percakapan Telegram.
+                        </p>
+                        <ul class="check-list">
+                            <li>Tanya rekap presensi toko cabang via chat singkat</li>
+                            <li>Persetujuan izin sakit, cuti, dan kasbon dengan 1 klik</li>
+                            <li>Notifikasi keterlambatan dan clock-in real-time</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 5: CLOUDFLARE ARCHITECTURE
+             ========================================== -->
+        <section class="slide" id="slide-5" data-title="Arsitektur">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot" style="background: #38bdf8;"></span>
+                        Infrastruktur Modern
+                    </div>
+                </div>
+                <h2 class="slide-title reveal" style="font-size: var(--h2-size);">
+                    Cloudflare Dedicated Pods: Cepat, Aman, &amp; Terisolasi
+                </h2>
+                <p class="slide-subtitle reveal">
+                    Arsitektur edge computing tanpa server konvensional, memberikan kecepatan akses instan di seluruh penjuru Indonesia.
+                </p>
+
+                <div class="cards-grid reveal">
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">⚡</div>
+                        <h3 class="card-title">Respon Edge &lt; 50ms</h3>
+                        <p class="card-desc">
+                            Serverless Workers dan D1 SQL Database berjalan di jaringan global Cloudflare, memastikan aplikasi presensi terbuka instan tanpa loading lama.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🔒</div>
+                        <h3 class="card-title">Database Terisolasi Penuh</h3>
+                        <p class="card-desc">
+                            Setiap pelanggan bisnis mendapatkan instans D1 database dan R2 bucket terpisah. Data presensi dan gaji karyawan aman tanpa bercampur pihak lain.
+                        </p>
+                    </div>
+
+                    <div class="feature-card">
+                        <div class="card-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">🌐</div>
+                        <h3 class="card-title">Custom Domain Sendiri</h3>
+                        <p class="card-desc">
+                            Gunakan nama domain resmi brand Anda (misal: <code>absen.tokosaya.id</code> dan <code>dash.tokosaya.id</code>) lengkap dengan sertifikat SSL otomatis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 6: PRICING TIERS
+             ========================================== -->
+        <section class="slide" id="slide-6" data-title="Skema Harga">
+            <div class="ambient-grid"></div>
+            <div class="slide-content">
+                <div class="reveal">
+                    <div class="badge">
+                        <span class="badge-dot" style="background: var(--emerald-accent);"></span>
+                        Harga Transparan
+                    </div>
+                </div>
+                <h2 class="slide-title reveal" style="font-size: var(--h2-size);">
+                    Pilihan Paket Terjangkau untuk Skala Bisnis Anda
+                </h2>
+                <p class="slide-subtitle reveal">
+                    Mulai tanpa risiko dengan uji coba gratis, lalu kembangkan seiring bertambahnya cabang dan armada sales Anda.
+                </p>
+
+                <div class="pricing-grid reveal">
+                    <div class="pricing-tier-card">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: var(--emerald-accent);">FREE TRIAL UMKM</span>
+                            <div class="tier-price">Rp 0 <span>/ 4 Bulan</span></div>
+                            <p class="card-desc">Cocok untuk usaha rintisan yang ingin merapikan presensi staf.</p>
+                            <ul class="check-list">
+                                <li>Hingga 4 Karyawan Aktif</li>
+                                <li>Presensi Selfie &amp; Geofence GPS</li>
+                                <li>Aplikasi Mobile PWA</li>
+                                <li>Dashboard HR Owner</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="pricing-tier-card featured">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: #fca5a5;">STARTER UMKM</span>
+                            <div class="tier-price">Rp 15rb <span>/ bulan</span></div>
+                            <p class="card-desc">Pilihan terpopuler toko, kafe, dan cabang ritel.</p>
+                            <ul class="check-list">
+                                <li>Hingga 15 Karyawan Aktif</li>
+                                <li>Kalkulator Gaji &amp; Slip PDF</li>
+                                <li>Lembur, BPJS &amp; Kasbon Cicilan</li>
+                                <li>Bot HR Asisten Telegram</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="pricing-tier-card">
+                        <div>
+                            <span style="font-size: 0.8rem; font-weight: 700; color: #a5b4fc;">BUSINESS PRO</span>
+                            <div class="tier-price">Rp 39rb <span>/ bulan</span></div>
+                            <p class="card-desc">Lengkap dengan modul kunjungan sales canvasing.</p>
+                            <ul class="check-list">
+                                <li>Hingga 50 Karyawan Aktif</li>
+                                <li>Canvasing Sales &amp; Beat Plan Toko</li>
+                                <li>Taking Order PO &amp; Setoran Kasir</li>
+                                <li>1 Dedicated Pod + Custom Domain</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             SLIDE 7: CLOSING & CTA
+             ========================================== -->
+        <section class="slide" id="slide-7" data-title="Penutup">
+            <div class="ambient-grid"></div>
+            <div class="slide-content" style="text-align: center; align-items: center;">
+                <div class="reveal">
+                    <div class="badge" style="margin: 0 auto 1rem auto;">
+                        <span class="badge-dot"></span>
+                        Mulai Sekarang
+                    </div>
+                </div>
+                <h2 class="slide-title slide-title-gradient reveal" style="font-size: clamp(2rem, 4.5vw, 3.6rem); max-width: 20ch;">
+                    Siap Merapikan Operasional Bisnis Anda?
+                </h2>
+                <p class="slide-subtitle reveal" style="max-width: 55ch; margin: 0 auto var(--content-gap) auto;">
+                    Dapatkan presensi akurat anti-titip, pantau armada sales di lapangan, dan nikmati kemudahan rekap penggajian otomatis bersama akugawe.
+                </p>
+
+                <div class="reveal" style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <a href="https://hrd.akugawe.web.id/demo" target="_blank" rel="noreferrer" class="action-button primary">
+                        Coba Demo HRD Langsung
+                    </a>
+                    <a href="https://app.akugawe.web.id/demo" target="_blank" rel="noreferrer" class="action-button secondary">
+                        Buka Demo Mobile Karyawan
+                    </a>
+                    <a href="https://akugawe.web.id" target="_blank" rel="noreferrer" class="action-button secondary">
+                        Kunjungi Portal Resmi
+                    </a>
+                </div>
+
+                <div class="reveal" style="margin-top: clamp(1.5rem, 3vh, 3rem); font-size: var(--small-size); color: var(--text-muted);">
+                    © 2026 akugawe Indonesia. Dilindungi Hak Cipta. Infrastruktur Cloudflare Serverless D1 &amp; Workers.
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===========================================
+         JAVASCRIPT CONTROLLER: KEYBOARD, TOUCH & WHEEL
+         =========================================== -->
+    <script>
+        class PresentationController {
+            constructor() {
+                this.slides = Array.from(document.querySelectorAll('.slide'));
+                this.currentIndex = 0;
+                this.isScrolling = false;
+                this.scrollCooldown = 750; // ms
+
+                this.progressBar = document.getElementById('progressBar');
+                this.slideCounter = document.getElementById('currentSlide');
+                this.navDotsContainer = document.getElementById('navDots');
+                this.keyboardHint = document.getElementById('keyboardHint');
+
+                this.init();
+            }
+
+            init() {
+                this.buildNavDots();
+                this.setupIntersectionObserver();
+                this.setupKeyboard();
+                this.setupWheel();
+                this.setupTouch();
+                this.updateUI(0);
+
+                // Auto hide keyboard hint after 5 seconds
+                setTimeout(() => {
+                    if (this.keyboardHint) {
+                        this.keyboardHint.style.opacity = '0';
+                    }
+                }, 5000);
+            }
+
+            buildNavDots() {
+                this.slides.forEach((slide, index) => {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot' + (index === 0 ? ' active' : '');
+                    dot.setAttribute('aria-label', `Pindah ke slide ${index + 1}`);
+                    dot.setAttribute('data-label', slide.getAttribute('data-title') || `Slide ${index + 1}`);
+                    dot.addEventListener('click', () => this.goToSlide(index));
+                    this.navDotsContainer.appendChild(dot);
+                });
+            }
+
+            setupIntersectionObserver() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            const index = this.slides.indexOf(entry.target);
+                            if (index !== -1) {
+                                this.currentIndex = index;
+                                this.updateUI(index);
+                            }
+                        }
+                    });
+                }, {
+                    threshold: 0.55
+                });
+
+                this.slides.forEach(slide => observer.observe(slide));
+            }
+
+            setupKeyboard() {
+                window.addEventListener('keydown', (e) => {
+                    // Ignore typing in input fields
+                    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+                    switch (e.key) {
+                        case 'ArrowDown':
+                        case 'PageDown':
+                        case ' ':
+                        case 'j':
+                        case 'J':
+                            e.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'ArrowUp':
+                        case 'PageUp':
+                        case 'k':
+                        case 'K':
+                            e.preventDefault();
+                            this.prevSlide();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.slides.length - 1);
+                            break;
+                    }
+                });
+            }
+
+            setupWheel() {
+                let wheelAccumulator = 0;
+                window.addEventListener('wheel', (e) => {
+                    if (this.isScrolling) return;
+
+                    wheelAccumulator += e.deltaY;
+
+                    if (Math.abs(wheelAccumulator) > 40) {
+                        if (wheelAccumulator > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                        wheelAccumulator = 0;
+                    }
+                }, { passive: true });
+            }
+
+            setupTouch() {
+                let touchStartY = 0;
+                window.addEventListener('touchstart', (e) => {
+                    touchStartY = e.touches[0].clientY;
+                }, { passive: true });
+
+                window.addEventListener('touchend', (e) => {
+                    if (this.isScrolling) return;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const diffY = touchStartY - touchEndY;
+
+                    if (Math.abs(diffY) > 50) {
+                        if (diffY > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+                }, { passive: true });
+            }
+
+            nextSlide() {
+                if (this.currentIndex < this.slides.length - 1) {
+                    this.goToSlide(this.currentIndex + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentIndex > 0) {
+                    this.goToSlide(this.currentIndex - 1);
+                }
+            }
+
+            goToSlide(index) {
+                if (index < 0 || index >= this.slides.length) return;
+                this.isScrolling = true;
+                this.currentIndex = index;
+
+                this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                this.updateUI(index);
+
+                setTimeout(() => {
+                    this.isScrolling = false;
+                }, this.scrollCooldown);
+            }
+
+            updateUI(index) {
+                // Update Progress Bar
+                const progress = ((index + 1) / this.slides.length) * 100;
+                if (this.progressBar) {
+                    this.progressBar.style.width = `${progress}%`;
+                }
+
+                // Update Counter
+                if (this.slideCounter) {
+                    this.slideCounter.textContent = String(index + 1).padStart(2, '0');
+                }
+
+                // Update Dots
+                const dots = this.navDotsContainer.querySelectorAll('.nav-dot');
+                dots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+        }
+
+        // Initialize presentation on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new PresentationController();
+        });
+    </script>
+</body>
+</html>

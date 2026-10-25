@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Users,
   Key,
@@ -59,9 +59,18 @@ import {
 } from '../services/security';
 import { loadSellerConfig, saveSellerConfig, fetchSellerConfig } from '../services/config';
 import { generateLicenseToken } from '../services/licenseService';
-import { SellerConfigPage } from './SellerConfigPage';
-import { AdminLeadsTab } from './AdminLeadsTab';
-import { AdminFleetTab } from './AdminFleetTab';
+import { useDebounce } from '../hooks/use-debounce';
+
+// Code-split heavy admin sub-tabs via React.lazy based on frontend-patterns
+const SellerConfigPage = lazy(() =>
+  import('./SellerConfigPage').then((m) => ({ default: m.SellerConfigPage }))
+);
+const AdminLeadsTab = lazy(() =>
+  import('./AdminLeadsTab').then((m) => ({ default: m.AdminLeadsTab }))
+);
+const AdminFleetTab = lazy(() =>
+  import('./AdminFleetTab').then((m) => ({ default: m.AdminFleetTab }))
+);
 import { SacredConfirmModal } from './SacredConfirmModal';
 import { Logo } from '../assets/logo';
 import {
@@ -716,6 +725,7 @@ export function AdminPortalPage({
   const [newClientCustomDashboard, setNewClientCustomDashboard] = useState<string>('');
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState<boolean>(false);
   const [filterSearch, setFilterSearch] = useState('');
+  const debouncedFilterSearch = useDebounce(filterSearch, 250);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'pending'>('all');
   const [lastGeneratedClient, setLastGeneratedClient] = useState<ClientRecord | null>(null);
 
@@ -1335,18 +1345,35 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
     e.target.value = ''; // Reset input
   };
 
-  const filteredClients = clients.filter((c) => {
-    const matchSearch =
-      c.name.toLowerCase().includes(filterSearch.toLowerCase()) ||
-      c.token.toLowerCase().includes(filterSearch.toLowerCase());
-    const matchStatus = filterStatus === 'all' || c.status === filterStatus;
-    return matchSearch && matchStatus;
-  });
+  // Memoize filtered client list based on debounced search to avoid heavy recalculations
+  const filteredClients = useMemo(() => {
+    const q = debouncedFilterSearch.trim().toLowerCase();
+    return clients.filter((c) => {
+      const matchSearch =
+        !q ||
+        c.name.toLowerCase().includes(q) ||
+        c.token.toLowerCase().includes(q);
+      const matchStatus = filterStatus === 'all' || c.status === filterStatus;
+      return matchSearch && matchStatus;
+    });
+  }, [clients, debouncedFilterSearch, filterStatus]);
 
   const totalClients = clients.length;
-  const activeClients = clients.filter((c) => c.status === 'active').length;
-  const pendingClients = clients.filter((c) => c.status === 'pending').length;
-  const estimatedRevenue = activeClients * 2999000;
+
+  // Single-pass calculation of active/pending counts and revenue
+  const { activeClients, pendingClients, estimatedRevenue } = useMemo(() => {
+    let active = 0;
+    let pending = 0;
+    for (const c of clients) {
+      if (c.status === 'active') active++;
+      else if (c.status === 'pending') pending++;
+    }
+    return {
+      activeClients: active,
+      pendingClients: pending,
+      estimatedRevenue: active * 2999000,
+    };
+  }, [clients]);
 
   if (isCheckingSession) {
     return (
@@ -2496,12 +2523,43 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
               </>
             )}
 
-            {activeTab === 'leads' && <AdminLeadsTab />}
+            {activeTab === 'leads' && (
+              <Suspense
+                fallback={
+                  <div className="p-12 flex flex-col items-center justify-center gap-3">
+                    <RefreshCw className="size-6 text-[#a9484c] animate-spin" />
+                    <p className="text-xs text-slate-500 font-medium">Memuat data leads...</p>
+                  </div>
+                }
+              >
+                <AdminLeadsTab />
+              </Suspense>
+            )}
 
-            {activeTab === 'fleet' && <AdminFleetTab />}
+            {activeTab === 'fleet' && (
+              <Suspense
+                fallback={
+                  <div className="p-12 flex flex-col items-center justify-center gap-3">
+                    <RefreshCw className="size-6 text-[#a9484c] animate-spin" />
+                    <p className="text-xs text-slate-500 font-medium">Memuat telemetri fleet Cloudflare...</p>
+                  </div>
+                }
+              >
+                <AdminFleetTab />
+              </Suspense>
+            )}
 
             {activeTab === 'settings' && (
-              <SellerConfigPage onBack={() => setActiveTab('overview')} adminPin={displayPin} />
+              <Suspense
+                fallback={
+                  <div className="p-12 flex flex-col items-center justify-center gap-3">
+                    <RefreshCw className="size-6 text-[#a9484c] animate-spin" />
+                    <p className="text-xs text-slate-500 font-medium">Memuat konfigurasi seller...</p>
+                  </div>
+                }
+              >
+                <SellerConfigPage onBack={() => setActiveTab('overview')} adminPin={displayPin} />
+              </Suspense>
             )}
           </main>
         </SidebarInset>
