@@ -174,7 +174,6 @@ export function sanitizePricingTiers(tiers?: any[]): PricingTier[] {
     return DEFAULT_PRICING_TIERS;
   }
 
-  // 1. Filter out White-Label / Source Code tier apapun
   const filtered = tiers.filter((t) => {
     const id = String(t?.id || '').toLowerCase();
     const name = String(t?.name || '').toLowerCase();
@@ -187,7 +186,6 @@ export function sanitizePricingTiers(tiers?: any[]): PricingTier[] {
     return !isWhiteLabel;
   });
 
-  // 2. Normalisasi Pro tier & Starter tier
   const normalized = filtered.map((t) => {
     const id = String(t?.id || '').toLowerCase();
     const name = String(t?.name || '').toLowerCase();
@@ -238,7 +236,6 @@ export function sanitizePricingTiers(tiers?: any[]): PricingTier[] {
     return t;
   });
 
-  // 3. Pastikan ketiga paket baku ada
   const hasFree = normalized.some((t) => t.isFree || t.id === 'free_trial');
   const hasStarter = normalized.some((t) => t.id === 'starter');
   const hasPro = normalized.some((t) => t.id === 'pro');
@@ -274,26 +271,22 @@ export const DEFAULT_SELLER_CONFIG: SellerConfig = {
   demoDashboardUrl: 'https://hrd.akugawe.web.id/demo',
   demoAppUrl: 'https://app.akugawe.web.id/demo',
 
-  // Multi-Layer Security (Default PIN: 2468)
   adminPin: '2468',
   adminPinHash: 'a1fb4e703a9ef1fa4936801721ff285a97ac85330856674412e054892afe6972',
   autoLockMinutes: 15,
 
-  // Add-on Monetisasi "Terima Beres"
   managedSetupEnabled: false,
   managedSetupPriceRp: 150000,
   managedSetupTitle: 'VIP Setup & Import Data Karyawan (+ Rp 150.000)',
   managedSetupDescription:
     'Tim kami yang bantu input data seluruh karyawan, setup shift kerja, dan set geofencing lokasi kantor sampai tuntas.',
 
-  // Payment Gateway & Switching (Default: hybrid untuk fleksibilitas maksimal)
   paymentMode: 'hybrid',
   pakasirApiKey: '',
   pakasirProjectSlug: '',
   pakasirApiUrl: 'https://api.pakasir.com',
   staticQrisString: '',
 
-  // Email Notification & Verification
   resendApiKey: '',
   emailFrom: 'akugawe <onboarding@resend.dev>',
 };
@@ -307,12 +300,11 @@ export function loadSellerConfig(): SellerConfig {
         ? 'akugawe'
         : (parsed.brandName || DEFAULT_SELLER_CONFIG.brandName);
 
-      // Jika emailFrom masih domain placeholder dummy yang belum diverifikasi, arahkan ke onboarding@resend.dev
+      // Fallback from unverified placeholder domain to verified onboarding sender
       const cleanEmailFrom = parsed.emailFrom && parsed.emailFrom.includes('noreply@akugawe.id')
         ? 'akugawe <onboarding@resend.dev>'
         : (parsed.emailFrom || DEFAULT_SELLER_CONFIG.emailFrom);
 
-      // Sanitasi tiers dari localStorage browser pembeli/admin
       const cleanPricingTiers = sanitizePricingTiers(parsed.pricingTiers);
 
       const loadedConfig: SellerConfig = {
@@ -323,7 +315,6 @@ export function loadSellerConfig(): SellerConfig {
         pricingTiers: cleanPricingTiers,
       };
 
-      // Jika ada perubahan setelah sanitasi (misal whitelabel terhapus), simpan balik ke localStorage
       if (
         parsed.pricingTiers &&
         JSON.stringify(parsed.pricingTiers) !== JSON.stringify(cleanPricingTiers)
@@ -383,7 +374,6 @@ export async function fetchSellerConfig(adminPin?: string): Promise<SellerConfig
         ),
       };
 
-      // Sinkronkan ke cache lokal dan beri tahu komponen
       saveSellerConfig(merged);
       return merged;
     }

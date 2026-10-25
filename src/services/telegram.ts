@@ -64,7 +64,7 @@ export async function sendTelegramOtp(
     endpoints.push('https://akugawe-portal.pages.dev/api/send-otp');
   }
 
-  // 1. Coba kirim via serverless endpoints
+  // Attempt delivery via serverless endpoints
   for (const endpoint of endpoints) {
     try {
       const proxyRes = await fetch(endpoint, {
@@ -80,7 +80,7 @@ export async function sendTelegramOtp(
           return true;
         }
         lastTelegramError = data.error || 'Pesan gagal dikirim oleh server Telegram.';
-        // Jika error spesifik seperti chat not found, tidak perlu coba endpoint lain
+        // Stop fallback on permanent chat errors
         if (typeof data.error === 'string' && (data.error.includes('chat not found') || data.error.includes('belum terhubung'))) {
           return false;
         }
@@ -96,7 +96,7 @@ export async function sendTelegramOtp(
     }
   }
 
-  // 2. Direct Fallback: Kirim langsung via Telegram API resmi (didukung CORS dari browser)
+  // Fallback directly to Telegram Bot API
   try {
     const token = options?.botToken || DEFAULT_TELEGRAM_BOT_TOKEN;
     if (token && targetChatId) {
@@ -155,7 +155,7 @@ export async function checkTelegramPairing(
   const token = botToken || DEFAULT_TELEGRAM_BOT_TOKEN;
   const cleanPin = expectedPin.trim();
 
-  // 1. Coba via API Serverless jika tersedia
+  // Attempt serverless pairing check
   try {
     const serverRes = await fetch('/api/check-telegram-pair', {
       method: 'POST',
@@ -172,11 +172,9 @@ export async function checkTelegramPairing(
         };
       }
     }
-  } catch (_) {
-    // Abaikan jika serverless tidak tersedia di local dev
-  }
+  } catch (_) {}
 
-  // 2. Direct Polling via getUpdates
+  // Fall back to direct updates polling
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=-20&limit=20`);
     if (!res.ok) {
@@ -188,7 +186,6 @@ export async function checkTelegramPairing(
       return { success: false, error: data.description || 'Gagal membaca pesan bot.' };
     }
 
-    // Urutkan dari pesan terbaru
     const updates = [...data.result].reverse();
 
     for (const update of updates) {
@@ -206,7 +203,7 @@ export async function checkTelegramPairing(
         const foundChatId = String(msg.chat.id);
         const senderName = msg.from?.first_name || msg.chat.first_name || 'Admin';
 
-        // Kirim ucapan selamat & konfirmasi ke obrolan Telegram
+        // Confirm successful pairing to Telegram chat
         try {
           await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: 'POST',
@@ -268,7 +265,7 @@ export async function resetMasterPinViaTelegram(config?: {
     authorizedChatId: config?.authorizedChatId,
   });
 
-  // 1. Coba melalui serverless endpoint Cloudflare Worker
+  // Attempt PIN reset via serverless worker endpoint
   for (const endpoint of endpoints) {
     try {
       const res = await fetch(endpoint, {
@@ -296,7 +293,7 @@ export async function resetMasterPinViaTelegram(config?: {
     }
   }
 
-  // 2. Client-side Direct Fallback (jika serverless proxy / worker offline di environment local dev)
+  // Fall back to client-side direct dispatch
   try {
     const targetChat = config?.authorizedChatId || AUTHORIZED_SELLER_CHAT_ID;
     const token = config?.telegramBotToken || DEFAULT_TELEGRAM_BOT_TOKEN;

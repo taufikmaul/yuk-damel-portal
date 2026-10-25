@@ -33,47 +33,39 @@ export function generateDynamicQris(staticQrisString: string, amount: number): s
 
   let qris = staticQrisString.trim();
 
-  // 1. Bersihkan CRC16 lama di akhir string jika ada (Tag 6304xxxx)
+  // Strip existing CRC tag (Tag 6304)
   const crcIndex = qris.lastIndexOf('6304');
   if (crcIndex !== -1) {
     qris = qris.substring(0, crcIndex);
   }
 
-  // 2. Ubah Tag 01 (Point of Initiation Method) dari '11' (Statis) menjadi '12' (Dinamis)
-  // Format Tag 01: "010211" -> ubah jadi "010212"
+  // Switch EMVCo Tag 01 from static (11) to dynamic (12)
   if (qris.includes('010211')) {
     qris = qris.replace('010211', '010212');
   }
 
-  // 3. Hapus Tag 54 lama jika sebelumnya sudah ada
-  // Format Tag 54: 54 + 2 digit panjang + nilai
+  // Remove existing amount (Tag 54) if present
   const tag54Regex = /54(\d{2})(\d+)/;
   if (tag54Regex.test(qris)) {
     qris = qris.replace(tag54Regex, '');
   }
 
-  // 4. Siapkan Tag 54 baru dengan nominal yang diinginkan
   const amountStr = Math.round(amount).toString();
   const amountLength = amountStr.length.toString().padStart(2, '0');
   const tag54 = `54${amountLength}${amountStr}`;
 
-  // 5. Sisipkan Tag 54 sebelum Tag 58 (Country Code '5802ID')
-  // Standar EMVCo: Tag 53 (Currency) -> Tag 54 (Amount) -> Tag 58 (Country Code)
+  // EMVCo sequence: place Tag 54 (Amount) before Tag 58 (Country Code '5802ID')
   const tag58Index = qris.indexOf('5802ID');
   if (tag58Index !== -1) {
     qris = qris.substring(0, tag58Index) + tag54 + qris.substring(tag58Index);
   } else {
-    // Jika tidak menemukan 5802ID, letakkan di akhir sebelum CRC
     qris = qris + tag54;
   }
 
-  // 6. Tambahkan Tag 63 (CRC) dengan placeholder panjang 04
+  // Append Tag 63 (CRC) with length 04 and compute final checksum
   qris = qris + '6304';
-
-  // 7. Hitung CRC16 dari seluruh string
   const crc = calculateCrc16(qris);
 
-  // 8. Gabungkan menjadi QRIS dinamis final
   return qris + crc;
 }
 
@@ -83,7 +75,7 @@ export function generateDynamicQris(staticQrisString: string, amount: number): s
 export function isValidQrisString(qrisString: string): boolean {
   if (!qrisString || qrisString.length < 20) return false;
   const clean = qrisString.trim();
-  // Harus dimulai dengan Format Indicator 000201
+  // EMVCo payload starts with format indicator tag 000201
   return clean.startsWith('000201');
 }
 

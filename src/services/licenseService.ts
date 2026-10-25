@@ -90,12 +90,12 @@ export function getRegisteredClients(): ClientRecord[] {
     const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
     if (!raw) return [];
 
-    // Jika terenkripsi dengan format ENC:, jangan JSON.parse langsung
+    // Handle encrypted storage records
     if (raw.startsWith('ENC:')) {
       if (cachedClients) {
         return cachedClients;
       }
-      // Picu dekripsi di background untuk mengisi cache
+      // Trigger background decryption to populate memory cache
       if (!isDecrypting) {
         isDecrypting = true;
         decryptData(raw.slice(4))
@@ -204,7 +204,6 @@ export type TokenVerificationResult =
  * Verify license token against registered database and security rules
  */
 export function verifyLicenseToken(token?: string | null): TokenVerificationResult {
-  // 1. Check if token is present
   if (!token || !token.trim()) {
     return {
       valid: false,
@@ -215,7 +214,6 @@ export function verifyLicenseToken(token?: string | null): TokenVerificationResu
 
   const cleanToken = token.trim().toUpperCase();
 
-  // 2. Check token prefix & basic format
   if (!cleanToken.startsWith('NGABSEN-')) {
     return {
       valid: false,
@@ -225,7 +223,6 @@ export function verifyLicenseToken(token?: string | null): TokenVerificationResu
     };
   }
 
-  // 3. Check registered clients database
   const client = getClientByToken(cleanToken);
 
   if (client) {
@@ -239,7 +236,6 @@ export function verifyLicenseToken(token?: string | null): TokenVerificationResu
     };
   }
 
-  // 4. Token has NGABSEN- prefix but is NOT registered in the system (e.g. NGABSEN-OPIKMAUL-3333)
   return {
     valid: false,
     reason: 'NOT_FOUND',
@@ -271,7 +267,7 @@ export async function verifyLicenseTokenRemote(token?: string | null): Promise<T
     };
   }
 
-  // 1. Coba verifikasi ke Remote Edge Serverless Database (/api/orders?token=...)
+  // Attempt verification against remote edge database first
   try {
     const res = await fetch(`/api/orders?token=${encodeURIComponent(cleanToken)}`);
     if (res.ok) {
@@ -285,11 +281,9 @@ export async function verifyLicenseTokenRemote(token?: string | null): Promise<T
         };
       }
     }
-  } catch (_) {
-    // Jika offline atau dev mode lokal, fallback ke verifikasi lokal
-  }
+  } catch (_) {}
 
-  // 2. Fallback ke database lokal (localStorage) dengan decoding ENC:
+  // Fallback to local storage database
   const clients = await getRegisteredClientsAsync();
   const client = clients.find((c) => c.token.toUpperCase() === cleanToken) || null;
 
@@ -321,7 +315,6 @@ export async function markClientDeployed(
 ): Promise<boolean> {
   const cleanToken = token.trim().toUpperCase();
 
-  // 1. Kirim update ke Remote Database Cloudflare D1
   try {
     await fetch('/api/orders', {
       method: 'POST',
@@ -336,7 +329,6 @@ export async function markClientDeployed(
     });
   } catch (_) {}
 
-  // 2. Update database lokal
   try {
     const clients = await getRegisteredClientsAsync();
     let found = false;

@@ -17,6 +17,7 @@ export function ScrollReveal({
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [animationDone, setAnimationDone] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
@@ -24,6 +25,7 @@ export function ScrollReveal({
 
     if (typeof IntersectionObserver === 'undefined') {
       setIsVisible(true);
+      setAnimationDone(true);
       return;
     }
 
@@ -32,6 +34,10 @@ export function ScrollReveal({
         if (entry.isIntersecting) {
           setIsVisible(true);
           observer.unobserve(el);
+          const timer = setTimeout(() => {
+            setAnimationDone(true);
+          }, delayMs + 700);
+          return () => clearTimeout(timer);
         }
       },
       {
@@ -42,7 +48,7 @@ export function ScrollReveal({
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [delayMs]);
 
   return (
     <div
@@ -53,7 +59,7 @@ export function ScrollReveal({
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0px)' : `translateY(${yOffset}px)`,
         transition: `opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${delayMs}ms, transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) ${delayMs}ms`,
-        willChange: 'opacity, transform',
+        willChange: animationDone ? 'auto' : 'opacity, transform',
       }}
     >
       {children}

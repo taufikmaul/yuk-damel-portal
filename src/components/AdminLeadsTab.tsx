@@ -47,7 +47,7 @@ export function AdminLeadsTab() {
           return;
         }
       }
-      // Mock leads fallback jika DB belum siap
+      // Fallback mock leads when database endpoint is unavailable
       setLeads([
         {
           id: 'lead-1',
@@ -97,7 +97,6 @@ export function AdminLeadsTab() {
 
   return (
     <div className="space-y-3.5">
-      {/* KPI METRICS ROW */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
         <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl p-3">
           <div className="flex items-center justify-between pb-1.5">
@@ -160,7 +159,6 @@ export function AdminLeadsTab() {
         </Card>
       </div>
 
-      {/* FILTER & SEARCH */}
       <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
         <CardHeader className="p-3 sm:p-3.5 border-b border-[#f0dbd8] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>

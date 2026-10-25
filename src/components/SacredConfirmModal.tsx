@@ -56,7 +56,6 @@ export function SacredConfirmModal({
   const [pinInput, setPinInput] = useState('');
   const [showPin, setShowPin] = useState(false);
 
-  // Reset input setiap kali modal dibuka / ditutup
   useEffect(() => {
     if (isOpen) {
       setBusinessNameInput('');
@@ -64,6 +63,17 @@ export function SacredConfirmModal({
       setShowPin(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isLoading) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, isLoading]);
 
   if (!isOpen) return null;
 
@@ -92,17 +102,20 @@ export function SacredConfirmModal({
     <div
       onClick={handleBackdropClick}
       className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
     >
       <div className="bg-white rounded-2xl border border-rose-200 shadow-2xl max-w-md w-full overflow-hidden flex flex-col scale-100 animate-in zoom-in-95 duration-150">
-        {/* Header Modal */}
         <div className="p-5 pb-4 bg-gradient-to-br from-rose-50/80 via-white to-slate-50 border-b border-rose-100 relative">
           <button
             type="button"
             disabled={isLoading}
             onClick={onClose}
-            className="absolute top-4 right-4 size-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors disabled:opacity-40"
+            aria-label="Tutup dialog konfirmasi"
+            className="absolute top-3.5 right-3.5 size-11 min-h-[44px] min-w-[44px] rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors disabled:opacity-40 cursor-pointer focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:outline-none"
           >
-            <X className="size-4" />
+            <X className="size-5" />
           </button>
 
           <div className="flex items-start gap-3.5">
@@ -134,9 +147,7 @@ export function SacredConfirmModal({
           </div>
         </div>
 
-        {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          {/* Target Summary Card */}
           {(targetBusinessName || targetDetails.length > 0) && (
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
               {targetBusinessName && (
@@ -168,7 +179,6 @@ export function SacredConfirmModal({
             </div>
           )}
 
-          {/* Warning Message Banner */}
           <div className="p-3 rounded-xl bg-rose-50/90 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
             <AlertTriangle className="size-4 shrink-0 text-rose-600 mt-0.5" />
             <div className="space-y-1 text-[11px] leading-relaxed">
@@ -180,7 +190,6 @@ export function SacredConfirmModal({
             </div>
           </div>
 
-          {/* Step 1: Input Konfirmasi Nama Bisnis */}
           {requireBusinessName && targetBusinessName && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
@@ -217,7 +226,6 @@ export function SacredConfirmModal({
             </div>
           )}
 
-          {/* Step 2: Input Master Admin PIN */}
           {requirePin && (
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
@@ -251,7 +259,6 @@ export function SacredConfirmModal({
             </div>
           )}
 
-          {/* Modal Action Buttons */}
           <div className="pt-2 flex items-center justify-end gap-2.5">
             <Button
               type="button"

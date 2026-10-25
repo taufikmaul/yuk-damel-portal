@@ -182,19 +182,17 @@ export async function verifySignedSession(session: any): Promise<boolean> {
   if (!session || typeof session !== 'object') return false;
   if (!session.authenticated || !session.expiresAt || !session.signature) return false;
 
-  // Check expiration
   if (Date.now() > session.expiresAt) {
     return false;
   }
 
-  // Check fingerprint match
   const fp = getDeviceFingerprint();
   const currentFpHash = await sha256(fp);
   if (session.fingerprintHash !== currentFpHash) {
     return false;
   }
 
-  // Recompute signature to verify data has not been modified
+  // Recompute signature to verify payload integrity
   const rawPayload = `${session.issuedAt}:${session.expiresAt}:${session.fingerprintHash}:${SESSION_SALT}`;
   const expectedSignature = await sha256(rawPayload);
 

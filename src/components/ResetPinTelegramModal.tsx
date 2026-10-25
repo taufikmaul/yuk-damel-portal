@@ -41,6 +41,17 @@ export function ResetPinTelegramModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isResetting) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, isResetting]);
+
   if (!isOpen) return null;
 
   const botUsername = config.telegramBotUsername || BOT_USERNAME;
@@ -80,15 +91,18 @@ export function ResetPinTelegramModal({
     <div
       onClick={handleBackdropClick}
       className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Reset PIN ke Telegram"
     >
       <div className="bg-white rounded-2xl border border-[#f0dbd8] shadow-2xl max-w-md w-full overflow-hidden flex flex-col scale-100 animate-in zoom-in-95 duration-150">
-        {/* Header Modal */}
         <div className="p-5 pb-4 bg-gradient-to-br from-[#fbf2f0] via-white to-slate-50 border-b border-[#f0dbd8] relative">
           <button
             type="button"
             onClick={onClose}
             disabled={isResetting}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer"
+            aria-label="Tutup dialog reset PIN"
+            className="absolute top-3.5 right-3.5 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-slate-800 p-1 rounded-lg hover:bg-slate-100 transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#a9484c] focus-visible:outline-none"
           >
             <X className="size-4" />
           </button>
@@ -108,10 +122,8 @@ export function ResetPinTelegramModal({
           </div>
         </div>
 
-        {/* Modal Body */}
         <div className="p-5 space-y-4">
           {resetSuccess ? (
-            /* Success State */
             <div className="space-y-4 py-2 text-center">
               <div className="size-14 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 mx-auto flex items-center justify-center shadow-xs">
                 <CheckCircle2 className="size-8" />
@@ -164,7 +176,6 @@ export function ResetPinTelegramModal({
               </div>
             </div>
           ) : (
-            /* Prompt State */
             <div className="space-y-4">
               <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200/90 text-amber-900 text-xs space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold">
@@ -176,7 +187,6 @@ export function ResetPinTelegramModal({
                 </p>
               </div>
 
-              {/* Telegram Connection Info */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500 font-medium">Akun Bot Telegram:</span>
@@ -212,7 +222,6 @@ export function ResetPinTelegramModal({
                 </div>
               </div>
 
-              {/* Bot Not Connected Warning */}
               {!isBotConfigured && (
                 <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs space-y-2">
                   <p className="text-[11px] leading-relaxed">
@@ -236,7 +245,6 @@ export function ResetPinTelegramModal({
                 </div>
               )}
 
-              {/* Error Message */}
               {errorMessage && (
                 <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
                   <AlertTriangle className="size-4 shrink-0 mt-0.5" />
@@ -244,7 +252,6 @@ export function ResetPinTelegramModal({
                 </div>
               )}
 
-              {/* Actions */}
               <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
                 <Button
                   type="button"

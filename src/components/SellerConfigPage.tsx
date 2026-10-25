@@ -70,11 +70,9 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
     message: string;
   } | null>(null);
 
-  // Sacred Reset Confirmation Modal State
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
-  // Security Management State
   const [oldPin, setOldPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmNewPin, setConfirmNewPin] = useState('');
@@ -86,13 +84,11 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
   const [resetBannerNotice, setResetBannerNotice] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('pricing');
 
-  // Payment & QRIS State
   const [showPakasirKey, setShowPakasirKey] = useState(false);
   const [testQrisAmount, setTestQrisAmount] = useState(10000);
   const [generatedTestQris, setGeneratedTestQris] = useState<string | null>(null);
   const [testQrisError, setTestQrisError] = useState<string | null>(null);
 
-  // Email Service State
   const [showResendKey, setShowResendKey] = useState(false);
   const [testEmailAddress, setTestEmailAddress] = useState('');
   const [testEmailSending, setTestEmailSending] = useState(false);
@@ -101,7 +97,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
     message: string;
   } | null>(null);
 
-  // Status kredensial langsung dari Server Cloudflare Database
   const [serverCredentials, setServerCredentials] = useState<{
     isResendConfigured: boolean;
     emailFrom: string;
@@ -244,7 +239,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
     toast.info('Tier baru berhasil ditambahkan');
   };
 
-  // Delete confirmation states
   const [tierToDelete, setTierToDelete] = useState<{ index: number; name: string } | null>(null);
   const [featureToDelete, setFeatureToDelete] = useState<{ tierIndex: number; featureIndex: number; name: string } | null>(null);
 
@@ -307,7 +301,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
       let pinToUse = adminPin || sessionStorage.getItem('ngabsen_admin_pin') || config.adminPin || '2468';
       let saveResult = await saveSellerConfigToDb(config, pinToUse);
 
-      // Jika otentikasi PIN ditolak (misal PIN telah diganti dan bukan default lagi), minta input PIN
+      // Prompt for PIN when rejected (e.g. non-default credentials)
       if (!saveResult.ok && saveResult.error && (saveResult.error.includes('PIN tidak valid') || saveResult.error.includes('Akses ditolak'))) {
         const pinPrompt = prompt(
           'Masukkan Master PIN Penjual untuk mengonfirmasi penyimpanan ke Cloudflare Database D1:'
@@ -326,10 +320,10 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         toast.error(`❌ Gagal menyimpan ke Database D1: ${saveResult.error || 'Periksa Master PIN atau koneksi.'}`);
       }
 
-      // Simpan cadangan ke browser local storage untuk ketersediaan offline
+      // Mirror to local storage for offline resilience
       const ok = saveSellerConfig(config);
       if (ok && saveResult.ok) {
-        // Broadcast custom event agar komponen lain seketika sinkron
+        // Broadcast update event to active windows
         window.dispatchEvent(new CustomEvent('seller-config-updated', { detail: config }));
       }
     } catch (err: any) {
@@ -423,7 +417,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
       saveSellerConfig(updatedConfig);
       sessionStorage.setItem('ngabsen_admin_pin', newPin);
 
-      // Simpan pembaruan PIN ke Database Cloudflare D1
       const dbRes = await saveSellerConfigToDb(updatedConfig, oldPin, newPin);
       if (dbRes.ok) {
         toast.success('Master PIN Berhasil Diperbarui di Database Cloudflare D1!');
@@ -463,7 +456,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
 
   return (
     <div className="space-y-3.5">
-      {/* Header & Sticky Action Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-[#f0dbd8]">
         <div>
           <h2 className="text-base font-bold tracking-tight text-slate-900 flex items-center gap-2">
@@ -510,7 +502,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         </div>
       </div>
 
-      {/* Tabs Navigation: Horizontal scroll on mobile, responsive on desktop */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-3.5">
         <TabsList className="flex overflow-x-auto no-scrollbar items-center justify-start sm:justify-center gap-1 bg-[#fbf4f3] border border-[#f0dbd8] p-1 w-full max-w-4xl rounded-xl">
           <TabsTrigger
@@ -564,9 +555,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </TabsTrigger>
         </TabsList>
 
-        {/* TAB 1: PRICING & PROMO */}
         <TabsContent value="pricing" className="space-y-3.5 mt-0">
-          {/* Promo Banner Settings */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -613,7 +602,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             )}
           </Card>
 
-          {/* Pricing Tiers List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
@@ -697,7 +685,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                           placeholder="15 (-1 unlim)"
                           className="h-7 text-xs font-mono bg-white"
                         />
-                        <span className="text-[9px] text-slate-400 block">-1 untuk Unlimited</span>
+                        <span className="text-[9px] text-slate-600 block">-1 untuk Unlimited</span>
                       </div>
                       <div className="space-y-1">
                         <label className="text-[10px] font-semibold text-slate-700 block">
@@ -723,7 +711,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                               placeholder="4"
                               className="h-6 text-[10px] font-mono bg-white"
                             />
-                            <span className="text-[9px] text-slate-400 block">Durasi (Bulan)</span>
+                            <span className="text-[9px] text-slate-600 block">Durasi (Bulan)</span>
                           </div>
                         )}
                       </div>
@@ -733,7 +721,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                       <div className="space-y-1.5 pt-1 border-t border-[#f0dbd8]">
                         <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700">
                           <span>Harga Paket per Durasi</span>
-                          <span className="text-[10px] text-slate-400 font-normal">Promo (Rp)</span>
+                          <span className="text-[10px] text-slate-600 font-normal">Promo (Rp)</span>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5 text-[10px]">
                           {[
@@ -771,7 +759,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                       />
                     </div>
 
-                    {/* Features list */}
                     <div className="space-y-1.5 pt-2 border-t border-[#f0dbd8]">
                       <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600">
                         <span>Fitur Termasuk ({tier.features?.length || 0})</span>
@@ -818,9 +805,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </div>
         </TabsContent>
 
-        {/* TAB PAYMENT: METODE PEMBAYARAN & ADD-ON */}
         <TabsContent value="payment" className="space-y-3.5 mt-0">
-          {/* Card 1: Switch Mode Pembayaran */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -891,7 +876,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             </CardContent>
           </Card>
 
-          {/* Card 2: Fasilitas Monetisasi "VIP Setup Terima Beres" */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -963,7 +947,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             </CardContent>
           </Card>
 
-          {/* Card 3: Integrasi API Pakasir */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1032,7 +1015,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                 </div>
               </div>
 
-              {/* Info Webhook URL */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold text-slate-800">
@@ -1061,7 +1043,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             </CardContent>
           </Card>
 
-          {/* Card 4: Generator QRIS Dinamis Mandiri (GoPay / DANA / BCA) */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
               <div>
@@ -1095,7 +1076,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                 </p>
               </div>
 
-              {/* Uji Coba Generator QR Dinamis */}
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
@@ -1158,8 +1138,8 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                       <div className="font-mono text-[10px] text-slate-500 max-h-16 overflow-y-auto break-all bg-slate-50 p-1.5 rounded">
                         {generatedTestQris}
                       </div>
-                      <span className="text-[10px] text-slate-400 block">
-                        Coba scan QR di atas pakai HP Anda — nominal akan otomatis muncul tanpa ketik manual!
+                      <span className="text-[10px] text-slate-600 block">
+                        Coba scan QR di atas pakai HP Anda. Nominal akan otomatis muncul tanpa ketik manual!
                       </span>
                     </div>
                   </div>
@@ -1169,7 +1149,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
 
-        {/* TAB 2: TELEGRAM BOT */}
         <TabsContent value="telegram" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
@@ -1273,7 +1252,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
 
-        {/* TAB 3: GITHUB DISPATCHER */}
         <TabsContent value="github" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
@@ -1347,7 +1325,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
 
-        {/* TAB 4: SALES & DEMO */}
         <TabsContent value="sales" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader>
@@ -1446,9 +1423,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
 
-        {/* TAB 5: SECURITY */}
         <TabsContent value="security" className="space-y-3.5 mt-0">
-          {/* Card 1: Ganti Master PIN Penjual */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1601,7 +1576,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             </CardContent>
           </Card>
 
-          {/* Card 2: Inactivity Guard (Auto-Lock on Idle) */}
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-4">
               <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1643,7 +1617,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
             </CardContent>
           </Card>
 
-          {/* Card 3: Status 7 Lapisan Keamanan Aktif */}
           <Card className="border-[#f0dbd8] bg-[#fdfaf9] shadow-xs rounded-xl overflow-hidden">
             <CardHeader className="pb-3 border-b border-[#f0dbd8] bg-white">
               <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -1730,7 +1703,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
           </Card>
         </TabsContent>
 
-        {/* TAB 7: EMAIL & VERIFIKASI OTP */}
         <TabsContent value="email" className="space-y-3.5 mt-0">
           <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
             <CardHeader className="pb-3">
@@ -1750,7 +1722,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Server Database Real-Time Status Banner */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-[#f0dbd8] bg-[#fbf4f3] text-xs">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-slate-800">Status Server Edge:</span>
@@ -1792,7 +1763,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                 </p>
               </div>
 
-              {/* Box Edukasi Aturan Resend */}
               <div className="p-3 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs space-y-1 text-amber-900">
                 <div className="font-bold flex items-center gap-1.5 text-amber-800">
                   <Sparkles className="size-3.5 text-amber-600" />
@@ -1808,7 +1778,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                 </ul>
               </div>
 
-              {/* Input Resend API Key */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold text-slate-700">
@@ -1839,12 +1808,11 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                     {showResendKey ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-slate-600">
                   Resend menyediakan kuota gratis 3.000 email/bulan. Jangan lupa klik tombol <strong>"Simpan Perubahan"</strong> di atas untuk menyimpan langsung ke Database Cloudflare D1.
                 </p>
               </div>
 
-              {/* Input Sender Email */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-slate-700">
                   Email Pengirim (Sender From)
@@ -1854,14 +1822,13 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                   placeholder="akugawe <onboarding@resend.dev> atau akugawe <noreply@domainanda.com>"
                   value={config.emailFrom || ''}
                   onChange={(e) => handleChange('emailFrom', e.target.value)}
-                  className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-400 text-xs focus-visible:ring-[#a9484c]"
+                  className="bg-white border-[#f0dbd8] text-slate-900 placeholder:text-slate-500 text-xs focus-visible:ring-[#a9484c]"
                 />
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-slate-600">
                   Contoh: <code>akugawe &lt;onboarding@resend.dev&gt;</code> untuk akun free trial Resend, atau domain custom yang sudah terverifikasi di Resend.
                 </p>
               </div>
 
-              {/* Uji Coba Pengiriman Email */}
               <div className="p-4 rounded-xl bg-white border border-[#f0dbd8] space-y-3 mt-4">
                 <div className="font-bold text-xs text-slate-900 flex items-center gap-2">
                   <Send className="size-3.5 text-[#a9484c]" />
@@ -1918,7 +1885,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         </TabsContent>
       </Tabs>
 
-      {/* Modal Sakral Konfirmasi Reset Pengaturan */}
       <SacredConfirmModal
         isOpen={isResetModalOpen}
         onClose={() => !isResetting && setIsResetModalOpen(false)}
@@ -1935,7 +1901,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         onConfirm={handleConfirmReset}
       />
 
-      {/* Confirmation Dialog Hapus Tier Harga */}
       <ConfirmationDialog
         open={!!tierToDelete}
         onOpenChange={(open) => !open && setTierToDelete(null)}
@@ -1947,7 +1912,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         onConfirm={handleConfirmRemoveTier}
       />
 
-      {/* Confirmation Dialog Hapus Fitur Tier */}
       <ConfirmationDialog
         open={!!featureToDelete}
         onOpenChange={(open) => !open && setFeatureToDelete(null)}
@@ -1959,7 +1923,6 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
         onConfirm={handleConfirmRemoveFeature}
       />
 
-      {/* Modal Reset Master PIN via Telegram */}
       <ResetPinTelegramModal
         isOpen={isResetPinTelegramModalOpen}
         onClose={() => setIsResetPinTelegramModalOpen(false)}

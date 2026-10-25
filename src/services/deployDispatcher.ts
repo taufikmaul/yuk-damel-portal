@@ -24,7 +24,7 @@ export interface DispatchResult {
 export async function triggerGitHubDeploy(payload: DispatchDeployPayload): Promise<DispatchResult> {
   const config = loadSellerConfig();
 
-  // Layer 1: Attempt Edge Serverless Function (/api/deploy) - Recommended & Secure
+  // Attempt edge serverless function first
   try {
     const edgeRes = await fetch('/api/deploy', {
       method: 'POST',
@@ -62,10 +62,10 @@ export async function triggerGitHubDeploy(payload: DispatchDeployPayload): Promi
       }
     }
   } catch (_) {
-    // If running in local Vite dev without Pages Functions, proceed to local fallback check
+    // Fall back to direct dispatch if serverless endpoint is unavailable
   }
 
-  // Layer 2: Local development fallback using optional browser PAT if configured
+  // Direct GitHub API dispatch fallback
   const patToken = config.githubPatToken?.trim();
   if (!patToken) {
     return {

@@ -54,31 +54,6 @@ body {
 }
 
 
-@keyframes shiny-text {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.animate-shiny-text {
-  animation: shiny-text 3.5s linear infinite;
-}
-
-@keyframes star-border-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-star-border {
-  animation: star-border-spin 4s linear infinite;
-}
 
 :root {
   --background: #faf6f5;

@@ -1,7 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Check, Tag, MessageCircle, QrCode, Zap, Users, ShieldCheck } from "lucide-react";
 import { PricingTier, SellerConfig, loadSellerConfig } from "@/services/config";
-import { CheckoutModal } from "./CheckoutModal";
+
+const CheckoutModal = lazy(() =>
+  import("./CheckoutModal").then((m) => ({ default: m.CheckoutModal }))
+);
 
 interface PricingSectionProps {
   onSelectTier?: (tier: PricingTier) => void;
@@ -41,7 +44,7 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [activeTier, setActiveTier] = useState<PricingTier>(tiers.find((t) => !t.isFree) || tiers[0]);
 
-  // Deteksi URL query param (?checkout=free_trial atau ?checkout=starter) dari demo app
+  // Synchronize tier and duration from query params if referred from demo app
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
@@ -80,32 +83,29 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
   };
 
   return (
-    <section id="harga" className="py-16 sm:py-24 px-4 sm:px-6 bg-zinc-50/60 border-b border-zinc-200/80">
+    <section id="harga" className="py-16 sm:py-24 px-4 sm:px-6 bg-slate-50/60 border-b border-slate-200/80">
       <div className="max-w-6xl mx-auto">
-        {/* BANNER PROMO */}
         {sellerConfig.isPromoActive && (
-          <div className="mb-8 max-w-xl mx-auto p-3 rounded-xl bg-white border border-zinc-200/90 text-center shadow-xs">
-            <span className="font-semibold text-xs text-[#a9484c] tracking-wide flex items-center justify-center gap-2">
-              <Tag className="size-4 shrink-0 text-[#a9484c]" />
+          <div className="mb-8 max-w-xl mx-auto p-3 rounded-xl bg-white border border-border text-center shadow-xs">
+            <span className="font-semibold text-xs text-primary tracking-wide flex items-center justify-center gap-2">
+              <Tag className="size-4 shrink-0 text-primary" />
               {sellerConfig.promoBannerText}
             </span>
           </div>
         )}
 
-        {/* SECTION HEADER */}
         <div className="text-center max-w-3xl mx-auto mb-10">
-          <p className="text-xs font-semibold text-[#a9484c] uppercase tracking-wider mb-3">
-            Harga
+          <p className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
+            Paket Harga
           </p>
-          <h2 className="text-3xl sm:text-5xl font-bold text-zinc-900 tracking-tight leading-tight">
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
             Mulai hemat, tanpa biaya bulanan tak terduga
           </h2>
-          <p className="mt-3 text-base text-zinc-600">
-            Pilih paket yang cocok dengan skala workspace Anda. Server & database berkecepatan tinggi ditangani penuh oleh tim kami.
+          <p className="mt-3 text-base text-slate-600">
+            Pilih paket yang cocok dengan skala usaha Anda. Server dan database berkecepatan tinggi dikelola optimal.
           </p>
 
-          {/* Single-line horizontal scrollable selector, no badges, no multi-row wrap */}
-          <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-white rounded-xl max-w-xl mx-auto border border-zinc-200 shadow-2xs mt-6 w-full justify-start sm:justify-center px-1.5">
+          <div className="flex overflow-x-auto no-scrollbar items-center gap-1.5 p-1 bg-white rounded-xl max-w-xl mx-auto border border-border shadow-2xs mt-6 w-full justify-start sm:justify-center px-1.5">
             {DURATION_OPTIONS.map((opt) => {
               const isSelected = selectedDuration === opt.value;
               return (
@@ -113,10 +113,10 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
                   key={opt.value}
                   type="button"
                   onClick={() => setSelectedDuration(opt.value)}
-                  className={`whitespace-nowrap shrink-0 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  className={`whitespace-nowrap shrink-0 px-4 py-2.5 min-h-[44px] flex items-center justify-center rounded-lg text-xs font-medium transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
                     isSelected
-                      ? "bg-[#a9484c] text-white shadow-2xs font-semibold"
-                      : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
+                      ? "bg-primary text-white shadow-2xs font-semibold"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                   }`}
                 >
                   {opt.label}
@@ -126,42 +126,39 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
           </div>
         </div>
 
-        {/* Pricing Cards: Smooth horizontal scroll on mobile, responsive grid on desktop (1 Brand Header + 3 Tiers) */}
-        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-zinc-200/80 rounded-2xl border border-zinc-200/90 shadow-xs bg-white">
-          {/* Header Left Brand Card */}
-          <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-zinc-900 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
+        <div className="flex md:grid md:grid-cols-2 lg:grid-cols-4 overflow-x-auto no-scrollbar snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 md:mx-0 md:px-0 md:gap-0 md:divide-x divide-slate-200/80 rounded-2xl border border-border shadow-xs bg-white">
+          <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-slate-950 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>
-              <p className="mb-2 text-xs font-bold text-[#cf807c] uppercase tracking-wider flex items-center gap-1.5">
+              <p className="mb-2 text-xs font-bold text-rose-300 uppercase tracking-wider flex items-center gap-1.5">
                 <ShieldCheck className="size-3.5" /> AKUGAWE SAAS
               </p>
               <h3 className="font-bold text-xl sm:text-2xl leading-tight text-white tracking-tight">
-                Langganan hemat tanpa ribet
+                Langganan terencana untuk usaha Anda
               </h3>
-              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+              <p className="mt-3 text-xs text-slate-400 leading-relaxed">
                 Semua paket sudah termasuk presensi selfie, geofence radius, dan slip gaji otomatis. Paket Business Pro dilengkapi fitur Canvasing Sales & Kunjungan Toko.
               </p>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-zinc-800 space-y-2">
-              <div className="text-xs text-zinc-300 flex items-center gap-2">
+            <div className="mt-8 pt-6 border-t border-slate-800 space-y-2">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Free Tier 4 Bulan (Rp 0)
               </div>
-              <div className="text-xs text-zinc-300 flex items-center gap-2">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Starter Mulai Rp 15rb/bln
               </div>
-              <div className="text-xs text-zinc-300 flex items-center gap-2">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Canvasing & Kunjungan Sales (Pro)
               </div>
-              <div className="text-xs text-zinc-300 flex items-center gap-2">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Anti-Fake GPS & PWA Mobile
               </div>
-              <div className="text-xs text-zinc-300 flex items-center gap-2">
+              <div className="text-xs text-slate-300 flex items-center gap-2">
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Otomasi Slip Gaji PDF
               </div>
             </div>
           </div>
 
-          {/* Pricing Cards */}
           {tiers.map((tier) => (
             <PricingCard
               key={tier.id}
@@ -174,15 +171,18 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
           ))}
         </div>
 
-        {/* CHECKOUT MODAL POP-UP */}
-        <CheckoutModal
-          isOpen={checkoutModalOpen}
-          onClose={() => setCheckoutModalOpen(false)}
-          selectedTier={activeTier}
-          selectedDurationMonths={Number(activeTier.isFree ? 4 : selectedDuration)}
-          sellerConfig={sellerConfig}
-          onProceedToOnboarding={onProceedToOnboarding}
-        />
+        {checkoutModalOpen && (
+          <Suspense fallback={null}>
+            <CheckoutModal
+              isOpen={checkoutModalOpen}
+              onClose={() => setCheckoutModalOpen(false)}
+              selectedTier={activeTier}
+              selectedDurationMonths={Number(activeTier.isFree ? 4 : selectedDuration)}
+              sellerConfig={sellerConfig}
+              onProceedToOnboarding={onProceedToOnboarding}
+            />
+          </Suspense>
+        )}
       </div>
     </section>
   );
@@ -204,7 +204,6 @@ function PricingCard({
   const isFree = Boolean(tier.isFree);
   const durNum = Number(selectedDuration);
 
-  // Kalkulasi harga berdasarkan durasi
   let displayPriceMonthly = 15000;
   let totalBilled = 15000;
   let durationLabel = `${durNum} Bulan`;
@@ -230,19 +229,17 @@ function PricingCard({
 
   return (
     <div
-      className={`w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none border md:border-0 border-zinc-200/80 shadow-xs md:shadow-none flex flex-col justify-between p-6 sm:p-7 transition-all ${
-        tier.isPopular ? "bg-[#fbf2f0]/60 ring-2 ring-inset ring-[#a9484c]" : "bg-white"
+      className={`w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none border md:border-0 border-border shadow-xs md:shadow-none flex flex-col justify-between p-6 sm:p-7 transition-all ${
+        tier.isPopular ? "bg-secondary/60 ring-2 ring-inset ring-primary" : "bg-white"
       }`}
     >
       <div>
-        {/* Tier Header */}
         <div className="flex items-center justify-between mb-3">
-          <p className={`text-xs font-bold uppercase tracking-wider ${tier.isPopular ? 'text-[#a9484c]' : 'text-slate-600'}`}>
+          <p className={`text-xs font-bold uppercase tracking-wider ${tier.isPopular ? 'text-primary' : 'text-slate-600'}`}>
             {tier.name}
           </p>
         </div>
 
-        {/* Price Block */}
         <div className="mb-3">
           {isFree ? (
             <div>
@@ -271,9 +268,8 @@ function PricingCard({
           )}
         </div>
 
-        {/* Max Employee Inline Info */}
-        <div className="mb-4 flex items-center gap-1.5 text-xs text-zinc-600 font-semibold">
-          <Users className="size-3.5 text-[#a9484c]" />
+        <div className="mb-4 flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+          <Users className="size-3.5 text-primary" />
           <span>{employeeLimitDisplay}</span>
         </div>
 
@@ -281,17 +277,16 @@ function PricingCard({
           {tier.description}
         </p>
 
-        {/* CTA Button */}
         <div className="mb-6">
           <button
             type="button"
             onClick={onSelect}
-            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer ${
+            className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${
               isFree
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
                 : tier.isPopular
-                ? "bg-[#a9484c] hover:bg-[#8f3b3f] text-white shadow-[#a9484c]/20"
-                : "bg-white hover:bg-slate-50 text-slate-800 border border-[#f0dbd8]"
+                ? "bg-primary hover:bg-primary/90 text-white shadow-primary/20"
+                : "bg-white hover:bg-slate-50 text-slate-800 border border-border"
             }`}
           >
             {isFree ? (
@@ -313,8 +308,7 @@ function PricingCard({
           </button>
         </div>
 
-        {/* Features Checklist */}
-        <div className="space-y-2.5 pt-5 border-t border-[#f0dbd8]">
+        <div className="space-y-2.5 pt-5 border-t border-border">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             FASILITAS PAKET:
           </p>

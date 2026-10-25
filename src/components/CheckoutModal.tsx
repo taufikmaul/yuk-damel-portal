@@ -48,14 +48,12 @@ export function CheckoutModal({
     sellerConfig.paymentMode === 'whatsapp' ? 'whatsapp' : 'qris'
   );
 
-  // Status transaksi
   const [isLoading, setIsLoading] = useState(false);
   const [orderData, setOrderData] = useState<any>(null);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'awaiting_payment' | 'paid'>('idle');
   const [copiedNominal, setCopiedNominal] = useState(false);
   const [copiedToken, setCopiedToken] = useState(false);
 
-  // Status Verifikasi Kode Email Free Tier (Anti-Spam)
   const [freeTierStep, setFreeTierStep] = useState<'form' | 'verify_code'>('form');
   const [activationCode, setActivationCode] = useState('');
   const [isSendingCode, setIsSendingCode] = useState(false);
@@ -69,7 +67,7 @@ export function CheckoutModal({
   );
   const durationMonths = isFreeTier ? (selectedTier.freeDurationMonths || 4) : selectedDurationMonths;
 
-  // Auto pre-fill dari URL Parameters jika prospek datang dari Demo App
+  // Pre-fill form fields when referred with query parameters
   useEffect(() => {
     if (isOpen) {
       setPaymentStatus('idle');
@@ -94,7 +92,6 @@ export function CheckoutModal({
     }
   }, [isOpen, sellerConfig.paymentMode]);
 
-  // Countdown timer untuk kirim ulang kode aktivasi
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const interval = setInterval(() => {
@@ -103,9 +100,19 @@ export function CheckoutModal({
     return () => clearInterval(interval);
   }, [resendCooldown]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isLoading) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose, isLoading]);
+
   if (!isOpen) return null;
 
-  // Kalkulasi harga paket
   let basePrice = 15000;
   const durStr = String(durationMonths);
   if (isFreeTier) {
@@ -121,7 +128,6 @@ export function CheckoutModal({
   const managedFee = hasManagedSetup ? sellerConfig.managedSetupPriceRp : 0;
   const estimatedTotal = basePrice + managedFee;
 
-  // Handler pengiriman kode aktivasi email Free Tier
   const handleSendActivationCode = async () => {
     if (!clientName.trim()) {
       toast.error('Nama toko / usaha wajib diisi.');
@@ -164,7 +170,6 @@ export function CheckoutModal({
     }
   };
 
-  // Handler verifikasi kode aktivasi & pembuatan order Free Tier
   const handleActivateFreeTierWithCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activationCode || activationCode.trim().length !== 6) {
@@ -216,13 +221,11 @@ export function CheckoutModal({
       return;
     }
 
-    // Jika Free Tier, wajib lewat verifikasi kode aktivasi email
     if (isFreeTier) {
       handleSendActivationCode();
       return;
     }
 
-    // Jika metode WhatsApp dipilih (Hanya berlaku untuk paket berbayar)
     if (selectedMethod === 'whatsapp') {
       const waText =
         `Halo Tim ${sellerConfig.brandName},\n\n` +
@@ -307,21 +310,28 @@ export function CheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isLoading) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Modal Checkout Paket"
+    >
       <div className="relative w-full max-w-lg bg-white border border-[#f0dbd8] rounded-3xl shadow-2xl text-slate-800 p-6 sm:p-8 my-8 transition-all">
-        {/* Tombol Tutup */}
         <button
+          type="button"
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+          aria-label="Tutup checkout dialog"
+          className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#a9484c] focus-visible:outline-none"
         >
           <X className="size-5" />
         </button>
 
-        {/* LAYAR 1: FORM CHECKOUT & VERIFIKASI KODE */}
         {paymentStatus === 'idle' && (
           <div>
             {isFreeTier && freeTierStep === 'verify_code' ? (
-              /* SUB-LAYAR 1B: VERIFIKASI KODE AKTIVASI EMAIL FREE TIER */
               <div className="text-center py-2 animate-in fade-in zoom-in-95 duration-200">
                 <div className="size-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-3 shadow-inner">
                   <MailCheck className="size-7" />
@@ -417,7 +427,6 @@ export function CheckoutModal({
                 </form>
               </div>
             ) : (
-              /* SUB-LAYAR 1A: FORM INPUT USAHA & KONTAK */
               <div>
                 <div className="mb-5">
                   <p className={`text-xs font-bold uppercase tracking-wider ${
@@ -435,7 +444,6 @@ export function CheckoutModal({
                   </p>
                 </div>
 
-                {/* Rincian Paket */}
                 <div className="p-4 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] mb-5 space-y-2.5">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 flex items-center gap-1.5">
@@ -476,7 +484,6 @@ export function CheckoutModal({
                     </span>
                   </div>
 
-                  {/* ADD-ON TERIMA BERES (Hanya untuk Paket Berbayar) */}
                   {!isFreeTier && sellerConfig.managedSetupEnabled && (
                     <div
                       onClick={() => setHasManagedSetup(!hasManagedSetup)}
@@ -519,7 +526,6 @@ export function CheckoutModal({
                   </div>
                 </div>
 
-                {/* Notice Anti-Spam Free Tier */}
                 {isFreeTier && (
                   <div className="mb-4 p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-left flex items-start gap-2.5">
                     <ShieldCheck className="size-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -529,7 +535,6 @@ export function CheckoutModal({
                   </div>
                 )}
 
-                {/* Form Input Pelanggan */}
                 <form onSubmit={handleCreateOrder} className="space-y-3.5">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -575,7 +580,6 @@ export function CheckoutModal({
                     </div>
                   </div>
 
-                  {/* Opsi Metode Pembayaran (Hanya untuk Paket Berbayar Mode Hybrid) */}
                   {!isFreeTier && sellerConfig.paymentMode === 'hybrid' && (
                     <div>
                       <label className="block text-xs font-semibold text-slate-700 mb-1.5">
@@ -663,7 +667,6 @@ export function CheckoutModal({
           </div>
         )}
 
-        {/* LAYAR 2: TAMPILAN QRIS PEMBAYARAN */}
         {paymentStatus === 'awaiting_payment' && orderData && (
           <div className="text-center">
             <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
@@ -676,7 +679,6 @@ export function CheckoutModal({
               Nominal sudah terkunci otomatis. Bebas biaya admin via aplikasi bank/e-wallet mana pun.
             </p>
 
-            {/* BOX KODE QR */}
             <div className="p-4 bg-[#faf6f5] border border-[#f0dbd8] rounded-2xl max-w-[240px] mx-auto shadow-sm mb-4">
               {orderData.qrCodeImageUrl ? (
                 <img
@@ -696,7 +698,6 @@ export function CheckoutModal({
               </div>
             </div>
 
-            {/* TOTAL TAGIHAN PERSIS */}
             <div className="p-3 bg-[#faf6f5] border border-[#f0dbd8] rounded-xl mb-4 max-w-sm mx-auto">
               <div className="text-[11px] text-slate-500 mb-0.5">Total yang Harus Dibayar:</div>
               <div className="flex items-center justify-center gap-2">
@@ -718,7 +719,6 @@ export function CheckoutModal({
               )}
             </div>
 
-            {/* ACTION BUTTONS */}
             <div className="space-y-2 max-w-sm mx-auto">
               {orderData.pakasirCheckoutUrl && (
                 <a
@@ -759,7 +759,6 @@ export function CheckoutModal({
           </div>
         )}
 
-        {/* LAYAR 3: SUKSES (FREE TIER INSTAN & PAID LUNAS) */}
         {paymentStatus === 'paid' && orderData && (
           <div className="text-center py-4">
             <div className="size-16 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto mb-4 animate-bounce">
@@ -773,7 +772,6 @@ export function CheckoutModal({
               Layanan absensi & payroll untuk <b>{clientName}</b> telah aktif dan siap digunakan.
             </p>
 
-            {/* TOKEN BOX */}
             <div className="my-5 p-4 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] text-left max-w-sm mx-auto">
               <div className="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-1">
                 Token Lisensi Anda:
@@ -793,7 +791,6 @@ export function CheckoutModal({
               </div>
             </div>
 
-            {/* LINK AKSES INSTAN */}
             <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs text-left mb-6 max-w-sm mx-auto space-y-1.5">
               <div className="font-bold flex items-center gap-1.5 text-emerald-800">
                 <BadgeCheck className="size-4 text-emerald-600" /> Akses Sistem Langsung Siap:

@@ -171,7 +171,6 @@ function AdminSidebar({
 
   return (
     <Sidebar collapsible="icon" className="border-r border-[#f0dbd8] bg-white">
-      {/* Header Brand */}
       <SidebarHeader className="border-b border-[#f0dbd8] p-2 sm:p-2.5 flex flex-row items-center justify-between min-h-[50px]">
         {isCollapsed ? (
           <div className="flex items-center justify-center w-full">
@@ -206,9 +205,7 @@ function AdminSidebar({
         )}
       </SidebarHeader>
 
-      {/* Navigation Menu */}
       <SidebarContent className="px-2 py-2 space-y-3">
-        {/* Section: Operasional */}
         <div className="space-y-0.5">
           {isCollapsed ? (
             <div className="my-1 border-t border-[#f0dbd8]/60 mx-1" />
@@ -219,7 +216,6 @@ function AdminSidebar({
           )}
 
           <div className="space-y-0.5">
-            {/* Dashboard & Lisensi */}
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -254,7 +250,6 @@ function AdminSidebar({
               </button>
             )}
 
-            {/* Prospek & Leads Demo */}
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -294,7 +289,6 @@ function AdminSidebar({
               </button>
             )}
 
-            {/* Cloudflare Pod Fleet */}
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -329,7 +323,6 @@ function AdminSidebar({
               </button>
             )}
 
-            {/* Konfigurasi Seller */}
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -366,7 +359,6 @@ function AdminSidebar({
           </div>
         </div>
 
-        {/* Section: Navigasi Cepat */}
         <div className="space-y-0.5">
           {isCollapsed ? (
             <div className="my-1 border-t border-[#f0dbd8]/60 mx-1" />
@@ -377,7 +369,6 @@ function AdminSidebar({
           )}
 
           <div className="space-y-0.5">
-            {/* Landing Page Publik */}
             {isCollapsed ? (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -404,7 +395,6 @@ function AdminSidebar({
               </button>
             )}
 
-            {/* Live Demo App */}
             {(() => {
               const demoUrl = loadSellerConfig().demoDashboardUrl || 'https://dash-ngabsen.historycake.com';
               return isCollapsed ? (
@@ -439,7 +429,6 @@ function AdminSidebar({
         </div>
       </SidebarContent>
 
-      {/* Footer User Profile */}
       <SidebarFooter className="border-t border-[#f0dbd8] p-2.5">
         {isCollapsed ? (
           <div className="flex flex-col items-center gap-2 py-1">
@@ -451,7 +440,7 @@ function AdminSidebar({
               </TooltipTrigger>
               <TooltipContent side="right" sideOffset={12} className="text-xs">
                 <div className="font-bold">Owner Authorized</div>
-                <div className="text-[10px] text-slate-400 font-mono">ID: 115334079</div>
+                <div className="text-[10px] text-slate-600 font-mono">ID: 115334079</div>
               </TooltipContent>
             </Tooltip>
 
@@ -509,7 +498,7 @@ export function AdminPortalPage({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isCheckingSession, setIsCheckingSession] = useState<boolean>(true);
 
-  // Validate session cryptographically on mount (Anti-Tamper localStorage verification)
+  // Validate signed session on mount against local tampering
   useEffect(() => {
     let isMounted = true;
     async function validateSession() {
@@ -522,7 +511,6 @@ export function AdminPortalPage({
             if (isMounted) setIsAuthenticated(true);
             return;
           } else {
-            // Tampered or expired session detected
             localStorage.removeItem(SESSION_KEY);
             if (isMounted) setIsAuthenticated(false);
           }
@@ -539,7 +527,7 @@ export function AdminPortalPage({
     };
   }, []);
 
-  // Helper sinkronisasi URL path dengan Tab menu aktif
+  // Map URL pathname to active admin tab
   function getTabFromPathname(pathname: string): AdminTab {
     const clean = pathname.replace(/^\/salesAdmin\/?/, '').split('/')[0].toLowerCase();
     if (clean === 'settings' || clean === 'setting' || clean === 'konfigurasi') return 'settings';
@@ -573,7 +561,6 @@ export function AdminPortalPage({
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Telegram Bot & 2FA Security Gate State
   const initialConfig = loadSellerConfig();
   const [displayPin] = useState<string>(() => initialConfig.adminPin || '2468');
   const [isBotConfigured, setIsBotConfigured] = useState<boolean>(() => {
@@ -595,13 +582,11 @@ export function AdminPortalPage({
     });
   }, [displayPin]);
 
-  // Inactivity Guard (Auto-Lock on Idle)
   const [isIdleLocked, setIsIdleLocked] = useState<boolean>(false);
   const [idleUnlockPin, setIdleUnlockPin] = useState('');
   const [showIdlePin, setShowIdlePin] = useState(false);
   const [idleError, setIdleError] = useState<string | null>(null);
 
-  // OTP State for 2FA Gate (Stores SHA-256 Hash of OTP + Salt, NEVER plaintext)
   const [activeOtpHashed, setActiveOtpHashed] = useState<string | null>(null);
   const [otpSalt, setOtpSalt] = useState<string>('');
   const [otpExpiresAt, setOtpExpiresAt] = useState<number>(0);
@@ -610,12 +595,10 @@ export function AdminPortalPage({
   const [otpSentSuccess, setOtpSentSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Rate Limiting & Lockout
   const [lockoutSeconds, setLockoutSeconds] = useState<number>(() => getLockoutRemaining());
   const [resendCooldown, setResendCooldown] = useState<number>(() => getResendCooldownRemaining());
   const [remainingAttempts, setRemainingAttempts] = useState<number>(5);
 
-  // Countdown timer for lockout and resend cooldown
   useEffect(() => {
     if (lockoutSeconds <= 0 && resendCooldown <= 0) return;
     const interval = setInterval(() => {
@@ -625,7 +608,7 @@ export function AdminPortalPage({
     return () => clearInterval(interval);
   }, [lockoutSeconds, resendCooldown]);
 
-  // Inactivity Auto-Lock Timer (monitors user interaction)
+  // Lock screen after inactivity threshold
   useEffect(() => {
     if (!isAuthenticated || isIdleLocked) return;
     const config = loadSellerConfig();
@@ -654,16 +637,14 @@ export function AdminPortalPage({
     };
   }, [isAuthenticated, isIdleLocked]);
 
-  // Clients State with AES-GCM 256-bit Encryption at Rest
   const [isClientsLoaded, setIsClientsLoaded] = useState(false);
   const [clients, setClients] = useState<ClientRecord[]>([]);
 
-  // Load and decrypt clients from localStorage
   useEffect(() => {
     let isMounted = true;
     async function loadEncryptedClients() {
       try {
-        // 1. Coba ambil pesanan terbaru dari Cloudflare D1 (/api/orders)
+        // Attempt fetching orders from remote D1 API first
         try {
           const res = await fetch('/api/orders');
           if (res.ok) {
@@ -676,7 +657,7 @@ export function AdminPortalPage({
           }
         } catch (_) {}
 
-        // 2. Fallback ke penyimpanan lokal jika server D1 belum di-setup
+        // Fall back to local encrypted storage if remote endpoint is unavailable
         const raw = localStorage.getItem(CLIENTS_STORAGE_KEY);
         if (raw) {
           let jsonStr = raw;
@@ -704,7 +685,6 @@ export function AdminPortalPage({
     };
   }, []);
 
-  // Encrypt and persist clients to localStorage on state change
   useEffect(() => {
     if (!isClientsLoaded) return;
     let isMounted = true;
@@ -727,7 +707,6 @@ export function AdminPortalPage({
     };
   }, [clients, isClientsLoaded]);
 
-  // Client generation form state
   const [newClientName, setNewClientName] = useState('');
   const [selectedTierId, setSelectedTierId] = useState<string>('free_trial');
   const [selectedCycleMonths, setSelectedCycleMonths] = useState<number>(4);
@@ -740,7 +719,6 @@ export function AdminPortalPage({
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'pending'>('all');
   const [lastGeneratedClient, setLastGeneratedClient] = useState<ClientRecord | null>(null);
 
-  // Sacred Action Modal State (Hapus Lisensi & Data Pod, Suspend Lisensi)
   const [sacredModalState, setSacredModalState] = useState<{
     isOpen: boolean;
     client: ClientRecord | null;
@@ -753,7 +731,7 @@ export function AdminPortalPage({
     isLoading: false,
   });
 
-  // Auto-polling mendeteksi chat masuk dengan PIN ke bot Telegram saat belum terhubung
+  // Poll Telegram updates for initial PIN pairing handshake
   useEffect(() => {
     if (isAuthenticated || isBotConfigured) return;
 
@@ -769,7 +747,6 @@ export function AdminPortalPage({
           setConnectedChatId(res.chatId);
           setIsBotConfigured(true);
           toast.success(`🎉 Bot Telegram terhubung dengan ${res.senderName || 'akun Anda'}! (ID: ${res.chatId})`);
-          // Kirim OTP otomatis ke chat yang baru saja terhubung
           handleSendOtp(res.chatId);
         }
       } catch (_) {}
@@ -814,7 +791,6 @@ export function AdminPortalPage({
     handleSendOtp(manualChatIdInput.trim());
   };
 
-  // 2FA Telegram OTP Actions
   const handleSendOtp = async (overrideChatId?: string) => {
     const lockRem = getLockoutRemaining();
     if (lockRem > 0) {
@@ -863,7 +839,6 @@ export function AdminPortalPage({
       const err = getLastTelegramError();
       const msg = err || 'Gagal mengirim pesan ke Telegram. Pastikan bot @AkugawePortalBot aktif.';
       
-      // Deteksi jika bot belum di-config atau chat belum dimulai
       if (
         msg.includes('chat not found') ||
         msg.includes('belum dikonfigurasi') ||
@@ -897,14 +872,12 @@ export function AdminPortalPage({
       return;
     }
 
-    // Verify via cryptographic hash comparison
     const inputHash = await sha256(inputOtp.trim() + otpSalt);
 
     if (inputHash === activeOtpHashed) {
       resetFailedAttempts();
       setErrorMessage(null);
 
-      // Create cryptographically signed session
       try {
         const signedSession = await createSignedSession(SESSION_TTL_MS);
         localStorage.setItem(SESSION_KEY, JSON.stringify(signedSession));
@@ -913,7 +886,6 @@ export function AdminPortalPage({
       setIsAuthenticated(true);
       toast.success('Verifikasi Berlapis Berhasil! Selamat datang di Sales Admin.');
     } else {
-      // Record failed attempt for brute-force mitigation
       const result = recordFailedAttempt();
       if (result.isLocked) {
         setLockoutSeconds(result.lockTimeSeconds);
@@ -928,7 +900,6 @@ export function AdminPortalPage({
     }
   };
 
-  // Inactivity Idle Unlock
   const handleUnlockIdle = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!idleUnlockPin.trim()) return;
@@ -1046,7 +1017,6 @@ export function AdminPortalPage({
     };
     (newRecord as any).slug = cleanSlug;
 
-    // 1. Simpan ke database Cloudflare D1 (/api/orders)
     try {
       await fetch('/api/orders', {
         method: 'POST',
@@ -1065,7 +1035,6 @@ export function AdminPortalPage({
       });
     } catch (_) {}
 
-    // 2. Simpan lokal & update state
     const updated = [newRecord, ...clients];
     setClients(updated);
     try {
@@ -1350,7 +1319,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
         const parsed = JSON.parse(content);
         const importedClients = Array.isArray(parsed) ? parsed : parsed.clients;
         if (Array.isArray(importedClients)) {
-          // Merge clients without duplicates
           const existingIds = new Set(clients.map((c) => c.id));
           const newEntries = importedClients.filter((c: any) => c.id && c.token && !existingIds.has(c.id));
           const merged = [...clients, ...newEntries];
@@ -1367,7 +1335,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
     e.target.value = ''; // Reset input
   };
 
-  // Filter clients
   const filteredClients = clients.filter((c) => {
     const matchSearch =
       c.name.toLowerCase().includes(filterSearch.toLowerCase()) ||
@@ -1381,7 +1348,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
   const pendingClients = clients.filter((c) => c.status === 'pending').length;
   const estimatedRevenue = activeClients * 2999000;
 
-  // ─── SESSION CHECKING LOADER ────────────────────────────────────────────────
   if (isCheckingSession) {
     return (
       <div className="min-h-screen bg-[#faf6f5] flex items-center justify-center p-4">
@@ -1393,14 +1359,11 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
     );
   }
 
-  // ─── MULTI-LAYERED LOGIN SCREEN (PIN -> OTP) ────────────────────────────────
-  // ─── LOGIN SCREEN (DIRECT OTP & TELEGRAM ACTIVATION) ─────────────────────────
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#faf6f5] flex items-center justify-center p-4">
         <Toaster position="top-center" richColors />
         <Card className="max-w-md w-full border-[#f0dbd8] bg-white shadow-xl shadow-rose-950/5 rounded-2xl overflow-hidden">
-          {/* Lockout Notice */}
           {lockoutSeconds > 0 && (
             <div className="m-4 mb-0 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
               <AlertCircle className="size-4 shrink-0 mt-0.5 text-rose-600" />
@@ -1414,7 +1377,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
           )}
 
           {!isBotConfigured ? (
-            /* ─── KONDISI 1: BOT BELUM DI-CONFIG (CHAT DULUAN DENGAN PIN) ─── */
             <>
               <CardHeader className="text-center pb-2 pt-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
@@ -1440,7 +1402,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
               </CardHeader>
 
               <CardContent className="pt-2 space-y-4">
-                {/* Tampilan PIN di Layar */}
                 <div className="p-4 rounded-xl bg-amber-50/70 border border-amber-200 text-center space-y-2.5">
                   <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider block">
                     PIN Verifikasi Bot:
@@ -1477,7 +1438,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </div>
                 )}
 
-                {/* Tombol Langsung Buka Chat Bot */}
                 <a
                   href={`https://t.me/${BOT_USERNAME}?start=${displayPin}`}
                   target="_blank"
@@ -1487,7 +1447,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   <Send className="size-4" /> Buka Bot Telegram (@{BOT_USERNAME}) <ExternalLink className="size-3.5" />
                 </a>
 
-                {/* Status Radar Polling */}
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs text-slate-600">
                   <div className="flex items-center gap-2">
                     <span className="relative flex h-2.5 w-2.5">
@@ -1509,7 +1468,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </Button>
                 </div>
 
-                {/* Input Manual Fallback */}
                 <div className="pt-1 text-center">
                   <button
                     type="button"
@@ -1546,7 +1504,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
               </CardContent>
             </>
           ) : (
-            /* ─── KONDISI 2: TERKONFIGURASI (LANGSUNG INPUT OTP + TOMBOL KIRIM OTP) ─── */
             <>
               <CardHeader className="text-center pb-2 pt-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
@@ -1585,7 +1542,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
               </CardHeader>
 
               <CardContent className="pt-3 space-y-4">
-                {/* Tombol Kirim OTP ke Telegram */}
                 <Button
                   type="button"
                   onClick={() => handleSendOtp()}
@@ -1607,7 +1563,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   )}
                 </Button>
 
-                {/* Notifikasi Kode Terkirim */}
                 {otpSentSuccess && (
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-2 animate-in fade-in">
                     <CheckCircle2 className="size-4 shrink-0 mt-0.5 text-emerald-600" />
@@ -1617,7 +1572,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </div>
                 )}
 
-                {/* Form Verifikasi Input OTP */}
                 <form onSubmit={handleVerifyOtp} className="space-y-4 pt-1">
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block text-center">
@@ -1696,12 +1650,10 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
     );
   }
 
-  // ─── AUTHENTICATED SALES ADMIN PORTAL ───────────────────────────────────────
   return (
     <SidebarProvider defaultOpen={true}>
       <Toaster position="top-right" richColors />
       <div className="flex min-h-screen w-full bg-[#faf6f5] text-slate-900 font-sans">
-        {/* SIDEBAR NAVIGATION (Dashboard Style) */}
         <AdminSidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -1709,9 +1661,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
           handleLogout={handleLogout}
         />
 
-        {/* MAIN CONTENT AREA */}
         <SidebarInset className="flex-1 flex flex-col min-w-0 bg-[#faf6f5] min-h-screen">
-          {/* Site Header */}
           <header className="sticky top-0 z-20 flex h-11 shrink-0 items-center justify-between border-b border-[#f0dbd8] bg-white/90 px-3 sm:px-4 backdrop-blur-md transition-all">
             <div className="flex items-center gap-2.5">
               <SidebarTrigger className="-ml-1" />
@@ -1765,11 +1715,9 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
             </div>
           </header>
 
-          {/* Body Content */}
           <main className="flex-1 p-3 sm:p-4 max-w-7xl w-full mx-auto space-y-3.5">
             {activeTab === 'overview' && (
               <>
-                {/* METRICS ROW (Compact Dashboard Style) */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
                   <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl p-3">
                     <div className="flex items-center justify-between">
@@ -1849,7 +1797,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </Card>
                 </div>
 
-                {/* GENERATE TOKEN CARD (Compact) */}
                 <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl">
                   <CardHeader className="p-3 sm:p-3.5 pb-2">
                     <CardTitle className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -1862,7 +1809,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </CardHeader>
                   <CardContent className="p-3 sm:p-3.5 pt-0">
                     <form onSubmit={handleGenerateToken} className="space-y-3">
-                      {/* Step 1: Pilih Tier / Paket */}
                       <div>
                         <label className="text-[11px] font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
                           <Sparkles className="size-3 text-[#a9484c]" />
@@ -1927,7 +1873,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           })}
                         </div>
 
-                        {/* Banner Aturan Baku Pod */}
                         <div className="mt-2 p-2 rounded-lg bg-[#faf6f5] border border-[#f0dbd8] text-[10px] text-slate-600 flex items-center justify-between">
                           <div className="flex items-center gap-1.5">
                             <Cloud className="size-3.5 text-[#a9484c] shrink-0" />
@@ -1947,7 +1892,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                         </div>
                       </div>
 
-                      {/* Step 2: Pilih Durasi (jika berbayar) */}
                       {selectedTierId !== 'free_trial' && currentTier?.pricing && (
                         <div>
                           <label className="text-[11px] font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
@@ -1986,7 +1930,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                         </div>
                       )}
 
-                      {/* Step 3: Informasi Klien & Subdomain */}
                       <div>
                         <label className="text-[11px] font-bold text-slate-700 block mb-1.5 flex items-center gap-1.5">
                           <Building className="size-3 text-[#a9484c]" />
@@ -2032,7 +1975,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           </div>
                         </div>
 
-                        {/* Input Custom Domain Khusus Pro Tier (Dedicated Pod) */}
                         {selectedTierId === 'pro' && (
                           <div className="mt-2 p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-200/80 space-y-2">
                             <div className="flex items-center justify-between">
@@ -2076,7 +2018,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           </div>
                         )}
 
-                        {/* Live URL Preview untuk PWA dan Dashboard HRD */}
                         <div className="p-2 rounded-lg bg-slate-50 border border-slate-200/80 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2">
                           <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 font-mono text-[11px]">
                             <span className="text-slate-500 font-sans font-semibold text-[10px] uppercase tracking-wider">Live URL Tenant:</span>
@@ -2092,7 +2033,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                         </div>
                       </div>
 
-                      {/* Ringkasan & Tombol Submit */}
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-1 border-t border-slate-100">
                         <div className="text-[11px] text-slate-600 flex items-center gap-1.5">
                           <span className="font-semibold text-slate-800">Paket:</span> {currentTier?.name || selectedTierId}
@@ -2164,7 +2104,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </CardContent>
                 </Card>
 
-                {/* CLIENTS DATA TABLE (Compact & Rich) */}
                 <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl overflow-hidden">
                   <CardHeader className="p-3 sm:p-3.5 pb-2.5 border-b border-[#f0dbd8]">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -2178,7 +2117,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                         </CardDescription>
                       </div>
 
-                      {/* Filter & Search Bar */}
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <div className="relative w-full sm:w-52">
                           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3 text-slate-400" />
@@ -2229,7 +2167,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                           </Button>
                         </div>
 
-                        {/* Backup & Restore Tools */}
                         <div className="flex items-center gap-1.5">
                           <Button
                             variant="outline"
@@ -2258,7 +2195,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                     </div>
                   </CardHeader>
 
-                  {/* INFO BANNER: SISTEM DEPLOY BARU & RELEVANSI TOKEN (Request 5) */}
                   <div className="p-2.5 sm:p-3 bg-gradient-to-r from-[#fbf4f3] to-white border-b border-[#f0dbd8] flex items-start gap-2 text-xs">
                     <div className="size-5 rounded-md bg-[#fbf2f0] flex items-center justify-center text-[#a9484c] shrink-0 mt-0.5">
                       <Sparkles className="size-3" />
@@ -2334,7 +2270,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                 <TableRow key={client.id} className="border-[#f0dbd8] hover:bg-[#fbf4f3]/40 transition-colors">
                                   <TableCell className="py-2 px-3 font-semibold text-xs text-slate-900">
                                     <div className="font-bold">{client.name}</div>
-                                    <div className="text-[10px] text-slate-400 font-mono">ID: {client.id.slice(0, 10)} • {client.createdAt}</div>
+                                    <div className="text-[10px] text-slate-600 font-mono">ID: {client.id.slice(0, 10)} • {client.createdAt}</div>
                                   </TableCell>
                                   <TableCell className="py-2 px-3 font-mono text-xs">
                                     <div className="flex items-center gap-1">
@@ -2348,13 +2284,13 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                           navigator.clipboard.writeText(client.token);
                                           toast.success('Token lisensi disalin!');
                                         }}
-                                        className="size-5.5 text-slate-400 hover:text-slate-900 hover:bg-[#fbf2f0]"
+                                        className="size-5.5 text-slate-500 hover:text-slate-900 hover:bg-[#fbf2f0]"
                                         title="Salin Token Lisensi"
                                       >
                                         <Copy className="size-2.5" />
                                       </Button>
                                     </div>
-                                    <div className="text-[10px] text-slate-400 font-sans mt-0.5 flex items-center gap-1">
+                                    <div className="text-[10px] text-slate-600 font-sans mt-0.5 flex items-center gap-1">
                                       <span>Pod: <span className="font-mono text-[#a9484c] font-semibold">{client.podId || (isProTier ? 'pod-pro' : 'pod-01')}</span></span>
                                       <Badge
                                         variant="outline"
@@ -2489,7 +2425,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                         </DropdownMenuItem>
                                         
                                         <DropdownMenuSeparator className="bg-[#f0dbd8]" />
-                                        <DropdownMenuLabel className="text-slate-400 text-[10px] uppercase font-semibold">Manajemen Langganan</DropdownMenuLabel>
+                                        <DropdownMenuLabel className="text-slate-600 text-[10px] uppercase font-semibold">Manajemen Langganan</DropdownMenuLabel>
                                         <DropdownMenuItem
                                           onClick={() => handleExtendSubscription(client.id, 1)}
                                           className="hover:bg-emerald-50 text-emerald-700 cursor-pointer"
@@ -2528,7 +2464,7 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                                         </DropdownMenuItem>
 
                                         <DropdownMenuSeparator className="bg-[#f0dbd8]" />
-                                        <DropdownMenuLabel className="text-slate-400 text-[10px] uppercase font-semibold">Opsional Enterprise</DropdownMenuLabel>
+                                        <DropdownMenuLabel className="text-slate-600 text-[10px] uppercase font-semibold">Opsional Enterprise</DropdownMenuLabel>
                                         <DropdownMenuItem onClick={() => onOpenOnboardingWithToken(client.token)} className="hover:bg-[#fbf2f0] cursor-pointer text-slate-600">
                                           <Server className="size-3.5 mr-2 text-slate-500" />
                                           Deploy Dedicated CF Klien
@@ -2571,7 +2507,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
         </SidebarInset>
       </div>
 
-      {/* ─── INACTIVITY AUTO-LOCK MODAL OVERLAY ───────────────────────────────── */}
       {isIdleLocked && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-md p-4 animate-in fade-in duration-200">
           <Card className="max-w-md w-full border-[#f0dbd8] bg-white shadow-2xl rounded-2xl overflow-hidden">
@@ -2641,7 +2576,6 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
         </div>
       )}
 
-      {/* Modal Sakral Konfirmasi Hapus Lisensi & Data Pod / Suspend */}
       <SacredConfirmModal
         isOpen={sacredModalState.isOpen}
         onClose={() => !sacredModalState.isLoading && setSacredModalState((prev) => ({ ...prev, isOpen: false }))}

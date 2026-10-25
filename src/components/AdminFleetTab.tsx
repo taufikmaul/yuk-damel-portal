@@ -69,7 +69,6 @@ export function AdminFleetTab() {
   const [selectedPodDetail, setSelectedPodDetail] = useState<PodRecord | null>(null);
   const [revealedTokens, setRevealedTokens] = useState<Record<string, boolean>>({});
 
-  // Form Tambah Pod
   const [newPodId, setNewPodId] = useState('');
   const [newPodName, setNewPodName] = useState('');
   const [newCfAccountId, setNewCfAccountId] = useState('');
@@ -93,7 +92,7 @@ export function AdminFleetTab() {
           return;
         }
       }
-      // Fallback data
+      // Fallback mock data when API endpoint is unavailable
       setFleet([
         {
           id: 'pod-01',
@@ -210,7 +209,6 @@ export function AdminFleetTab() {
 
   return (
     <div className="space-y-3.5">
-      {/* SUMMARY KPI (Compact & Tight) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
         <Card className="border-[#f0dbd8] bg-white shadow-xs rounded-xl p-3">
           <div className="flex items-center justify-between">
@@ -260,7 +258,7 @@ export function AdminFleetTab() {
               <span className="size-2 rounded-full bg-emerald-500 animate-pulse"></span>
               Optimal
             </div>
-            <p className="text-[10px] text-slate-500 mt-0.5">Workers & D1 D100% online</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Semua node Workers &amp; database D1 aktif</p>
           </div>
         </Card>
 
@@ -282,7 +280,6 @@ export function AdminFleetTab() {
         </Card>
       </div>
 
-      {/* HEADER SECTION & ACTION BUTTONS */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white p-3 sm:p-3.5 rounded-xl border border-[#f0dbd8] shadow-xs">
         <div>
           <h3 className="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
@@ -295,7 +292,6 @@ export function AdminFleetTab() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          {/* TOMBOL POPUP ARSITEKTUR CLOUD (Request 4) */}
           <Button
             variant="outline"
             size="sm"
@@ -328,7 +324,6 @@ export function AdminFleetTab() {
         </div>
       </div>
 
-      {/* BANNER ATURAN BAKU POD */}
       <div className="bg-[#fff8f7] border border-[#f0dbd8] p-3 rounded-xl flex items-start gap-2.5 text-xs text-slate-700 shadow-xs">
         <Sparkles className="size-4 text-[#a9484c] shrink-0 mt-0.5" />
         <div className="space-y-0.5">
@@ -342,7 +337,6 @@ export function AdminFleetTab() {
         </div>
       </div>
 
-      {/* POD CARDS LIST */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
         {fleet.map((pod) => {
           const isFull = pod.currentCompaniesCount >= pod.maxCompanies;
@@ -358,7 +352,6 @@ export function AdminFleetTab() {
           return (
             <Card key={pod.id} className="border-[#f0dbd8] bg-white shadow-xs rounded-xl overflow-hidden flex flex-col justify-between">
               <div>
-                {/* Header Pod */}
                 <div className="bg-[#faf6f5] border-b border-[#f0dbd8] p-3 sm:p-3.5 flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -402,9 +395,7 @@ export function AdminFleetTab() {
                 </div>
 
                 <div className="p-3 sm:p-3.5 space-y-3">
-                  {/* INFORMASI DETAIL: ACCOUNT ID & TOKEN (Request 2) */}
                   <div className="p-2.5 rounded-lg bg-[#fbf4f3] border border-[#f0dbd8] space-y-2 text-xs">
-                    {/* Account ID Row with Full Text & Copy Button */}
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[10px] font-bold text-[#7d6568] uppercase tracking-wider shrink-0 flex items-center gap-1">
                         <Key className="size-3 text-[#a9484c]" /> CF Account ID:
@@ -425,7 +416,6 @@ export function AdminFleetTab() {
                       </div>
                     </div>
 
-                    {/* API Token Row with Reveal/Hide & Copy Button */}
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[10px] font-bold text-[#7d6568] uppercase tracking-wider shrink-0 flex items-center gap-1">
                         <Lock className="size-3 text-emerald-600" /> API Token:
@@ -455,7 +445,6 @@ export function AdminFleetTab() {
                       </div>
                     </div>
 
-                    {/* Infrastructure Bindings Quick Info */}
                     <div className="pt-1.5 border-t border-[#f0dbd8]/80 grid grid-cols-2 gap-2 text-[10px]">
                       <div>
                         <span className="text-slate-500">API Endpoint:</span>
@@ -484,7 +473,6 @@ export function AdminFleetTab() {
                     </div>
                   </div>
 
-                  {/* 1. Bar Kapasitas Perusahaan */}
                   <div className="space-y-1">
                     <div className="flex justify-between items-center text-xs">
                       <span className="font-semibold text-slate-700 flex items-center gap-1.5 text-[11px]">
@@ -505,7 +493,6 @@ export function AdminFleetTab() {
                     </div>
                   </div>
 
-                  {/* 2. Bar Traffic Request Harian & Storage R2 */}
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1">
                       <div className="flex justify-between items-center text-[10px]">
@@ -538,7 +525,6 @@ export function AdminFleetTab() {
                 </div>
               </div>
 
-              {/* FOOTER ACTIONS */}
               <div className="px-3.5 py-2.5 bg-[#faf6f5]/50 border-t border-[#f0dbd8] flex items-center justify-between">
                 <Button
                   variant="ghost"
@@ -565,13 +551,9 @@ export function AdminFleetTab() {
         })}
       </div>
 
-      {/* ───────────────────────────────────────────────────────────────────────── */}
-      {/* MODAL 1: INFORMASI ARSITEKTUR CLOUD & PANDUAN TOKEN (Request 4)          */}
-      {/* ───────────────────────────────────────────────────────────────────────── */}
       {infraModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
           <div className="max-w-3xl w-full bg-white border border-[#f0dbd8] text-slate-900 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-[#f0dbd8] flex items-center justify-between bg-[#faf6f5]">
               <div className="flex items-center gap-2.5">
                 <div className="size-8 rounded-xl bg-[#fbf2f0] flex items-center justify-center text-[#a9484c]">
@@ -596,7 +578,6 @@ export function AdminFleetTab() {
               </Button>
             </div>
 
-            {/* Modal Content (Scrollable) */}
             <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3.5 rounded-xl bg-[#fbf4f3] border border-[#f0dbd8] space-y-1.5">
@@ -640,7 +621,6 @@ export function AdminFleetTab() {
                 </div>
               </div>
 
-              {/* Panduan Izin Token */}
               <div className="p-4 rounded-xl bg-[#fdf7f1] border border-[#f0dbd8] space-y-2.5">
                 <div className="font-bold text-slate-900 flex items-center gap-2">
                   <Sparkles className="size-4 text-[#a9484c]" />
@@ -674,7 +654,6 @@ export function AdminFleetTab() {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="p-3 border-t border-[#f0dbd8] bg-[#faf6f5] flex justify-end">
               <Button
                 size="sm"
@@ -688,9 +667,6 @@ export function AdminFleetTab() {
         </div>
       )}
 
-      {/* ───────────────────────────────────────────────────────────────────────── */}
-      {/* MODAL 2: DETAIL KREDENSIAL POD LENGKAP (Request 2)                       */}
-      {/* ───────────────────────────────────────────────────────────────────────── */}
       {selectedPodDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
           <div className="max-w-xl w-full bg-white border border-[#f0dbd8] text-slate-900 rounded-2xl shadow-2xl overflow-hidden space-y-4">
@@ -719,7 +695,6 @@ export function AdminFleetTab() {
             </div>
 
             <div className="p-4 sm:p-5 space-y-3.5 text-xs">
-              {/* Account ID Full */}
               <div>
                 <label className="text-[10px] font-bold text-[#7d6568] uppercase tracking-wider block mb-1">
                   Cloudflare Account ID (32 Hex)
@@ -741,7 +716,6 @@ export function AdminFleetTab() {
                 </div>
               </div>
 
-              {/* API Token Full */}
               <div>
                 <label className="text-[10px] font-bold text-[#7d6568] uppercase tracking-wider block mb-1">
                   API Token Kredensial
@@ -763,7 +737,6 @@ export function AdminFleetTab() {
                 </div>
               </div>
 
-              {/* Endpoints & Bindings */}
               <div className="grid grid-cols-2 gap-2.5 pt-1">
                 <div className="p-2.5 rounded-lg bg-[#fbf4f3] border border-[#f0dbd8]">
                   <span className="text-[10px] font-bold text-slate-500 uppercase block">Hono API URL</span>
@@ -804,7 +777,6 @@ export function AdminFleetTab() {
                 </div>
               </div>
 
-              {/* Status Tenant & Catatan */}
               <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] space-y-1">
                 <div className="font-bold flex items-center gap-1.5">
                   <CheckCircle2 className="size-3.5 text-emerald-600" />
@@ -837,9 +809,6 @@ export function AdminFleetTab() {
         </div>
       )}
 
-      {/* ───────────────────────────────────────────────────────────────────────── */}
-      {/* MODAL 3: TAMBAH POD BARU                                                 */}
-      {/* ───────────────────────────────────────────────────────────────────────── */}
       {addModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
           <div className="max-w-lg w-full bg-white border border-[#f0dbd8] text-slate-900 rounded-2xl p-5 shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto">

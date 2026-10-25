@@ -51,7 +51,6 @@ export function Onboarding1({
     <section className={cn('py-8 sm:py-12 w-full', className)}>
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
         <div className="flex flex-col items-center text-center">
-          {/* Step indicator */}
           {totalSteps > 0 && (
             <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbf2f0] border border-[#f0dbd8] text-xs font-semibold text-[#8f3b3f]">
               <span className="size-1.5 rounded-full bg-[#a9484c] animate-pulse" />
@@ -59,7 +58,6 @@ export function Onboarding1({
             </div>
           )}
 
-          {/* Kicker Title */}
           {badge && (
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-[#a9484c] flex items-center justify-center gap-1.5">
               <Sparkles className="size-3.5 text-[#a9484c]" />
@@ -67,21 +65,18 @@ export function Onboarding1({
             </p>
           )}
 
-          {/* Heading */}
           {heading && (
             <h1 className="mb-3 text-2xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
               {heading}
             </h1>
           )}
 
-          {/* Description */}
           {description && (
             <p className="mb-6 max-w-2xl text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed">
               {description}
             </p>
           )}
 
-          {/* Image */}
           {image && (
             <div className="relative mb-8 aspect-video w-full max-w-2xl overflow-hidden rounded-2xl border border-[#f0dbd8] shadow-md">
               <img
@@ -92,7 +87,6 @@ export function Onboarding1({
             </div>
           )}
 
-          {/* Dual CTAs / Action Buttons */}
           {buttons.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
               {buttons.map((btn, idx) => {
@@ -128,7 +122,6 @@ export function Onboarding1({
             </div>
           )}
 
-          {/* Slot for Main Interactive Content / Card Form */}
           {children && <div className="w-full text-left mt-2">{children}</div>}
         </div>
       </div>

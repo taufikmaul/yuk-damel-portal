@@ -109,7 +109,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     fetchSellerConfig().then((cfg) => setSellerConfig(cfg));
   }, []);
 
-  // Token Verification State
   const [tokenInput, setTokenInput] = useState(initialToken);
   const [verification, setVerification] = useState<TokenVerificationResult>(() =>
     verifyLicenseToken(initialToken)
@@ -117,7 +116,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
 
   const initialSaved = getSavedDeployState(initialToken);
 
-  // Form State
   const [businessName, setBusinessName] = useState(() => {
     if (initialSaved?.businessName) return initialSaved.businessName;
     return verification.valid ? verification.client.name : '';
@@ -142,7 +140,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     () => initialSaved?.deployMode || 'production'
   );
 
-  // Status Konfirmasi: Sudah Selesai vs Belum Selesai
   const [isCompleted, setIsCompleted] = useState<boolean>(() => {
     if (initialSaved?.isCompleted !== undefined) return initialSaved.isCompleted;
     if (verification.valid && (verification.isAlreadyDeployed || verification.client.status === 'active')) {
@@ -151,7 +148,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     return false;
   });
 
-  // Deploy State — keep user on deployed view if already dispatched / active
+  // Keep user on dispatched view if tenant is already deployed
   const [isDeploying, setIsDeploying] = useState(false);
   const [dispatched, setDispatched] = useState<boolean>(() => {
     if (initialSaved?.dispatched) return true;
@@ -204,7 +201,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     return null;
   });
 
-  // Redeploy confirmation modal state
   const [redeployConfirmOpen, setRedeployConfirmOpen] = useState(false);
   const [redeployTargetInfo, setRedeployTargetInfo] = useState<{
     targetName: string;
@@ -213,7 +209,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     tokenVal: string;
   } | null>(null);
 
-  // Admin State & Verification for Redeploy Capability
   const [isAdmin, setIsAdmin] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -231,7 +226,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
   const [isVerifyingAdminPin, setIsVerifyingAdminPin] = useState<boolean>(false);
   const [isRedeployMode, setIsRedeployMode] = useState<boolean>(false);
 
-  // Telegram 2FA PIN State for Customer
   const cleanActiveToken = (verification.valid ? verification.client.token : initialToken || tokenInput).trim().toUpperCase();
   const [isTelegramVerified, setIsTelegramVerified] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -255,7 +249,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
   const [otpCountdown, setOtpCountdown] = useState<number>(0);
   const [deployPinInput, setDeployPinInput] = useState<string>('');
 
-  // OTP Countdown timer
   useEffect(() => {
     let timer: any;
     if (otpCountdown > 0) {
@@ -264,7 +257,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     return () => clearTimeout(timer);
   }, [otpCountdown]);
 
-  // Validate if current session is an authenticated admin session
   useEffect(() => {
     let isMounted = true;
     async function checkAdminAuth() {
@@ -320,7 +312,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     }
   };
 
-  // Redeploy Handler: Memuat ulang konfigurasi tersimpan sebelumnya
   const handleStartRedeploy = () => {
     const activeToken = (verification.valid ? verification.client.token : tokenInput) || initialToken;
     const saved = getSavedDeployState(activeToken);
@@ -340,7 +331,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     toast.info('Mode Redeploy aktif dengan konfigurasi tersimpan sebelumnya.');
   };
 
-  // Direct 1-Click Redeploy using exact same credentials and settings
   const handleDirectRedeploy = async () => {
     const token = (verification.valid ? verification.client.token : tokenInput) || initialToken;
     const saved = getSavedDeployState(token);
@@ -405,7 +395,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     }
   };
 
-  // Re-verify if initialToken prop changes
   useEffect(() => {
     let isMounted = true;
     async function checkToken() {
@@ -468,7 +457,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     };
   }, [initialToken]);
 
-  // Sinkronisasi URL browser agar refresh tetap di onboarding dan membersihkan path /salesAdmin
+  // Synchronize URL query params during onboarding steps
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
@@ -501,7 +490,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     } catch (_) {}
   }, [verification, tokenInput, initialToken, isAdmin]);
 
-  // Send Customer Telegram PIN
   const handleSendCustomerOtp = async () => {
     if (!telegramChatId.trim()) {
       toast.error('Silakan masukkan Chat ID Telegram Anda terlebih dahulu.');
@@ -534,7 +522,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     }
   };
 
-  // Verify Customer Telegram PIN
   const handleVerifyCustomerPin = async (e: React.FormEvent) => {
     e.preventDefault();
     const pin = telegramPinInput.trim();
@@ -543,7 +530,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
       return;
     }
 
-    // 1. Cek jika sesuai dengan OTP dinamis yang dikirimkan ke Telegram bot
+    // Match against dynamic OTP delivered via Telegram bot
     if (activeTelegramOtp && pin === activeTelegramOtp) {
       setIsTelegramVerified(true);
       if (cleanActiveToken) {
@@ -553,7 +540,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
       return;
     }
 
-    // 2. Cek jika menggunakan Master PIN Admin (misal: 2468)
+    // Fall back to master admin PIN verification
     const isMaster = await verifyMasterPin(pin, sellerConfig.adminPinHash);
     if (isMaster) {
       setIsTelegramVerified(true);
@@ -569,7 +556,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     toast.error('PIN Telegram salah atau tidak cocok. Silakan periksa kembali pesan dari bot Telegram.');
   };
 
-  // Handler to verify a manual token input on the security gate
   const handleVerifyManualToken = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tokenInput.trim()) {
@@ -793,7 +779,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     return `https://wa.me/${sellerConfig.whatsappNumber}?text=${encodeURIComponent(text)}`;
   };
 
-  // ─── SECURITY GATE: ACCESS DENIED IF TOKEN IS NOT REGISTERED ───────────────
   if (!verification.valid) {
     return (
       <div className="min-h-screen bg-[#faf6f5] text-slate-900 flex items-center justify-center p-4 sm:p-6 font-sans">
@@ -879,14 +864,12 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
     );
   }
 
-  // ─── AUTHENTICATED ONBOARDING PAGE (TOKEN VALID & REGISTERED) ───────────────
   const client = verification.client;
   const currentStep = !isTelegramVerified && !isAdmin ? 1 : !dispatched ? 2 : 3;
 
   return (
     <div className="min-h-screen bg-[#faf6f5] text-slate-900 py-6 sm:py-10 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header Navigation Bar */}
         <div className="bg-white border border-[#f0dbd8] rounded-2xl p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex aspect-square size-9 items-center justify-center rounded-xl bg-[#a9484c] text-white p-1.5 shadow-xs">
@@ -953,7 +936,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
           </div>
         </div>
 
-        {/* ─── STEP 1: VERIFIKASI KEAMANAN TELEGRAM PIN (CUSTOMER GATE) ─────────── */}
         {!isTelegramVerified ? (
           <Onboarding1
             currentStep={1}
@@ -964,7 +946,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
             labels={{ stepOf: 'Langkah {current} dari {total}: Verifikasi Telegram' }}
           >
             <div className="max-w-2xl mx-auto space-y-6">
-              {/* Card Panduan Khusus Memulai Bot Telegram */}
               <div className="bg-white border border-[#f0dbd8] rounded-3xl p-6 sm:p-8 shadow-md text-left space-y-6">
                 <div className="flex items-start gap-3.5 pb-4 border-b border-[#f0dbd8]">
                   <div className="size-11 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center shrink-0 shadow-inner">
@@ -980,9 +961,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                   </div>
                 </div>
 
-                {/* 4 Langkah Detail */}
                 <div className="space-y-4">
-                  {/* Langkah 1 */}
                   <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                     <div className="size-7 rounded-full bg-[#a9484c] text-white flex items-center justify-center text-xs font-bold shrink-0">
                       1
@@ -1004,7 +983,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     </div>
                   </div>
 
-                  {/* Langkah 2 */}
                   <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                     <div className="size-7 rounded-full bg-[#a9484c] text-white flex items-center justify-center text-xs font-bold shrink-0">
                       2
@@ -1017,7 +995,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     </div>
                   </div>
 
-                  {/* Langkah 3 */}
                   <div className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                     <div className="size-7 rounded-full bg-[#a9484c] text-white flex items-center justify-center text-xs font-bold shrink-0">
                       3
@@ -1067,7 +1044,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     </div>
                   </div>
 
-                  {/* Langkah 4 */}
                   <form onSubmit={handleVerifyCustomerPin} className="flex items-start gap-3.5 p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200">
                     <div className="size-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold shrink-0">
                       4
@@ -1098,7 +1074,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                   </form>
                 </div>
 
-                {/* Bantuan Support WhatsApp */}
                 <div className="pt-3 border-t border-[#f0dbd8] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
                   <span>Belum memiliki Telegram atau butuh bantuan admin?</span>
                   <a
@@ -1114,7 +1089,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
             </div>
           </Onboarding1>
         ) : !dispatched ? (
-          /* ─── STEP 2: FORM SETUP CONFIGURATION ────────────────────────── */
           <div className="space-y-6">
             <Onboarding1
               currentStep={2}
@@ -1130,7 +1104,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 text-left">
-              {/* Form Setup Kiri */}
               <div className="lg:col-span-7 bg-white border border-[#f0dbd8] rounded-3xl p-6 sm:p-8 shadow-xs">
                 {isRedeployMode && (
                   <div className="mb-6 p-4 rounded-2xl bg-purple-50 border border-purple-200 text-purple-950 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs">
@@ -1191,13 +1164,12 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                         placeholder="kopi-kenangan"
                         value={businessSlug}
                         onChange={(e) => setBusinessSlug(e.target.value)}
-                        className="bg-transparent text-slate-900 focus:outline-none flex-1 font-mono text-sm"
+                        className="bg-transparent text-slate-900 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#a9484c] rounded px-1 flex-1 font-mono text-sm"
                       />
                       <span className="text-slate-400 font-mono text-xs">.pages.dev</span>
                     </div>
                   </div>
 
-                  {/* Custom Domain Section */}
                   <div className="p-4 rounded-2xl bg-[#fbf4f3] border border-[#f0dbd8] space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
@@ -1215,7 +1187,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                           onChange={(e) => setUseCustomDomain(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#a9484c]"></div>
+                        <div className="w-9 h-5 bg-slate-300 peer-focus:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-[#a9484c] peer-focus-visible:ring-offset-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#a9484c]"></div>
                       </label>
                     </div>
 
@@ -1252,7 +1224,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     )}
                   </div>
 
-                  {/* Pilihan Mode Deployment */}
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider">
@@ -1402,7 +1373,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     </p>
                   </div>
 
-                  {/* 2FA Telegram PIN Saat Deploy (Wajib bagi Customer Non-Admin) */}
                   {!isAdmin && (
                     <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-2.5">
                       <div className="flex items-center justify-between">
@@ -1465,7 +1435,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </form>
               </div>
 
-              {/* Panduan Langkah Kanan */}
               <div className="lg:col-span-5 space-y-6">
                 <div className="bg-white border border-[#f0dbd8] rounded-3xl p-6 shadow-xs space-y-5">
                   <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2 pb-3 border-b border-[#f0dbd8]">
@@ -1530,7 +1499,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
             </div>
           </div>
         ) : (
-          /* ─── STEP 3: DISPATCHED / LIVE STATUS VIEW ───────────────────── */
           <div className="space-y-6">
             <Onboarding1
               currentStep={3}
@@ -1542,7 +1510,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
             />
 
             <div className="bg-white border border-emerald-300 rounded-3xl p-6 sm:p-10 text-center shadow-lg relative overflow-hidden">
-              {/* Animated Progress Steps Visualizer */}
               <div className="max-w-2xl mx-auto mb-8">
                 <div className="grid grid-cols-3 gap-2 text-left">
                   <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200">
@@ -1571,7 +1538,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               </div>
 
-              {/* Status Box */}
               {isCompleted ? (
                 <div className="max-w-2xl mx-auto bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3 text-left">
                   <CheckCircle2 className="size-5 text-emerald-600 shrink-0 mt-0.5" />
@@ -1594,7 +1560,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               )}
 
-              {/* Konfirmasi Status Deployment (Sudah / Belum Selesai) */}
               <div className="mt-6 max-w-2xl mx-auto p-5 sm:p-6 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8] text-left">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                   <div>
@@ -1644,7 +1609,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               </div>
 
-              {/* Tombol Konsultasi WhatsApp jika ada kendala */}
               <div className="mt-5 max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 text-left">
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -1670,7 +1634,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </a>
               </div>
 
-              {/* ─── KONTROL ADMIN: TOMBOL REDEPLOY SISTEM ──────────────────── */}
               {isAdmin && (
                 <div className="mt-6 max-w-2xl mx-auto p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-purple-50 via-[#faf5ff] to-purple-50 border-2 border-dashed border-purple-300 text-left shadow-xs space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1688,7 +1651,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                     Sebagai admin, Anda dapat memicu ulang pipeline deployment ke Cloudflare menggunakan konfigurasi yang sama atau meninjau kredensial sebelum mengirim ulang.
                   </p>
 
-                  {/* Ringkasan Konfigurasi Tersimpan */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-2xl bg-white border border-purple-200 text-[11px]">
                     <div>
                       <span className="text-slate-400 block text-[10px]">Cloudflare Account:</span>
@@ -1737,7 +1699,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               )}
 
-              {/* Predicted URL Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-6 text-left">
                 <div className="p-5 rounded-2xl bg-[#faf6f5] border border-[#f0dbd8]">
                   <div className="text-xs font-semibold text-[#a9484c] uppercase tracking-wider mb-1 flex items-center justify-between">
@@ -1810,7 +1771,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               </div>
 
-              {/* Custom Domain DNS Guide */}
               {predictedUrls?.customDashboard && (
                 <div className="mt-6 max-w-2xl mx-auto bg-sky-50 border border-sky-200 rounded-2xl p-5 text-left text-xs">
                   <div className="font-bold text-sky-900 flex items-center gap-2 mb-2">
@@ -1835,7 +1795,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 </div>
               )}
 
-              {/* Mode Info */}
               {deployMode === 'production' ? (
                 <div className="mt-8 max-w-xl mx-auto bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-left text-xs space-y-2">
                   <div className="font-bold text-slate-900 flex items-center justify-between">
@@ -1901,7 +1860,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         )}
       </div>
 
-      {/* ─── MODAL VERIFIKASI MASTER PIN ADMIN ───────────────────────────── */}
       {showAdminPinModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white border border-purple-200 shadow-2xl rounded-3xl max-w-md w-full p-6 text-left space-y-5 animate-in zoom-in-95 duration-150">
@@ -1982,7 +1940,6 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
         </div>
       )}
 
-      {/* Confirmation Dialog Picu Ulang Deployment */}
       <ConfirmationDialog
         open={redeployConfirmOpen}
         onOpenChange={setRedeployConfirmOpen}
