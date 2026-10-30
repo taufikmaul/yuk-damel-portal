@@ -37,8 +37,7 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
         ).bind(cleanToken).first<any>();
 
         if (order) {
-          const isFree = order.package_tier_id === 'free_trial' || order.package_tier_id === 'free' || order.amount_paid_rp === 0;
-          const isPro = !isFree && Boolean(
+          const isPro = Boolean(
             (order.pod_id || '').includes('pro') ||
             (order.pod_id || '').includes('historycake') ||
             order.package_tier_id === 'pro' ||
@@ -48,7 +47,14 @@ export const onRequestGet = async (context: { request: Request; env: Env }) => {
             (order.client_slug || '').includes('historycake') ||
             (order.client_slug || '').includes('ngabsen')
           );
-          const tier = isFree ? 'free' : isPro ? 'pro' : 'starter';
+          const isStarter = !isPro && (order.package_tier_id === 'starter');
+          const isFree = !isPro && !isStarter && (
+            order.package_tier_id === 'free_trial' ||
+            order.package_tier_id === 'free' ||
+            order.amount_paid_rp === 0 ||
+            !order.package_tier_id
+          );
+          const tier = isPro ? 'pro' : isStarter ? 'starter' : 'free';
           const maxEmployees = order.max_employees || (isFree ? 4 : isPro ? 50 : 15);
 
           return jsonResponse({
