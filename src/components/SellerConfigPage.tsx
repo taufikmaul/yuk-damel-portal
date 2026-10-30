@@ -304,7 +304,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
       // Prompt for PIN when rejected (e.g. non-default credentials)
       if (!saveResult.ok && saveResult.error && (saveResult.error.includes('PIN tidak valid') || saveResult.error.includes('Akses ditolak'))) {
         const pinPrompt = prompt(
-          'Masukkan Master PIN Penjual untuk mengonfirmasi penyimpanan ke Cloudflare Database D1:'
+          'Masukkan Master PIN Penjual untuk mengonfirmasi penyimpanan konfigurasi:'
         );
         if (pinPrompt) {
           pinToUse = pinPrompt.trim();
@@ -314,10 +314,10 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
       }
 
       if (saveResult.ok) {
-        toast.success('✅ Seluruh konfigurasi & kredensial berhasil disimpan ke Database Cloudflare D1!');
+        toast.success('✅ Seluruh konfigurasi & kredensial berhasil disimpan!');
         await checkServerStatus();
       } else {
-        toast.error(`❌ Gagal menyimpan ke Database D1: ${saveResult.error || 'Periksa Master PIN atau koneksi.'}`);
+        toast.error(`❌ Gagal menyimpan konfigurasi: ${saveResult.error || 'Periksa Master PIN atau koneksi.'}`);
       }
 
       // Mirror to local storage for offline resilience
@@ -419,7 +419,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
 
       const dbRes = await saveSellerConfigToDb(updatedConfig, oldPin, newPin);
       if (dbRes.ok) {
-        toast.success('Master PIN Berhasil Diperbarui di Database Cloudflare D1!');
+        toast.success('Master PIN Berhasil Diperbarui!');
       } else {
         toast.warning('PIN lokal diperbarui, namun periksa sinkronisasi database: ' + dbRes.error);
       }
@@ -1010,7 +1010,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-500 mt-1">
-                    Disimpan aman di database Cloudflare D1 terenkripsi.
+                    Disimpan aman di database terenkripsi.
                   </p>
                 </div>
               </div>
@@ -1732,7 +1732,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                   ) : serverCredentials?.isResendConfigured ? (
                     <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[11px] font-semibold flex items-center gap-1">
                       <CheckCircle2 className="size-3 text-emerald-600" />
-                      Aktif di Cloudflare Database
+                      Aktif di Server Database
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-300 text-[11px] font-semibold flex items-center gap-1">
@@ -1809,7 +1809,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                   </button>
                 </div>
                 <p className="text-[10px] text-slate-600">
-                  Resend menyediakan kuota gratis 3.000 email/bulan. Jangan lupa klik tombol <strong>"Simpan Perubahan"</strong> di atas untuk menyimpan langsung ke Database Cloudflare D1.
+                  Resend menyediakan kuota gratis 3.000 email/bulan. Jangan lupa klik tombol <strong>"Simpan Perubahan"</strong> di atas untuk menyimpan langsung ke database sistem.
                 </p>
               </div>
 

@@ -130,7 +130,7 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
           <div className="w-[82vw] max-w-[320px] md:w-auto md:max-w-none shrink-0 snap-center rounded-2xl md:rounded-none flex flex-col justify-between bg-slate-950 text-white p-6 sm:p-7 md:col-span-2 lg:col-span-1">
             <div>
               <p className="mb-2 text-xs font-semibold text-rose-300 flex items-center gap-1.5">
-                <ShieldCheck className="size-3.5" /> akugawe Cloudflare Pod
+                <ShieldCheck className="size-3.5" /> akugawe Cloud Pod
               </p>
               <h3 className="font-bold text-xl sm:text-2xl leading-tight text-white tracking-tight">
                 Langganan terencana untuk usaha Anda
