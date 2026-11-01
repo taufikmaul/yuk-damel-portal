@@ -52,10 +52,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     // 4. Hitung SHA-256 hash dari PIN baru
     const newHash = await sha256(newPin);
 
-    // 5. Simpan Hash PIN baru ke Cloudflare Database D1 / KV (isSecret = true)
-    await setSystemConfig(context.env, 'ADMIN_PIN_HASH', newHash, true);
-
-    // 6. Format pesan notifikasi reset PIN ke Telegram
+    // 5. Format pesan notifikasi reset PIN ke Telegram
     const message = `🔐 *RESET MASTER ADMIN PIN AKUGAWE*\n\nHalo Admin, permintaan reset Master PIN Anda berhasil diproses.\n\nMaster PIN baru Anda:\n\`${newPin}\`\n\n_(Ketuk angka di atas atau tombol di bawah untuk menyalin)_\n\n⚠️ *Perhatian:* PIN lama Anda tidak lagi berlaku. Gunakan Master PIN baru ini untuk login, membuka sesi (Auto-Lock), dan mengonfirmasi simpan konfigurasi di portal seller.`;
 
     // Pasang AbortController 8 detik agar tidak hang jika server Telegram lambat
@@ -98,6 +95,9 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       const errorMsg = tgData.description || 'Gagal mengirim pesan reset PIN via bot Telegram.';
       return jsonResponse({ ok: false, error: errorMsg, details: tgData }, telegramRes.status || 400);
     }
+
+    // 6. Simpan Hash PIN baru ke Cloudflare Database D1 / KV HANYA setelah pesan Telegram terbukti sukses terkirim
+    await setSystemConfig(context.env, 'ADMIN_PIN_HASH', newHash, true);
 
     return jsonResponse({
       ok: true,

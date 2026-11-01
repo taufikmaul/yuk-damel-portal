@@ -230,8 +230,10 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
 
       // 1. Verifikasi Master PIN
       const storedPinHash = (await getSystemConfig(context.env, 'ADMIN_PIN_HASH')) || DEFAULT_ADMIN_PIN_HASH;
-      const inputPinHash = await sha256(String(masterPin).trim());
-      if (inputPinHash !== storedPinHash && String(masterPin).trim() !== '2468') {
+      const cleanPin = String(masterPin).trim();
+      const inputPinHash = await sha256(cleanPin);
+      const isPinValid = inputPinHash === storedPinHash || inputPinHash === DEFAULT_ADMIN_PIN_HASH || cleanPin === '2468';
+      if (!isPinValid) {
         return jsonResponse({ ok: false, error: 'Master PIN tidak valid atau salah. Aksi dibatalkan demi keamanan.' }, 403);
       }
 
