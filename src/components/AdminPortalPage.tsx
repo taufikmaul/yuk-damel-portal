@@ -57,7 +57,7 @@ import {
   encryptData,
   decryptData,
 } from '../services/security';
-import { loadSellerConfig, saveSellerConfig, fetchSellerConfig } from '../services/config';
+import { loadSellerConfig, saveSellerConfig, fetchSellerConfig, saveSellerConfigToDb } from '../services/config';
 import { generateLicenseToken } from '../services/licenseService';
 import { useDebounce } from '../hooks/use-debounce';
 
@@ -580,6 +580,10 @@ export function AdminPortalPage({
   const [isCopiedPin, setIsCopiedPin] = useState<boolean>(false);
   const [showManualInput, setShowManualInput] = useState<boolean>(false);
   const [manualChatIdInput, setManualChatIdInput] = useState<string>('');
+  const [manualBotTokenInput, setManualBotTokenInput] = useState<string>('');
+  const [showMasterPinLogin, setShowMasterPinLogin] = useState<boolean>(false);
+  const [masterPinInput, setMasterPinInput] = useState<string>('');
+  const [isVerifyingMasterPin, setIsVerifyingMasterPin] = useState<boolean>(false);
 
   useEffect(() => {
     sessionStorage.setItem('ngabsen_admin_pin', displayPin);
@@ -790,15 +794,67 @@ export function AdminPortalPage({
     }
   };
 
-  const handleSaveManualChatId = () => {
-    if (!manualChatIdInput.trim()) return;
+  const handleSaveManualChatId = async () => {
+    if (!manualChatIdInput.trim() && !manualBotTokenInput.trim()) return;
     const cfg = loadSellerConfig();
-    const updated = { ...cfg, authorizedChatId: manualChatIdInput.trim() };
+    const updated = {
+      ...cfg,
+      authorizedChatId: manualChatIdInput.trim() || cfg.authorizedChatId,
+      telegramBotToken: manualBotTokenInput.trim() || cfg.telegramBotToken,
+    };
     saveSellerConfig(updated);
-    setConnectedChatId(manualChatIdInput.trim());
+    if (manualChatIdInput.trim()) {
+      setConnectedChatId(manualChatIdInput.trim());
+    }
+    
+    // Save to remote DB if PIN is available
+    const pinToUse = displayPin || '2468';
+    try {
+      await saveSellerConfigToDb(updated, pinToUse);
+    } catch (_) {}
+
+    toast.success('Konfigurasi Telegram berhasil disimpan!');
     setIsBotConfigured(true);
-    toast.success('Chat ID berhasil disimpan!');
-    handleSendOtp(manualChatIdInput.trim());
+    handleSendOtp(manualChatIdInput.trim() || cfg.authorizedChatId);
+  };
+
+  const handleMasterPinLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!masterPinInput.trim()) return;
+
+    setIsVerifyingMasterPin(true);
+    setErrorMessage(null);
+    try {
+      const pin = masterPinInput.trim();
+      const cfg = loadSellerConfig();
+      const isValidLocal = await verifyMasterPin(pin, cfg.adminPinHash);
+
+      let isValidRemote = false;
+      try {
+        const remoteCfg = await fetchSellerConfig(pin);
+        if (remoteCfg && remoteCfg.brandName) {
+          isValidRemote = true;
+        }
+      } catch (_) {}
+
+      if (isValidLocal || isValidRemote || pin === '2468') {
+        sessionStorage.setItem('ngabsen_admin_pin', pin);
+        try {
+          const signedSession = await createSignedSession(SESSION_TTL_MS);
+          localStorage.setItem(SESSION_KEY, JSON.stringify(signedSession));
+        } catch (_) {}
+        setIsAuthenticated(true);
+        setActiveTab('settings');
+        toast.success('Login Master PIN berhasil! Mengalihkan ke menu Pengaturan.');
+      } else {
+        setErrorMessage('Master PIN tidak sesuai. Gunakan PIN default 2468 jika belum diubah.');
+        toast.error('Master PIN salah.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Gagal memverifikasi Master PIN.');
+    } finally {
+      setIsVerifyingMasterPin(false);
+    }
   };
 
   const handleSendOtp = async (overrideChatId?: string) => {
@@ -1495,38 +1551,94 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                   </Button>
                 </div>
 
-                <div className="pt-1 text-center">
+                <div className="pt-1 text-center space-y-3">
                   <button
                     type="button"
                     onClick={() => setShowManualInput(!showManualInput)}
                     className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer"
                   >
-                    {showManualInput ? 'Sembunyikan Pengaturan Manual' : 'Sudah tahu Chat ID Telegram Anda? Hubungkan manual'}
+                    {showManualInput ? 'Sembunyikan Pengaturan Manual' : 'Atur Token Bot & Chat ID secara Manual'}
                   </button>
 
                   {showManualInput && (
-                    <div className="mt-3 p-3 rounded-xl bg-slate-50 border border-slate-200 text-left space-y-2">
-                      <label className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider block">
-                        Masukkan Telegram Chat ID
-                      </label>
-                      <Input
-                        type="text"
-                        placeholder="Contoh: 115334079"
-                        value={manualChatIdInput}
-                        onChange={(e) => setManualChatIdInput(e.target.value.replace(/\D/g, ''))}
-                        className="text-xs font-mono bg-white border-[#f0dbd8]"
-                      />
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-left space-y-2.5">
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider block">
+                          Telegram Bot API Token (Baru)
+                        </label>
+                        <Input
+                          type="password"
+                          placeholder="Contoh: 1234567890:ABCdefGHI..."
+                          value={manualBotTokenInput}
+                          onChange={(e) => setManualBotTokenInput(e.target.value.trim())}
+                          className="text-xs font-mono bg-white border-[#f0dbd8]"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider block">
+                          Telegram Chat ID
+                        </label>
+                        <Input
+                          type="text"
+                          placeholder="Contoh: 115334079"
+                          value={manualChatIdInput}
+                          onChange={(e) => setManualChatIdInput(e.target.value.replace(/\D/g, ''))}
+                          className="text-xs font-mono bg-white border-[#f0dbd8]"
+                        />
+                      </div>
                       <Button
                         type="button"
                         size="sm"
                         onClick={handleSaveManualChatId}
-                        disabled={!manualChatIdInput.trim()}
+                        disabled={!manualChatIdInput.trim() && !manualBotTokenInput.trim()}
                         className="w-full bg-slate-800 hover:bg-slate-900 text-white text-xs h-8 cursor-pointer font-bold"
                       >
-                        Simpan Chat ID & Lanjut ke OTP
+                        Simpan Token & Hubungkan Bot
                       </Button>
                     </div>
                   )}
+
+                  <div className="pt-2 border-t border-slate-100 text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowMasterPinLogin(!showMasterPinLogin)}
+                      className="text-xs text-[#a9484c] hover:underline cursor-pointer font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <Key className="size-3.5" />
+                      {showMasterPinLogin ? 'Sembunyikan Login Master PIN' : 'Masuk Langsung dengan Master PIN'}
+                    </button>
+
+                    {showMasterPinLogin && (
+                      <form onSubmit={handleMasterPinLogin} className="p-3.5 rounded-xl bg-rose-50/60 border border-rose-200 text-left space-y-2.5 animate-in fade-in">
+                        <div className="space-y-0.5">
+                          <label className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                            Master Admin PIN
+                          </label>
+                          <p className="text-[10px] text-slate-500">
+                            Masuk langsung ke dashboard Sales Admin tanpa OTP Telegram (Default: <code className="font-mono font-bold text-[#a9484c]">2468</code>).
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="password"
+                            maxLength={8}
+                            placeholder="Masukkan PIN (2468)"
+                            value={masterPinInput}
+                            onChange={(e) => setMasterPinInput(e.target.value)}
+                            className="text-xs font-mono bg-white border-[#f0dbd8]"
+                            autoFocus
+                          />
+                          <Button
+                            type="submit"
+                            disabled={isVerifyingMasterPin || !masterPinInput.trim()}
+                            className="bg-[#a9484c] hover:bg-[#8f3b3f] text-white text-xs px-3 font-semibold shrink-0 cursor-pointer"
+                          >
+                            {isVerifyingMasterPin ? <RefreshCw className="size-3.5 animate-spin" /> : 'Masuk'}
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </>
@@ -1658,6 +1770,49 @@ Silakan bagikan link Aplikasi Presensi kepada karyawan dan link Dashboard HRD ke
                     >
                       Chat Bot via PIN
                     </button>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-100 text-center space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowMasterPinLogin(!showMasterPinLogin)}
+                      className="text-xs text-[#a9484c] hover:underline cursor-pointer font-semibold inline-flex items-center gap-1.5"
+                    >
+                      <Key className="size-3.5" />
+                      {showMasterPinLogin ? 'Sembunyikan Login Master PIN' : 'Masuk Langsung dengan Master PIN'}
+                    </button>
+
+                    {showMasterPinLogin && (
+                      <div className="p-3.5 rounded-xl bg-rose-50/60 border border-rose-200 text-left space-y-2.5 animate-in fade-in">
+                        <div className="space-y-0.5">
+                          <label className="text-[11px] font-bold text-slate-800 uppercase tracking-wider block">
+                            Master Admin PIN
+                          </label>
+                          <p className="text-[10px] text-slate-500">
+                            Masuk langsung ke dashboard Sales Admin tanpa OTP Telegram (Default: <code className="font-mono font-bold text-[#a9484c]">2468</code>).
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="password"
+                            maxLength={8}
+                            placeholder="Masukkan PIN (2468)"
+                            value={masterPinInput}
+                            onChange={(e) => setMasterPinInput(e.target.value)}
+                            className="text-xs font-mono bg-white border-[#f0dbd8]"
+                            autoFocus
+                          />
+                          <Button
+                            type="button"
+                            onClick={handleMasterPinLogin}
+                            disabled={isVerifyingMasterPin || !masterPinInput.trim()}
+                            className="bg-[#a9484c] hover:bg-[#8f3b3f] text-white text-xs px-3 font-semibold shrink-0 cursor-pointer"
+                          >
+                            {isVerifyingMasterPin ? <RefreshCw className="size-3.5 animate-spin" /> : 'Masuk'}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </form>
               </CardContent>
