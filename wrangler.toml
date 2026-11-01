@@ -4,7 +4,6 @@ compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
 
 [vars]
-TELEGRAM_BOT_TOKEN = "8609932923:AAEj3YmFlhwaQLhZOSe8oBqz1ZkwmVkmg3U"
 AUTHORIZED_CHAT_ID = "115334079"
 TELEGRAM_BOT_USERNAME = "AkugawePortalBot"
 

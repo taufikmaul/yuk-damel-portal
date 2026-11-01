@@ -259,7 +259,7 @@ export const DEFAULT_SELLER_CONFIG: SellerConfig = {
   promoBannerText: '🔥 PROMO KHUSUS HARI INI: FREE TIER 4 BULAN & STARTER HANYA RP 15.000/BULAN!',
   pricingTiers: DEFAULT_PRICING_TIERS,
 
-  telegramBotToken: '8609932923:AAEj3YmFlhwaQLhZOSe8oBqz1ZkwmVkmg3U',
+  telegramBotToken: '',
   telegramBotUsername: 'AkugawePortalBot',
   authorizedChatId: '',
 

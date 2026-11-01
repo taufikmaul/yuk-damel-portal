@@ -8,7 +8,7 @@ export const BOT_USERNAME = 'AkugawePortalBot';
 export const DEFAULT_TELEGRAM_BOT_TOKEN = '';
 export const AUTHORIZED_SELLER_CHAT_ID = '';
 
-import { generateSecureOtp, sha256 } from './security';
+import { generateSecureOtp } from './security';
 
 export interface OtpSession {
   code: string;
@@ -96,63 +96,18 @@ export async function sendTelegramOtp(
     }
   }
 
-  // Fallback directly to Telegram Bot API
-  try {
-    const token = options?.botToken || DEFAULT_TELEGRAM_BOT_TOKEN;
-    if (token && targetChatId) {
-      const title = options?.title || (options?.clientName ? `KODE VERIFIKASI ONBOARDING: ${options?.clientName}` : 'KODE VERIFIKASI TELEGRAM');
-      const textMsg = options?.message || `🔐 *${title}:*\n\`${otpCode}\`\n\n_(Ketuk angka di atas atau tombol di bawah untuk menyalin kode)_\n\n⚠️ Kode OTP ini rahasia untuk verifikasi akses Sales Admin. Jangan berikan kepada siapa pun.`;
-
-      const directRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          chat_id: targetChatId,
-          text: textMsg,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: `📋 Salin Kode ${otpCode}`,
-                  copy_text: { text: otpCode },
-                },
-              ],
-            ],
-          },
-        }),
-      });
-
-      const dData = await directRes.json().catch(() => ({}));
-      if (directRes.ok && dData.ok) {
-        lastTelegramError = null;
-        return true;
-      } else {
-        const desc = dData.description || 'Gagal mengirim pesan via Telegram.';
-        if (typeof desc === 'string' && desc.includes('chat not found')) {
-          lastTelegramError = `Chat Telegram belum terhubung. Buka bot @${BOT_USERNAME} di Telegram, kirimkan PIN dan ulangi lagi.`;
-        } else {
-          lastTelegramError = desc;
-        }
-        return false;
-      }
-    }
-  } catch (directErr: any) {
-    lastTelegramError = directErr?.message || 'Gagal terhubung ke Telegram API.';
-  }
-
+  // If all serverless endpoints fail or return error
   return false;
 }
 
 /**
  * Memeriksa apakah ada pesan masuk ke bot Telegram dengan teks yang cocok dengan PIN.
- * Jika ditemukan, mengambil Chat ID dan mengirimkan pesan konfirmasi balik.
+ * Dilakukan secara aman via Edge Serverless (/api/check-telegram-pair) tanpa mengekspos token bot ke browser.
  */
 export async function checkTelegramPairing(
   expectedPin: string,
-  botToken?: string
+  _botToken?: string
 ): Promise<{ success: boolean; chatId?: string; senderName?: string; error?: string }> {
-  const token = botToken || DEFAULT_TELEGRAM_BOT_TOKEN;
   const cleanPin = expectedPin.trim();
 
   // Attempt serverless pairing check
@@ -171,76 +126,30 @@ export async function checkTelegramPairing(
           senderName: sData.senderName || 'Admin',
         };
       }
+      return {
+        success: false,
+        error: sData.error || 'Belum terdeteksi pesan dengan PIN yang sesuai di bot Telegram.',
+      };
+    } else {
+      const sErr = await serverRes.json().catch(() => ({}));
+      return {
+        success: false,
+        error: sErr.error || 'Gagal memeriksa pesan dari bot Telegram.',
+      };
     }
-  } catch (_) {}
-
-  // Fall back to direct updates polling
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=-20&limit=20`);
-    if (!res.ok) {
-      return { success: false, error: 'Gagal menghubungi server Telegram.' };
-    }
-
-    const data = await res.json();
-    if (!data.ok || !Array.isArray(data.result)) {
-      return { success: false, error: data.description || 'Gagal membaca pesan bot.' };
-    }
-
-    const updates = [...data.result].reverse();
-
-    for (const update of updates) {
-      const msg = update.message;
-      if (!msg || !msg.text) continue;
-
-      const text = msg.text.trim();
-      const isMatch =
-        text === cleanPin ||
-        text === `/start ${cleanPin}` ||
-        text.includes(cleanPin) ||
-        (cleanPin === '2468' && text === '/start');
-
-      if (isMatch && msg.chat && msg.chat.id) {
-        const foundChatId = String(msg.chat.id);
-        const senderName = msg.from?.first_name || msg.chat.first_name || 'Admin';
-
-        // Confirm successful pairing to Telegram chat
-        try {
-          await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: foundChatId,
-              text: `✅ *Bot Akugawe Terhubung!*\n\nHalo *${senderName}*, Telegram Anda berhasil dikonfigurasi sebagai akun Sales Admin akugawe.\n\nKode OTP Anda siap dikirimkan.`,
-              parse_mode: 'Markdown',
-            }),
-          });
-        } catch (_) {}
-
-        return {
-          success: true,
-          chatId: foundChatId,
-          senderName,
-        };
-      }
-    }
-
-    return {
-      success: false,
-      error: 'Belum terdeteksi pesan dengan PIN yang sesuai di bot Telegram.',
-    };
   } catch (err: any) {
     return {
       success: false,
-      error: err?.message || 'Error memeriksa pesan Telegram.',
+      error: err?.message || 'Gagal terhubung ke endpoint /api/check-telegram-pair',
     };
   }
 }
 
 /**
  * Mereset Master Admin PIN dan mengirimkan PIN baru ke bot Telegram penjual.
- * Digunakan saat penjual lupa PIN lama di halaman Settings.
+ * Dilakukan secara aman via Edge Serverless (/api/reset-pin).
  */
-export async function resetMasterPinViaTelegram(config?: {
+export async function resetMasterPinViaTelegram(_config?: {
   telegramBotToken?: string;
   telegramBotUsername?: string;
   authorizedChatId?: string;
@@ -260,18 +169,13 @@ export async function resetMasterPinViaTelegram(config?: {
     endpoints.push('https://akugawe-portal.pages.dev/api/reset-pin');
   }
 
-  const payload = JSON.stringify({
-    telegramBotToken: config?.telegramBotToken,
-    authorizedChatId: config?.authorizedChatId,
-  });
-
   // Attempt PIN reset via serverless worker endpoint
   for (const endpoint of endpoints) {
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload,
+        body: JSON.stringify({}),
       });
 
       if (res.ok) {
@@ -293,47 +197,9 @@ export async function resetMasterPinViaTelegram(config?: {
     }
   }
 
-  // Fall back to client-side direct dispatch
-  try {
-    const targetChat = config?.authorizedChatId || AUTHORIZED_SELLER_CHAT_ID;
-    const token = config?.telegramBotToken || DEFAULT_TELEGRAM_BOT_TOKEN;
-
-    if (!targetChat || !token) {
-      return {
-        success: false,
-        error: 'Bot Telegram atau Chat ID belum terkonfigurasi. Silakan hubungkan bot Telegram terlebih dahulu.',
-      };
-    }
-
-    const newPin = generateOtp(); // 6-digit CSPRNG
-    const newHash = await sha256(newPin);
-
-    const message = `🔐 *RESET MASTER ADMIN PIN AKUGAWE*\n\nHalo Admin, permintaan reset Master PIN Anda berhasil diproses.\n\nMaster PIN baru Anda:\n\`${newPin}\`\n\n_(Ketuk angka di atas atau tombol di bawah untuk menyalin)_\n\n⚠️ *Perhatian:* PIN lama Anda tidak lagi berlaku. Gunakan Master PIN baru ini untuk login, membuka sesi (Auto-Lock), dan mengonfirmasi simpan konfigurasi di portal seller.`;
-
-    const ok = await sendTelegramOtp(newPin, targetChat, {
-      title: 'RESET MASTER ADMIN PIN',
-      message,
-      botToken: token,
-    });
-
-    if (ok) {
-      lastTelegramError = null;
-      return {
-        success: true,
-        newPinHash: newHash,
-        newPin: newPin,
-      };
-    } else {
-      return {
-        success: false,
-        error: lastTelegramError || 'Gagal mengirim Master PIN baru ke Telegram.',
-      };
-    }
-  } catch (directErr: any) {
-    return {
-      success: false,
-      error: directErr?.message || 'Terjadi kesalahan saat memproses reset PIN.',
-    };
-  }
+  return {
+    success: false,
+    error: lastTelegramError || 'Gagal mereset Master PIN.',
+  };
 }
 
