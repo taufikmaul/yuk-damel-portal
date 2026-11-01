@@ -915,7 +915,7 @@ export function SellerConfigPage({ onBack, adminPin }: SellerConfigPageProps) {
                     placeholder="350000"
                   />
                   <p className="text-[10px] text-slate-500 mt-1">
-                    Rekomendasi: Rp 350.000 – Rp 500.000 per transaksi.
+                    Rekomendasi: Rp 350.000 sampai Rp 500.000 per transaksi.
                   </p>
                 </div>
                 <div>

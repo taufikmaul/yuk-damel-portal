@@ -216,7 +216,7 @@ export function App() {
     },
     {
       q: 'Bagaimana aturan cicilan Kasbon Darurat dan rekonsiliasi pembayarannya?',
-      a: 'Karyawan dapat mengajukan kasbon darurat langsung dari ponsel (tenor 1–6 bulan). Jadwal angsuran potong gaji otomatis tersinkronisasi dengan tanggal cutoff payroll perusahaan. Jika terdapat kesalahan pencatatan, sistem menyediakan tombol Undo Bayar khusus role Owner demi akuntabilitas pembukuan.',
+      a: 'Karyawan dapat mengajukan kasbon darurat langsung dari ponsel (tenor 1-6 bulan). Jadwal angsuran potong gaji otomatis tersinkronisasi dengan tanggal cutoff payroll perusahaan. Jika terdapat kesalahan pencatatan, sistem menyediakan tombol Undo Bayar khusus role Owner demi akuntabilitas pembukuan.',
     },
     {
       q: 'Bagaimana akugawe menghitung uang lembur dan iuran BPJS?',
@@ -882,7 +882,7 @@ export function App() {
 
                   <div className="mt-6 pt-4 border-t border-slate-100 space-y-2 text-xs">
                     <div className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                      <span className="font-medium text-slate-800">Kasbon Cicilan 1–6 Bulan</span>
+                      <span className="font-medium text-slate-800">Kasbon Cicilan 1-6 Bulan</span>
                       <span className="text-[11px] font-semibold text-primary">Sinkron Cutoff Payroll</span>
                     </div>
                     <div className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">

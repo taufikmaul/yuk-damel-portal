@@ -287,7 +287,7 @@ export function AdminFleetTab() {
             Cloudflare Pod Fleet (Multi-Account Grouping)
           </h3>
           <p className="text-[11px] text-slate-500 mt-0.5">
-            Sistem deploy SaaS baru: 1 Pod menampung 20–25 tenant dengan biaya Rp 0 tanpa perlu pembeli membuat Cloudflare manual.
+            Sistem deploy SaaS baru: 1 Pod menampung 20-25 tenant dengan biaya Rp 0 tanpa perlu pembeli membuat Cloudflare manual.
           </p>
         </div>
 
@@ -331,7 +331,7 @@ export function AdminFleetTab() {
             Aturan Baku Alokasi Pod & Akun Cloudflare:
           </div>
           <p className="text-[11px] text-slate-600 leading-relaxed">
-            • <b>Demo, Free Tier &amp; Starter:</b> Berada di <b>1 Pod Shared bersama</b> (multi-tenant grouping 25–50 tenant per akun Cloudflare) dengan biaya hosting Rp 0.<br />
+            • <b>Demo, Free Tier &amp; Starter:</b> Berada di <b>1 Pod Shared bersama</b> (multi-tenant grouping 25-50 tenant per akun Cloudflare) dengan biaya hosting Rp 0.<br />
             • <b>Pro Tier (Business Pro):</b> Mendapatkan <b>1 Dedicated Pod di 1 Akun Cloudflare tersendiri</b> (Database D1, Worker, dan KV khusus terisolasi penuh) + akses eksklusif <b>Fitur Canvasing Sales &amp; Kunjungan Toko</b>.
           </p>
         </div>
@@ -561,7 +561,7 @@ export function AdminFleetTab() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    Arsitektur Cloudflare Serverless Ekosistem
+                    Arsitektur Cloudflare Serverless
                   </h3>
                   <p className="text-xs text-slate-500">
                     Sistem multi-tenant akugawe berjalan di edge network Cloudflare dengan biaya server Rp 0.

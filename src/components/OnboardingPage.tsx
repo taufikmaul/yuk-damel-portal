@@ -1562,7 +1562,7 @@ export function OnboardingPage({ initialToken = '', onBackToLanding }: Onboardin
                 <div className="max-w-2xl mx-auto bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3 text-left">
                   <Clock className="size-5 text-amber-600 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-amber-900">Estimasi proses: 5–10 menit</p>
+                    <p className="text-sm font-semibold text-amber-900">Estimasi proses: 5-10 menit</p>
                     <p className="text-xs text-amber-800 mt-1 leading-relaxed">
                       Cloudflare sedang memproses deployment serverless Anda. URL portal di bawah akan aktif secara otomatis setelah pipeline selesai sepenuhnya.
                     </p>
