@@ -151,10 +151,13 @@ export function PricingSection({ onSelectTier, onProceedToOnboarding, sellerConf
                 <Check className="size-3.5 text-emerald-400 shrink-0" /> Canvasing & Kunjungan Sales (Pro)
               </div>
               <div className="text-xs text-slate-300 flex items-center gap-2">
-                <Check className="size-3.5 text-emerald-400 shrink-0" /> Anti-Fake GPS & PWA Mobile
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Lembur Strict & BPJS Kustom
               </div>
               <div className="text-xs text-slate-300 flex items-center gap-2">
-                <Check className="size-3.5 text-emerald-400 shrink-0" /> Otomasi Slip Gaji PDF
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Kasbon Sinkron Cutoff Payroll
+              </div>
+              <div className="text-xs text-slate-300 flex items-center gap-2">
+                <Check className="size-3.5 text-emerald-400 shrink-0" /> Anti-Fake GPS & PWA Mobile
               </div>
             </div>
           </div>

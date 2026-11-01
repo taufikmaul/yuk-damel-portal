@@ -26,6 +26,9 @@ import {
   Navigation,
   ShoppingBag,
   CheckCircle2,
+  BellRing,
+  Timer,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { PricingSection } from './components/pricing-section';
 import { ScrollReveal } from './components/ScrollReveal';
@@ -200,6 +203,10 @@ export function App() {
       a: 'akugawe menerapkan validasi berlapis: karyawan wajib selfie langsung lewat kamera aktif dan berada di dalam radius geofence kantor atau cabang toko. Sistem mendeteksi serta menolak Fake GPS dan foto galeri. Fitur kunci perangkat memastikan 1 akun hanya dapat mencatatkan kehadiran pada 1 ponsel resmi terverifikasi.',
     },
     {
+      q: 'Bagaimana sistem menangani keterlambatan berulang dan anomali jam kerja?',
+      a: 'Tersedia fitur Maximum Late Alert dengan 3 mode respon bertingkat: Warning (peringatan), Auto-Cut/Lock (pemotongan/kunci presensi otomatis), dan Escalation (eskalasi langsung ke Telegram Bot Owner/HR). Karyawan juga dapat mengajukan Koreksi Absensi Mandiri dengan validasi 3-aturan ketat dan deteksi anomali jam kerja real-time.',
+    },
+    {
       q: 'Apa saja kelengkapan Fitur Canvasing Sales & Kunjungan Toko (Business Pro)?',
       a: 'Tim sales lapangan memiliki tab Kunjungan terintegrasi: panduan Beat Plan harian dengan navigasi Google Maps, check-in dan check-out berbasis GPS beserta foto toko, pencatatan pesanan (Taking Order PO), rekonsiliasi setoran kasir (Tunai, Transfer, Giro), serta mode offline-first untuk area minim sinyal.',
     },
@@ -208,8 +215,12 @@ export function App() {
       a: 'Karyawan yang hadir tepat waktu sebelum batas toleransi memperoleh poin harian dan lencana streak berturut-turut. Poin yang terakumulasi dapat ditukarkan langsung dari ponsel menjadi voucher belanja ritel, saldo dompet digital, atau insentif cuti tambahan.',
     },
     {
-      q: 'Bagaimana aturan cicilan Kasbon Darurat dan pemotongan gajinya?',
-      a: 'Karyawan dapat mengajukan kasbon darurat langsung melalui aplikasi ponsel dengan tenor cicilan 1 hingga 6 bulan. Begitu permohonan disetujui atasan, nominal angsuran otomatis dipotongkan pada perhitungan slip gaji bulan bersangkutan tanpa perlu rekap Excel terpisah.',
+      q: 'Bagaimana aturan cicilan Kasbon Darurat dan rekonsiliasi pembayarannya?',
+      a: 'Karyawan dapat mengajukan kasbon darurat langsung dari ponsel (tenor 1–6 bulan). Jadwal angsuran potong gaji otomatis tersinkronisasi dengan tanggal cutoff payroll perusahaan. Jika terdapat kesalahan pencatatan, sistem menyediakan tombol Undo Bayar khusus role Owner demi akuntabilitas pembukuan.',
+    },
+    {
+      q: 'Bagaimana akugawe menghitung uang lembur dan iuran BPJS?',
+      a: 'akugawe menyediakan opsi Perhitungan Lembur Strict (membandingkan jam kerja aktual terhadap durasi shift resmi) dengan rincian badge jam/menit transparan. Komponen BPJS Ketenagakerjaan dan Kesehatan juga mendukung input kustom disertai catatan penjelasan (notes), selain formula otomatis TER PPh 21 (PP 58/2023).',
     },
     {
       q: 'Bagaimana akugawe menghitung THR karyawan?',
@@ -217,7 +228,7 @@ export function App() {
     },
     {
       q: 'Bagaimana cara karyawan mengajukan klaim reimbursement operasional?',
-      a: 'Karyawan cukup mengambil foto kuitansi atau nota (BBM, parkir, tol, atau perlengkapan toko) melalui kamera aplikasi. Setelah diverifikasi dan disetujui atasan, nominal klaim otomatis terakumulasi dalam transfer gaji periode berikutnya.',
+      a: 'Karyawan cukup mengambil foto kuitansi atau nota (BBM, parkir, tol, atau perlengkapan toko) melalui kamera aplikasi. Status persetujuan atau alasan penolakan ditampilkan transparan di aplikasi, dan dana otomatis masuk dalam transfer gaji periode berikutnya.',
     },
     {
       q: 'Apa manfaat Asisten HR dan Bot Telegram di akugawe?',
@@ -647,10 +658,10 @@ export function App() {
                 Fitur Utama
               </p>
               <h2 className="text-3xl sm:text-5xl font-bold text-slate-900 tracking-tight leading-tight">
-                Empat Pilar Operasional untuk Usaha yang Terus Tumbuh
+                Pilar Operasional Terpadu untuk Toko, Sales, & Karyawan
               </h2>
               <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
-                Menyelesaikan kebutuhan riil di lapangan: dari pencegahan kecurangan presensi, pengawalan rute sales, kebutuhan finansial darurat karyawan, hingga perhitungan gaji resmi.
+                Menyelesaikan kebutuhan riil di lapangan: presensi radius anti-curang, peringatan keterlambatan bertingkat, pengawalan sales, kasbon sinkron cutoff, hingga otomasi lembur dan payroll resmi.
               </p>
             </ScrollReveal>
 
@@ -688,6 +699,26 @@ export function App() {
                           <p className="font-bold text-slate-900">Sensor Biometrik Cepat</p>
                           <p className="text-slate-600 text-[11px] mt-0.5 leading-normal">
                             Buka aplikasi secara instan dan aman menggunakan sidik jari atau Face ID di ponsel masing-masing.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
+                        <BellRing className="size-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-slate-900">Late Alert 3 Mode</p>
+                          <p className="text-slate-600 text-[11px] mt-0.5 leading-normal">
+                            Peringatan telat berulang via Warning, Auto-Cut/Lock, dan eskalasi Telegram Bot ke Owner.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3">
+                        <Timer className="size-4 text-indigo-600 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-bold text-slate-900">Koreksi 3-Rule & Anomali</p>
+                          <p className="text-slate-600 text-[11px] mt-0.5 leading-normal">
+                            Koreksi mandiri dengan 3 aturan ketat dan deteksi anomali durasi jam kerja real-time.
                           </p>
                         </div>
                       </div>
@@ -845,18 +876,22 @@ export function App() {
                       Kasbon darurat cicilan dan klaim reimbursement foto nota
                     </h3>
                     <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-                      Bantu kebutuhan darurat karyawan tanpa prosedur birokrasi yang rumit. Karyawan dapat mengajukan kasbon darurat langsung dari ponsel dengan opsi cicilan 1 sampai 6 bulan. Setelah disetujui atasan, potongan angsuran langsung tercatat rapi di slip gaji. Karyawan lapangan juga dapat mengklaim uang BBM dan operasional cukup dengan memotret kuitansi nota.
+                      Bantu kebutuhan darurat karyawan tanpa birokrasi rumit. Karyawan dapat mengajukan kasbon darurat langsung dari ponsel dengan opsi cicilan 1 sampai 6 bulan. Jadwal angsuran otomatis tersinkronisasi dengan tanggal cutoff payroll perusahaan. Tersedia tombol Undo Bayar khusus role Owner untuk rekonsiliasi yang aman. Karyawan juga dapat mengklaim uang BBM dan operasional via foto nota dengan alasan penolakan transparan di PWA.
                     </p>
                   </div>
 
                   <div className="mt-6 pt-4 border-t border-slate-100 space-y-2 text-xs">
                     <div className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
                       <span className="font-medium text-slate-800">Kasbon Cicilan 1–6 Bulan</span>
-                      <span className="text-[11px] font-semibold text-primary">Auto-Potong Slip</span>
+                      <span className="text-[11px] font-semibold text-primary">Sinkron Cutoff Payroll</span>
+                    </div>
+                    <div className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
+                      <span className="font-medium text-slate-800">Audit Rekonsiliasi Kasbon</span>
+                      <span className="text-[11px] font-semibold text-rose-700">Tombol Undo Bayar Owner</span>
                     </div>
                     <div className="px-3 py-2.5 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
                       <span className="font-medium text-slate-800">Klaim BBM & Operasional Toko</span>
-                      <span className="text-[11px] font-semibold text-emerald-700">Foto Kuitansi Nota</span>
+                      <span className="text-[11px] font-semibold text-emerald-700">Alasan Transparan di PWA</span>
                     </div>
                   </div>
                 </ScrollReveal>
@@ -901,30 +936,30 @@ export function App() {
                     </div>
 
                     <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                      Kalkulasi gaji, lembur, BPJS, THR, dan pajak PPh 21 otomatis
+                      Kalkulasi gaji, lembur strict, BPJS custom, THR, dan PPh 21
                     </h3>
 
                     <p className="text-sm text-slate-600 leading-relaxed">
-                      Selesaikan proses penggajian bulanan dalam hitungan menit. Seluruh komponen diperhitungkan secara otomatis: potongan keterlambatan, uang lembur resmi Depnaker, pajak PPh 21 skema TER (PP 58/2023), iuran BPJS Ketenagakerjaan dan Kesehatan, serta kalkulator THR proporsional sesuai Permenaker No. 6/2016. Slip gaji PDF siap dibagikan ke ponsel karyawan bersama berkas transfer bank massal.
+                      Selesaikan proses penggajian bulanan dalam hitungan menit. Perhitungan uang lembur dapat diatur secara ketat membandingkan jam kerja nyata terhadap jam shift resmi (dengan badge menit/jam transparan). Iuran BPJS Ketenagakerjaan dan Kesehatan mendukung nominal kustom dengan catatan keterangan. Pajak PPh 21 skema TER (PP 58/2023) dan kalkulator THR proporsional terhitung otomatis.
                     </p>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 text-xs">
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <FileText className="size-4 text-primary mb-1.5" />
-                        <p className="font-bold text-slate-900">Pajak PPh 21 TER</p>
-                        <p className="text-slate-600 text-[11px] mt-0.5">Sesuai Kategori A, B, C</p>
+                        <Timer className="size-4 text-primary mb-1.5" />
+                        <p className="font-bold text-slate-900">Lembur Strict Shift</p>
+                        <p className="text-slate-600 text-[11px] mt-0.5">Badge Menit & Jam Presisi</p>
                       </div>
 
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <ShieldCheck className="size-4 text-emerald-600 mb-1.5" />
-                        <p className="font-bold text-slate-900">BPJS Lengkap</p>
-                        <p className="text-slate-600 text-[11px] mt-0.5">JHT, JP, JKK, JKM & Kesehatan</p>
+                        <SlidersHorizontal className="size-4 text-emerald-600 mb-1.5" />
+                        <p className="font-bold text-slate-900">BPJS & Nominal Bebas</p>
+                        <p className="text-slate-600 text-[11px] mt-0.5">Input Kustom + Catatan</p>
                       </div>
 
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                         <Calculator className="size-4 text-amber-600 mb-1.5" />
-                        <p className="font-bold text-slate-900">Kalkulator THR</p>
-                        <p className="text-slate-600 text-[11px] mt-0.5">Proporsional Masa Kerja</p>
+                        <p className="font-bold text-slate-900">THR & Pajak TER</p>
+                        <p className="text-slate-600 text-[11px] mt-0.5">PP 58/2023 & Permenaker</p>
                       </div>
                     </div>
                   </div>

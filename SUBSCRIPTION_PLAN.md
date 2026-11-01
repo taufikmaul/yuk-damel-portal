@@ -125,32 +125,38 @@ Seluruh parameter tier tersimpan dalam format JSON di database `system_configs` 
       "Maksimal 15 Karyawan Aktif",
       "Pilihan Durasi 1 Bulan s/d 5 Tahun",
       "Geofencing Radius GPS Meter & Anti-Fake GPS",
+      "Maximum Late Alert (3 Mode) & Self-Correction (3 Rules)",
       "Otomasi Payroll & Export Slip Gaji PDF",
-      "Pencatatan Lembur, Kasbon, & Izin Cuti",
+      "Pencatatan Lembur Strict & BPJS Custom with Notes",
+      "Kasbon Cicilan Sinkron Cutoff Payroll & Undo Bayar Owner",
       "Prioritas Dukungan Teknis WhatsApp"
     ]
   },
   {
     "id": "business_pro",
     "name": "Business Pro",
-    "badge": "Bisnis Berkembang",
+    "badge": "1 Akun CF Dedicated",
     "isFree": false,
     "maxEmployees": 50,
-    "description": "Untuk bisnis dengan banyak staf, multi-cabang, atau shift fleksibel.",
+    "description": "1 Dedicated Pod di 1 Akun Cloudflare mandiri dengan custom domain sendiri & Fitur Canvasing Sales / Kunjungan Toko lengkap.",
     "pricing": {
-      "1": { "normalRp": 39000, "promoRp": 35000, "discountPercent": 10, "label": "1 Bulan" },
-      "3": { "normalRp": 117000, "promoRp": 99000, "discountPercent": 15, "label": "3 Bulan" },
-      "6": { "normalRp": 234000, "promoRp": 189000, "discountPercent": 19, "label": "6 Bulan" },
-      "12": { "normalRp": 468000, "promoRp": 349000, "discountPercent": 25, "badge": "Best Value", "label": "1 Tahun" },
-      "24": { "normalRp": 936000, "promoRp": 599000, "discountPercent": 36, "label": "2 Tahun" },
-      "60": { "normalRp": 2340000, "promoRp": 1199000, "discountPercent": 49, "label": "5 Tahun" }
+      "1": { "normalRp": 49000, "promoRp": 39000, "discountPercent": 20, "label": "1 Bulan" },
+      "3": { "normalRp": 147000, "promoRp": 109000, "discountPercent": 25, "label": "3 Bulan" },
+      "6": { "normalRp": 294000, "promoRp": 199000, "discountPercent": 32, "label": "6 Bulan" },
+      "12": { "normalRp": 588000, "promoRp": 360000, "discountPercent": 38, "badge": "Best Value", "label": "1 Tahun" },
+      "24": { "normalRp": 1176000, "promoRp": 649000, "discountPercent": 44, "label": "2 Tahun" },
+      "60": { "normalRp": 2940000, "promoRp": 1299000, "discountPercent": 55, "badge": "Super Saver", "label": "5 Tahun" }
     },
     "features": [
-      "Maksimal 50 Karyawan Aktif",
+      "1 Dedicated Pod di 1 Akun Cloudflare Khusus",
+      "Bisa Custom Domain Sendiri (misal: absen.perusahaan.com)",
+      "Database D1 & Worker Terisolasi Penuh Tanpa Berbagi",
+      "Maksimal 50 Karyawan Aktif (Bisa Upgrade)",
+      "Fitur Canvasing Sales & Kunjungan Toko (Beat Plan, Peta Sebaran, Live GPS, Taking Order, Tagihan)",
       "Multi-Cabang & Multi-Lokasi Kantor",
-      "Pengaturan Shift Kerja Kompleks",
+      "Pengaturan Shift Kerja Kompleks & Lembur Otomatis Strict",
       "Laporan Analitik Kehadiran & Rekap PPh 21",
-      "Bot Notifikasi Telegram Absensi Harian"
+      "Bot Asisten & Notifikasi Telegram Interaktif"
     ]
   }
 ]
